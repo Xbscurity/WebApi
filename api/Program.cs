@@ -7,7 +7,11 @@ var builder = WebApplication.CreateBuilder(args);
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(options =>
+{
+     var xmlFile = Path.Combine(AppContext.BaseDirectory, "ApiComments.xml"); // Adjust with your actual project name
+    options.IncludeXmlComments(xmlFile);  // Include XML comments in Swagger UI
+});
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
 {
 options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
