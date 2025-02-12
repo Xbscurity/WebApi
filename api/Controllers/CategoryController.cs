@@ -1,12 +1,6 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Linq.Expressions;
-using System.Threading.Tasks;
 using api.Data;
 using api.Dtos.Category;
 using api.Helpers;
-using api.Helpers.Report;
 using api.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -26,39 +20,39 @@ namespace api.Controllers
         /// Get all categories.
         /// </summary>
         /// <returns>A list of all categoeries</returns>
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Response<FinancialTransaction>))]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ApiResponse<List<Category>>))]
         [HttpGet]
-        public async Task<ActionResult<Response<List<Category>>>> GetAll()
+        public async Task<ApiResponse<List<Category>>> GetAll()
         {
             var categories = await _context.Categories.AsNoTracking().ToListAsync();
-            return Ok(categories);
+            return ApiResponse.Success(categories);
         }
         /// <summary>
         /// Get a specific category by its ID.
         /// </summary>
         /// <param name="id">The ID of the category to get.</param>
         /// <returns>The category with the specified ID.</returns>
-         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Response<Category>))]
-        [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(Response<Category>))]
+         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ApiResponse<Category>))]
+        [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(ApiResponse<Category>))]
         [HttpGet("{id:int}")]
-        public async Task<ActionResult<Response<Category>>> GetById([FromRoute] int id)
+        public async Task<ApiResponse<Category>> GetById([FromRoute] int id)
         {
             var category = await _context.Categories.FindAsync(id);
             if (category == null)
             {
-                return NotFound($"Category with ID {id} not found.");
+                return ApiResponse.NotFound<Category>("Category not found");
             }
-            return Ok(category);
+            return ApiResponse.Success(category);
         }
         /// <summary>
         /// Create a new category.
         /// </summary>
         /// <param name="categoryDto">The data for the new category.</param>
         /// <returns>The created category with its details</returns>
-         [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(Response<Category>))]
-        [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(Response<Category>))]
+         [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(ApiResponse<Category>))]
+        [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(ApiResponse<Category>))]
         [HttpPost]
-        public async Task<ActionResult<Response<Category>>> Create([FromBody] CategoryDto categoryDto)
+        public async Task<ApiResponse<Category>> Create([FromBody] CategoryDto categoryDto)
         {
             Category category = new Category
             {
@@ -66,7 +60,7 @@ namespace api.Controllers
             };
             await _context.Categories.AddAsync(category);
             await _context.SaveChangesAsync();
-            return CreatedAtAction(nameof(GetById), new { id = category.Id }, Response<Category>.SuccessResponse(category));
+            return ApiResponse.NoContent<Category>();
         }
         /// <summary>
         /// Update an existing category.
@@ -75,18 +69,18 @@ namespace api.Controllers
         /// <param name="categoryDto">The updated category data.</param>
         /// <returns>No content if the update is successful.</returns>
         [ProducesResponseType(StatusCodes.Status204NoContent)]
-        [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(Response<Category>))]
+        [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(ApiResponse<Category>))]
         [HttpPut("{id:int}")]
-        public async Task<ActionResult<Response<Category>>> Update([FromRoute] int id, [FromBody] CategoryDto categoryDto)
+        public async Task<ApiResponse<Category>> Update([FromRoute] int id, [FromBody] CategoryDto categoryDto)
         {
             var category = await _context.Categories.FindAsync(id);
             if (category == null)
             {
-                return NotFound(Response<Category>.NotFoundResponse("Category not found"));
+                return ApiResponse.NotFound<Category>("Category not found");
             }
             category.Name = categoryDto.Name;
             await _context.SaveChangesAsync();
-            return NoContent();
+            return ApiResponse.NoContent<Category>();
         }
         /// <summary>
         /// Delete an existing category.
@@ -94,19 +88,19 @@ namespace api.Controllers
         /// <param name="id">The ID of the category to delete.</param>
         /// <returns>No content if the delete is successful.</returns>
         [ProducesResponseType(StatusCodes.Status204NoContent)]
-        [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(Response<Category>))]
+        [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(ApiResponse<Category>))]
         [HttpDelete("{id:int}")]
 
-        public async Task<ActionResult<Response<Category>>> Delete([FromRoute] int id)
+        public async Task<ActionResult<ApiResponse<Category>>> Delete([FromRoute] int id)
         {
             var category = await _context.Categories.FindAsync(id);
             if (category == null)
             {
-                return NotFound(Response<Category>.NotFoundResponse("Category not found"));
+                return ApiResponse.NotFound<Category>("Category not found");
             }
             _context.Categories.Remove(category);
             await _context.SaveChangesAsync();
-            return NoContent();
+            return ApiResponse.NoContent<Category>();
         }
        
     }

@@ -13,9 +13,8 @@ namespace api.Helpers
         public static ApiResponse<T> NotFound<T>(string message = "Entity Not Found", object errorData = null) =>
             new() { Error = new Error { Code = "NOT_FOUND", Message = message, Data = errorData } };
     }
-    public class ApiResponse<T> 
+    public class ApiResponse<T> : ApiResponse
     {
-         public Error Error { get; set; }
         public T Data { get; set; }
     }
 }
