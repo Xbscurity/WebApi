@@ -28,9 +28,9 @@ namespace api.Middlewares
         }
         catch (Exception)
         {
+            System.Console.WriteLine("catching exception");
             context.Response.StatusCode = StatusCodes.Status500InternalServerError;
             context.Response.ContentType = "application/json";
-            System.Console.WriteLine("asASDd");
             var errorResponse = new ApiResponse<object>
             {
                 Code = "SERVER_ERROR",

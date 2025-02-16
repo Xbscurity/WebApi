@@ -24,15 +24,14 @@ public class StatusCodeMiddleware
         try
         {
             context.Response.Body = memoryStream;
-
             await _next(context); 
 
             memoryStream.Seek(0, SeekOrigin.Begin);
+
             var bodyContent = await new StreamReader(memoryStream).ReadToEndAsync();
 
             if (!string.IsNullOrEmpty(bodyContent))
             {
-                System.Console.WriteLine("this works");
 
                 using var doc = JsonDocument.Parse(bodyContent);
 
