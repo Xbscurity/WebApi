@@ -1,29 +1,32 @@
 using api.Data;
+using api.Middlewares;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {
-     var xmlFile = Path.Combine(AppContext.BaseDirectory, "ApiComments.xml"); // Adjust with your actual project name
-    options.IncludeXmlComments(xmlFile);  // Include XML comments in Swagger UI
+     var xmlFile = Path.Combine(AppContext.BaseDirectory, "ApiComments.xml"); 
+    options.IncludeXmlComments(xmlFile);  
 });
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
 {
 options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
 });
 var app = builder.Build();
-
+app.UseMiddleware<ExceptionHandlingMiddleware>(); 
+app.UseHttpsRedirection();
+app.UseMiddleware<StatusCodeMiddleware>(); 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
-app.UseHttpsRedirection();
 app.MapControllers();
 app.Run();

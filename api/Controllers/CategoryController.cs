@@ -60,7 +60,7 @@ namespace api.Controllers
             };
             await _context.Categories.AddAsync(category);
             await _context.SaveChangesAsync();
-            return ApiResponse.NoContent<Category>();
+            return ApiResponse.Success(category);
         }
         /// <summary>
         /// Update an existing category.
@@ -80,7 +80,7 @@ namespace api.Controllers
             }
             category.Name = categoryDto.Name;
             await _context.SaveChangesAsync();
-            return ApiResponse.NoContent<Category>();
+            return ApiResponse.Success(category);
         }
         /// <summary>
         /// Delete an existing category.
@@ -100,8 +100,7 @@ namespace api.Controllers
             }
             _context.Categories.Remove(category);
             await _context.SaveChangesAsync();
-            return ApiResponse.NoContent<Category>();
+            return ApiResponse.Success(category);
         }
-       
     }
 }

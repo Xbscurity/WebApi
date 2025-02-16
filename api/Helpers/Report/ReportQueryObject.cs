@@ -7,7 +7,7 @@ namespace api.Helpers
 {
     public class ReportQueryObject
     {
-        public DateTime? startDate { get; set; }
-        public DateTime? endDate { get; set; }
+        public DateTime? StartDate { get; set; }
+        public DateTime? EndDate { get; set; }
     }
 }

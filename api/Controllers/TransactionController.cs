@@ -21,16 +21,16 @@ namespace api.Controllers
         /// <summary>
         /// Get a report grouped by category.
         /// </summary>
-        /// <param name="query">The report query parameters(data range).</param>
+        /// <param name="dateRange">The report query parameters(data range).</param>
         /// <returns>A grouped report response containing the data.</returns>
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ApiResponse<List<GroupedReportDto>>))]
         [HttpGet("reportByCategory")]
         public async Task<ApiResponse<List<GroupedReportDto>>> GetReportByCategory(
-     [FromQuery] ReportQueryObject? query)
+     [FromQuery] ReportQueryObject? dateRange)
         {
             var groupedTransactions = await GetGroupedTransactions(
-                query,
-                t => t.Category != null ? t.Category.Name : "No category",
+                dateRange,
+                t => t.Category == null ? "No category" : t.Category.Name,
                 key => new ReportKey { Category = key }
             );
             return ApiResponse.Success(groupedTransactions);
@@ -38,15 +38,15 @@ namespace api.Controllers
         /// <summary>
         /// Get a report grouped by date(month and year).
         /// </summary>
-        /// <param name="query">The report query parameters(data range).</param>
+        /// <param name="dateRange">The report query parameters(data range).</param>
         /// <returns>A grouped report response containing the data.</returns>
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ApiResponse<List<GroupedReportDto>>))]
         [HttpGet("reportByDate")]
         public async Task<ApiResponse<List<GroupedReportDto>>> GetReportByDate(
-          [FromQuery] ReportQueryObject? query)
+          [FromQuery] ReportQueryObject? dateRange)
         {
             var groupedTransactions = await GetGroupedTransactions(
-               query,
+               dateRange,
                t => new { t.Date.Month, t.Date.Year },
                key => new ReportKey { Month = key.Month, Year = key.Year }
            );
@@ -55,15 +55,15 @@ namespace api.Controllers
         /// <summary>
         /// Get a report grouped by both category and date(month and year).
         /// </summary>
-        /// <param name="query">The report query parameters(data range).</param>
+        /// <param name="dateRange">The report query parameters(data range).</param>
         /// <returns>A grouped report response containing the data.</returns>
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ApiResponse<List<GroupedReportDto>>))]
         [HttpGet("reportCategoryAndDate")]
         public async Task<ApiResponse<List<GroupedReportDto>>> GetReportByCategoryAndDate(
-            [FromQuery] ReportQueryObject? query)
+            [FromQuery] ReportQueryObject? dateRange)
         {
             var groupedTransactions = await GetGroupedTransactions(
-                query,
+                dateRange,
                 t => new { Category = t.Category.Name ?? "No category", t.Date.Month, t.Date.Year },
                 key => new ReportKey { Category = key.Category, Month = key.Month, Year = key.Year }
             );
@@ -77,6 +77,7 @@ namespace api.Controllers
         [HttpGet]
         public async Task<ApiResponse<List<FinancialTransaction>>> GetAll()
         {
+            throw new Exception("Custom error idk");
             var transactions = await _context.Transactions
             .AsNoTracking()
             .Include(t => t.Category).ToListAsync();
@@ -93,6 +94,7 @@ namespace api.Controllers
         public async Task<ApiResponse<FinancialTransaction>> GetById([FromRoute] int id)
         {
             var transaction = await _context.Transactions.FindAsync(id);
+           // throw new Exception("lol my bad");
             if (transaction == null)
             {
                 return ApiResponse.NotFound<FinancialTransaction>("Transaction not found");
@@ -149,7 +151,7 @@ namespace api.Controllers
             transaction.CategoryId = transactionDto.CategoryId;
             transaction.Comment = transactionDto.Comment;
             await _context.SaveChangesAsync();
-            return ApiResponse.NoContent<FinancialTransaction>();
+            return ApiResponse.Success(transaction);
         }
         /// <summary>
         /// Delete an existing financial transaction.
@@ -168,32 +170,32 @@ namespace api.Controllers
             }
             _context.Transactions.Remove(transaction);
             await _context.SaveChangesAsync();
-            return ApiResponse.NoContent<FinancialTransaction>();
+            return ApiResponse.Success(transaction);
         }
-        private IQueryable<FinancialTransaction> GetFilteredTransactions(ReportQueryObject? query)
+        private IQueryable<FinancialTransaction> GetFilteredTransactions(ReportQueryObject? dateRange)
         {
             var transactions = _context.Transactions
                 .AsNoTracking()
                 .Include(t => t.Category)
                 .AsQueryable();
 
-            if (query?.startDate != null)
+            if (dateRange?.StartDate != null)
             {
-                transactions = transactions.Where(t => t.Date >= query.startDate);
+                transactions = transactions.Where(t => t.Date >= dateRange.StartDate);
             }
-            if (query?.endDate != null)
+            if (dateRange?.EndDate != null)
             {
-                transactions = transactions.Where(t => t.Date <= query.endDate);
+                transactions = transactions.Where(t => t.Date <= dateRange.EndDate);
             }
 
             return transactions;
         }
         private async Task<List<GroupedReportDto>> GetGroupedTransactions<TGroupKey>(
-            ReportQueryObject? query,
+            ReportQueryObject? dateRange,
             Expression<Func<FinancialTransaction, TGroupKey>> groupBySelector,
             Func<TGroupKey, ReportKey> keySelector)
         {
-            var transactions = GetFilteredTransactions(query);
+            var transactions = GetFilteredTransactions(dateRange);
 
             return await transactions
                 .GroupBy(groupBySelector)
