@@ -33,6 +33,7 @@ public class StatusCodeMiddleware
             if (!string.IsNullOrEmpty(bodyContent))
             {
 
+
                 using var doc = JsonDocument.Parse(bodyContent);
 
                 if (doc.RootElement.TryGetProperty("code", out var codeElement))

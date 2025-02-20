@@ -7,9 +7,9 @@ using Microsoft.EntityFrameworkCore;
 
 namespace api.Controllers
 {
-    [ApiController]
+
     [Route("api/category")]
-    public class CategoryController : ControllerBase
+    public class CategoryController 
     {
         private readonly ApplicationDbContext _context;
         public CategoryController(ApplicationDbContext context)
@@ -20,10 +20,10 @@ namespace api.Controllers
         /// Get all categories.
         /// </summary>
         /// <returns>A list of all categoeries</returns>
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ApiResponse<List<Category>>))]
         [HttpGet]
         public async Task<ApiResponse<List<Category>>> GetAll()
         {
+            throw new Exception("custom error");
             var categories = await _context.Categories.AsNoTracking().ToListAsync();
             return ApiResponse.Success(categories);
         }
@@ -101,6 +101,11 @@ namespace api.Controllers
             _context.Categories.Remove(category);
             await _context.SaveChangesAsync();
             return ApiResponse.Success(category);
+        }
+           [HttpGet("products")]
+        public ApiResponse<object> GetProducts([FromQuery]TimeZoneInfo timezone)
+        {
+            return ApiResponse.Success(new object());
         }
     }
 }

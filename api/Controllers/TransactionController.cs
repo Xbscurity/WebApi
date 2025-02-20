@@ -77,7 +77,6 @@ namespace api.Controllers
         [HttpGet]
         public async Task<ApiResponse<List<FinancialTransaction>>> GetAll()
         {
-            throw new Exception("Custom error idk");
             var transactions = await _context.Transactions
             .AsNoTracking()
             .Include(t => t.Category).ToListAsync();

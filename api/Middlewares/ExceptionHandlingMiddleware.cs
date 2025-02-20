@@ -8,49 +8,49 @@ using api.Helpers;
 namespace api.Middlewares
 {
     public class ExceptionHandlingMiddleware
-{
-    private readonly RequestDelegate _next;
-
-    public ExceptionHandlingMiddleware(RequestDelegate next)
     {
-        _next = next;
-    }
+        private readonly RequestDelegate _next;
 
-    public async Task InvokeAsync(HttpContext context)
-    {
-        Stream originalBodyStream = context.Response.Body;
-        using var memoryStream = new MemoryStream();
-        context.Response.Body = memoryStream;
-
-        try
+        public ExceptionHandlingMiddleware(RequestDelegate next)
         {
-            await _next(context);
+            _next = next;
         }
-        catch (Exception)
+
+        public async Task InvokeAsync(HttpContext context)
         {
-            System.Console.WriteLine("catching exception");
-            context.Response.StatusCode = StatusCodes.Status500InternalServerError;
-            context.Response.ContentType = "application/json";
-            var errorResponse = new ApiResponse<object>
+            Stream originalBodyStream = context.Response.Body;
+            using var memoryStream = new MemoryStream();
+            context.Response.Body = memoryStream;
+
+            try
             {
-                Code = "SERVER_ERROR",
-                Error = new Error
+                await _next(context);
+            }
+            catch (Exception)
+            {
+                System.Console.WriteLine("catching exception");
+                context.Response.StatusCode = StatusCodes.Status500InternalServerError;
+                context.Response.ContentType = "application/json";
+                var errorResponse = new ApiResponse<object>
                 {
-                    Message = "An unexpected error occurred"
-                }
-            };
+                    Error = new Error
+                    {
+                        Code = "SERVER_ERROR",
+                        Message = "An unexpected error occurred"
+                    }
+                };
 
-            var json = JsonSerializer.Serialize(errorResponse);
-            await context.Response.WriteAsync(json);
-        }
-        finally
-        {
-            memoryStream.Seek(0, SeekOrigin.Begin);
-            await memoryStream.CopyToAsync(originalBodyStream);
-            context.Response.Body = originalBodyStream;
+                var json = JsonSerializer.Serialize(errorResponse);
+                await context.Response.WriteAsync(json);
+            }
+            finally
+            {
+                memoryStream.Seek(0, SeekOrigin.Begin);
+                await memoryStream.CopyToAsync(originalBodyStream);
+                context.Response.Body = originalBodyStream;
+            }
         }
     }
-}
 
 
 }
