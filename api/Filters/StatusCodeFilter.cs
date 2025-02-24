@@ -1,8 +1,4 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.InteropServices;
-using System.Threading.Tasks;
+using System.Net;
 using api.Helpers;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
@@ -17,8 +13,8 @@ namespace api.Filters
             {
                 context.HttpContext.Response.StatusCode = response.Error?.Code switch
                 {
-                    "NOT_FOUND" => 404,
-                    _ => 200
+                    "NOT_FOUND" => (int)HttpStatusCode.NotFound,
+                    _ => (int)HttpStatusCode.OK
                 };
             }
         }

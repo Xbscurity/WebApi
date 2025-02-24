@@ -1,4 +1,3 @@
-using System.Linq.Expressions;
 using System.Text.Json;
 
 public class StatusCodeMiddleware
@@ -24,7 +23,7 @@ public class StatusCodeMiddleware
         try
         {
             context.Response.Body = memoryStream;
-            await _next(context); 
+            await _next(context);
 
             memoryStream.Seek(0, SeekOrigin.Begin);
 
@@ -53,7 +52,7 @@ public class StatusCodeMiddleware
         finally
         {
             context.Response.Body = originalBodyStream;
-            memoryStream.Dispose(); 
+            memoryStream.Dispose();
         }
     }
 }

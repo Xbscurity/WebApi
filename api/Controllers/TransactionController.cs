@@ -93,7 +93,7 @@ namespace api.Controllers
         public async Task<ApiResponse<FinancialTransaction>> GetById([FromRoute] int id)
         {
             var transaction = await _context.Transactions.FindAsync(id);
-           // throw new Exception("lol my bad");
+            // throw new Exception("lol my bad");
             if (transaction == null)
             {
                 return ApiResponse.NotFound<FinancialTransaction>("Transaction not found");

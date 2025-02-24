@@ -1,8 +1,4 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace api.Dtos
 {
@@ -15,6 +11,6 @@ namespace api.Dtos
         public decimal Amount { get; set; }
         [Required]
         [MaxLength(255, ErrorMessage = "Comment can not be over 255 characters")]
-        public string Comment {get;set;} = string.Empty;
+        public string Comment { get; set; } = string.Empty;
     }
 }

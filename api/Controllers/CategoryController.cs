@@ -9,7 +9,7 @@ namespace api.Controllers
 {
 
     [Route("api/category")]
-    public class CategoryController 
+    public class CategoryController
     {
         private readonly ApplicationDbContext _context;
         public CategoryController(ApplicationDbContext context)
@@ -32,7 +32,7 @@ namespace api.Controllers
         /// </summary>
         /// <param name="id">The ID of the category to get.</param>
         /// <returns>The category with the specified ID.</returns>
-         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ApiResponse<Category>))]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ApiResponse<Category>))]
         [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(ApiResponse<Category>))]
         [HttpGet("{id:int}")]
         public async Task<ApiResponse<Category>> GetById([FromRoute] int id)
@@ -49,7 +49,7 @@ namespace api.Controllers
         /// </summary>
         /// <param name="categoryDto">The data for the new category.</param>
         /// <returns>The created category with its details</returns>
-         [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(ApiResponse<Category>))]
+        [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(ApiResponse<Category>))]
         [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(ApiResponse<Category>))]
         [HttpPost]
         public async Task<ApiResponse<Category>> Create([FromBody] CategoryDto categoryDto)
@@ -102,8 +102,8 @@ namespace api.Controllers
             await _context.SaveChangesAsync();
             return ApiResponse.Success(category);
         }
-           [HttpGet("products")]
-        public ApiResponse<TimeZoneInfo> GetProducts([FromQuery]TimeZoneInfo timezone)
+        [HttpGet("products")]
+        public ApiResponse<TimeZoneInfo> GetProducts([FromQuery] TimeZoneInfo timezone)
         {
             return ApiResponse.Success(timezone);
         }

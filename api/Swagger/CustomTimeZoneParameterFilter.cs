@@ -1,7 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.OpenApi.Any;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.SwaggerGen;
@@ -18,7 +14,9 @@ namespace api.Swagger
             {
                 var timeZoneFieldsToRemove = new HashSet<string>
         {
-            "Id", "HasIanaId", "DisplayName", "StandardName", "DaylightName", "BaseUtcOffset", "SupportsDaylightSavingTime"
+               nameof(TimeZoneInfo.Id), nameof(TimeZoneInfo.HasIanaId), nameof(TimeZoneInfo.DisplayName),
+              nameof(TimeZoneInfo.StandardName), nameof(TimeZoneInfo.DaylightName), nameof(TimeZoneInfo.BaseUtcOffset),
+              nameof(TimeZoneInfo.SupportsDaylightSavingTime)
         };
                 operation.Parameters = operation.Parameters
                     .Where(p => !timeZoneFieldsToRemove.Contains(p.Name))
