@@ -103,9 +103,9 @@ namespace api.Controllers
             return ApiResponse.Success(category);
         }
            [HttpGet("products")]
-        public ApiResponse<object> GetProducts([FromQuery]TimeZoneInfo timezone)
+        public ApiResponse<TimeZoneInfo> GetProducts([FromQuery]TimeZoneInfo timezone)
         {
-            return ApiResponse.Success(new object());
+            return ApiResponse.Success(timezone);
         }
     }
 }

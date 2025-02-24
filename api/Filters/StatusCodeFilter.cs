@@ -18,7 +18,7 @@ namespace api.Filters
                 context.HttpContext.Response.StatusCode = response.Error?.Code switch
                 {
                     "NOT_FOUND" => 404,
-                    _ => 400
+                    _ => 200
                 };
             }
         }

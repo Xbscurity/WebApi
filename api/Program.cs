@@ -1,8 +1,11 @@
 using api.Data;
 using api.Filters;
 using api.Middlewares;
+using api.ModelBinders;
+using api.Swagger;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -13,12 +16,14 @@ builder.Services.AddControllers(options =>
 {
     options.Filters.Add<ExceptionFilter>();
     options.Filters.Add<StatusCodeFilter>();
+    options.ModelBinderProviders.Insert(0,new TimeZoneInfoModeBinderProvider());  
 });
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {
     var xmlFile = Path.Combine(AppContext.BaseDirectory, "ApiComments.xml");
     options.IncludeXmlComments(xmlFile);
+     options.OperationFilter<CustomTimeZoneParameterFilter>();
 });
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
 {
