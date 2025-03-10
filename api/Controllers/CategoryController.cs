@@ -1,20 +1,29 @@
+﻿using System.ComponentModel;
+using api.Converters;
 using api.Data;
+using api.Dtos;
 using api.Dtos.Category;
+using api.Filters;
 using api.Helpers;
 using api.Models;
+using api.Repositories;
+using api.Repositories.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace api.Controllers
 {
 
+    
+    [ServiceFilter(typeof(ExecutionTimeFilter))]
+    [ApiController]
     [Route("api/category")]
-    public class CategoryController
+    public class CategoryController : ControllerBase
     {
-        private readonly ApplicationDbContext _context;
-        public CategoryController(ApplicationDbContext context)
+        private readonly ICategoryRepository _categoryRepository;
+        public CategoryController(ICategoryRepository categoryRepository)
         {
-            _context = context;
+            _categoryRepository = categoryRepository;
         }
         /// <summary>
         /// Get all categories.
@@ -23,8 +32,7 @@ namespace api.Controllers
         [HttpGet]
         public async Task<ApiResponse<List<Category>>> GetAll()
         {
-            throw new Exception("custom error");
-            var categories = await _context.Categories.AsNoTracking().ToListAsync();
+            var categories = await _categoryRepository.GetAllAsync();
             return ApiResponse.Success(categories);
         }
         /// <summary>
@@ -37,7 +45,7 @@ namespace api.Controllers
         [HttpGet("{id:int}")]
         public async Task<ApiResponse<Category>> GetById([FromRoute] int id)
         {
-            var category = await _context.Categories.FindAsync(id);
+            var category = await _categoryRepository.GetByIdAsync(id);
             if (category == null)
             {
                 return ApiResponse.NotFound<Category>("Category not found");
@@ -45,7 +53,7 @@ namespace api.Controllers
             return ApiResponse.Success(category);
         }
         /// <summary>
-        /// Create a new category.
+        /// CreateAsync a new category.
         /// </summary>
         /// <param name="categoryDto">The data for the new category.</param>
         /// <returns>The created category with its details</returns>
@@ -58,12 +66,11 @@ namespace api.Controllers
             {
                 Name = categoryDto.Name
             };
-            await _context.Categories.AddAsync(category);
-            await _context.SaveChangesAsync();
+            await _categoryRepository.CreateAsync(category);
             return ApiResponse.Success(category);
         }
         /// <summary>
-        /// Update an existing category.
+        /// UpdateAsync an existing category.
         /// </summary>
         /// <param name="id">The Id of the category to update.</param>
         /// <param name="categoryDto">The updated category data.</param>
@@ -73,17 +80,17 @@ namespace api.Controllers
         [HttpPut("{id:int}")]
         public async Task<ApiResponse<Category>> Update([FromRoute] int id, [FromBody] CategoryDto categoryDto)
         {
-            var category = await _context.Categories.FindAsync(id);
+            var category = await _categoryRepository.GetByIdAsync(id);
             if (category == null)
             {
                 return ApiResponse.NotFound<Category>("Category not found");
             }
             category.Name = categoryDto.Name;
-            await _context.SaveChangesAsync();
-            return ApiResponse.Success(category);
+            var updatedCategory = await _categoryRepository.UpdateAsync(category);
+            return ApiResponse.Success(updatedCategory);
         }
         /// <summary>
-        /// Delete an existing category.
+        /// DeleteAsync an existing category.
         /// </summary>
         /// <param name="id">The ID of the category to delete.</param>
         /// <returns>No content if the delete is successful.</returns>
@@ -91,21 +98,24 @@ namespace api.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(ApiResponse<Category>))]
         [HttpDelete("{id:int}")]
 
-        public async Task<ActionResult<ApiResponse<Category>>> Delete([FromRoute] int id)
+        public async Task<ActionResult<ApiResponse<bool>>> Delete([FromRoute] int id)
         {
-            var category = await _context.Categories.FindAsync(id);
-            if (category == null)
+            var success = await _categoryRepository.DeleteAsync(id);
+            if (!success)
             {
-                return ApiResponse.NotFound<Category>("Category not found");
+                return ApiResponse.NotFound<bool>("Category not found");
             }
-            _context.Categories.Remove(category);
-            await _context.SaveChangesAsync();
-            return ApiResponse.Success(category);
+            return ApiResponse.Success(true);
         }
-        [HttpGet("products")]
-        public ApiResponse<TimeZoneInfo> GetProducts([FromQuery] TimeZoneInfo timezone)
+        [HttpGet("convert")]
+        public ApiResponse<TimeZoneRequest> GetTimeZoneInfo([FromQuery]TimeZoneRequest request)
         {
-            return ApiResponse.Success(timezone);
+            if (request.TimeZone == null)
+            {
+                return ApiResponse.NotFound<TimeZoneRequest>("Invalid or missing timezone.");
+            }
+
+            return ApiResponse.Success(request);
         }
     }
 }

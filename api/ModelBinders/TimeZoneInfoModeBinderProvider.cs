@@ -8,7 +8,7 @@ namespace api.ModelBinders
         {
             if (context.Metadata.ModelType == typeof(TimeZoneInfo))
             {
-                return new TimeZoneInfoModelBinder();
+                return TimeZoneInfoModelBinder.Instance;
             }
             return null;
         }

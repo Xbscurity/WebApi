@@ -17,7 +17,7 @@ namespace api.Filters
                     Message = "Server error occured"
                 }
             })
-            { StatusCode = (int?)HttpStatusCode.InternalServerError };
+            { StatusCode = StatusCodes.Status500InternalServerError}; //(int?)HttpStatusCode.InternalServerError
 
             context.ExceptionHandled = true;
         }

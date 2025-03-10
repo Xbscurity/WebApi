@@ -1,9 +1,15 @@
+using System.Security.Cryptography;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 namespace api.ModelBinders
 {
     public class TimeZoneInfoModelBinder : IModelBinder
     {
+        public static readonly TimeZoneInfoModelBinder Instance = new TimeZoneInfoModelBinder();
+        private TimeZoneInfoModelBinder()
+        {
+            
+        } 
         public Task BindModelAsync(ModelBindingContext bindingContext)
         {
             var valueProviderResult = bindingContext.ValueProvider.GetValue(bindingContext.ModelName);
@@ -11,18 +17,17 @@ namespace api.ModelBinders
             if (valueProviderResult != ValueProviderResult.None)
             {
                 var timezoneString = valueProviderResult.FirstValue;
-                try
+                if (TimeZoneInfo.TryFindSystemTimeZoneById(timezoneString!, out TimeZoneInfo? timezoneInfo))
                 {
-                    var timezoneInfo = TimeZoneInfo.FindSystemTimeZoneById(timezoneString);
                     bindingContext.Result = ModelBindingResult.Success(timezoneInfo);
                 }
-                catch (TimeZoneNotFoundException)
+                else
                 {
                     bindingContext.ModelState.AddModelError(bindingContext.ModelName, "Invalid timezone");
                 }
             }
-
             return Task.CompletedTask;
         }
+
     }
 }

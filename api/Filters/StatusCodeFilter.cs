@@ -13,8 +13,8 @@ namespace api.Filters
             {
                 context.HttpContext.Response.StatusCode = response.Error?.Code switch
                 {
-                    "NOT_FOUND" => (int)HttpStatusCode.NotFound,
-                    _ => (int)HttpStatusCode.OK
+                    "NOT_FOUND" => StatusCodes.Status404NotFound, // (int)HttpStatusCode.NotFound,
+                    _ => StatusCodes.Status200OK // (int)HttpStatusCode.OK
                 };
             }
         }
