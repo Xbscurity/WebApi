@@ -8,11 +8,11 @@ using Microsoft.EntityFrameworkCore;
 
 namespace api.Repositories
 {
-    public class TransactionRepository : ITransactionRepository
+    public class TransactionsRepository : ITransactionsRepository
     {
         private readonly ApplicationDbContext _context;
 
-        public TransactionRepository(ApplicationDbContext context)
+        public TransactionsRepository(ApplicationDbContext context)
         {
             _context = context;
         }

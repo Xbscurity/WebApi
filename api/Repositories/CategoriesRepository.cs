@@ -5,11 +5,11 @@ using Microsoft.EntityFrameworkCore;
 
 namespace api.Repositories
 {
-    public class CategoryRepository : ICategoryRepository
+    public class CategoriesRepository : ICategoriesRepository
     {
         private readonly ApplicationDbContext _context;
 
-        public CategoryRepository(ApplicationDbContext context)
+        public CategoriesRepository(ApplicationDbContext context)
         {
             _context = context;
         }
@@ -19,7 +19,7 @@ namespace api.Repositories
             return await _context.Categories.AsNoTracking().ToListAsync();
         }
 
-        public async Task<Category> GetByIdAsync(int id)
+        public async Task<Category?> GetByIdAsync(int id)
         {
             return await _context.Categories.FindAsync(id);
         }
@@ -30,7 +30,7 @@ namespace api.Repositories
             await _context.SaveChangesAsync();
         }
 
-        public async Task<Category> UpdateAsync(Category category)
+        public async Task<Category?> UpdateAsync(Category category)
         {
             _context.Categories.Update(category);
             await _context.SaveChangesAsync();

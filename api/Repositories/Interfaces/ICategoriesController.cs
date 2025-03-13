@@ -2,10 +2,10 @@
 
 namespace api.Repositories.Interfaces
 {
-    public interface ICategoryRepository
+    public interface ICategoriesRepository
     {
         Task<List<Category>> GetAllAsync();
-        Task<Category> GetByIdAsync(int id);
+        Task<Category?> GetByIdAsync(int id);
         Task CreateAsync(Category category);
         Task<Category> UpdateAsync(Category category);
         Task<bool> DeleteAsync(int id);

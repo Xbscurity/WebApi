@@ -4,7 +4,7 @@ using api.Models;
 
 namespace api.Repositories.Interfaces
 {
-    public interface ITransactionRepository
+    public interface ITransactionsRepository
     {
         Task<List<GroupedReportDto>> GetReportByCategoryAsync(ReportQueryObject? dateRange);
         Task<List<GroupedReportDto>> GetReportByDateAsync(ReportQueryObject? dateRange);

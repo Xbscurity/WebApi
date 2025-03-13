@@ -11,13 +11,13 @@ using Microsoft.EntityFrameworkCore;
 namespace api.Controllers
 {
     [ApiController]
-    [Route("api/transaction")]
-    public class TransactionController : ControllerBase
+    [Route("api/transactions")]
+    public class TransactionsController : ControllerBase
     {
-        private readonly ITransactionRepository _transactionRepository;
-        public TransactionController(ITransactionRepository transactionRepository)
+        private readonly ITransactionsRepository _transactionsRepository;
+        public TransactionsController(ITransactionsRepository transactionRepository)
         {
-            _transactionRepository = transactionRepository;
+            _transactionsRepository = transactionRepository;
         }
         /// <summary>
         /// Get a report grouped by category.
@@ -29,7 +29,7 @@ namespace api.Controllers
         public async Task<ApiResponse<List<GroupedReportDto>>> GetReportByCategory(
      [FromQuery] ReportQueryObject? dateRange)
         {
-            var report = await _transactionRepository.GetReportByCategoryAsync(dateRange);
+            var report = await _transactionsRepository.GetReportByCategoryAsync(dateRange);
             return ApiResponse.Success(report);
         }
         /// <summary>
@@ -42,7 +42,7 @@ namespace api.Controllers
         public async Task<ApiResponse<List<GroupedReportDto>>> GetReportByDate(
           [FromQuery] ReportQueryObject? dateRange)
         {
-            var report = await _transactionRepository.GetReportByDateAsync(dateRange);
+            var report = await _transactionsRepository.GetReportByDateAsync(dateRange);
             return ApiResponse.Success(report);
         }
         /// <summary>
@@ -55,7 +55,7 @@ namespace api.Controllers
         public async Task<ApiResponse<List<GroupedReportDto>>> GetReportByCategoryAndDate(
             [FromQuery] ReportQueryObject? dateRange)
         {
-            var report = await _transactionRepository.GetReportByCategoryAndDateAsync(dateRange);
+            var report = await _transactionsRepository.GetReportByCategoryAndDateAsync(dateRange);
             return ApiResponse.Success(report);
         }
         /// <summary>
@@ -66,7 +66,7 @@ namespace api.Controllers
         [HttpGet]
         public async Task<ApiResponse<List<FinancialTransaction>>> GetAll()
         {
-            var transactions = await _transactionRepository.GetAllAsync();
+            var transactions = await _transactionsRepository.GetAllAsync();
             return ApiResponse.Success(transactions);
         }
         /// <summary>
@@ -79,7 +79,7 @@ namespace api.Controllers
         [HttpGet("{id:int}")]
         public async Task<ApiResponse<FinancialTransaction>> GetById([FromRoute] int id)
         {
-            var transaction = await _transactionRepository.GetByIdAsync(id);
+            var transaction = await _transactionsRepository.GetByIdAsync(id);
             if (transaction == null)
             {
                 return ApiResponse.NotFound<FinancialTransaction>("Transaction not found");
@@ -103,7 +103,7 @@ namespace api.Controllers
                 Amount = transactionDto.Amount,
                 Comment = transactionDto.Comment
             };
-            var createdTransaction = await _transactionRepository.CreateAsync(transaction);
+            var createdTransaction = await _transactionsRepository.CreateAsync(transaction);
             return ApiResponse.Success(createdTransaction);
         }
         /// <summary>
@@ -117,7 +117,7 @@ namespace api.Controllers
         [HttpPut("{id:int}")]
         public async Task<ApiResponse<FinancialTransaction>> Update([FromRoute] int id, [FromBody] FinancialTransactionDto transactionDto)
         {
-            if (await _transactionRepository.GetByIdAsync(id) == null)
+            if (await _transactionsRepository.GetByIdAsync(id) == null)
             {
                 return ApiResponse.NotFound<FinancialTransaction>("Transaction not found");
             }
@@ -128,7 +128,7 @@ namespace api.Controllers
                 Amount = transactionDto.Amount,
                 Comment = transactionDto.Comment
             };
-            await _transactionRepository.UpdateAsync(id, transaction);
+            await _transactionsRepository.UpdateAsync(id, transaction);
             return ApiResponse.Success(transaction);
         }
         /// <summary>
@@ -141,12 +141,12 @@ namespace api.Controllers
         [HttpDelete("{id}")]
         public async Task<ApiResponse<FinancialTransaction>> Delete([FromRoute] int id)
         {
-            var transaction = await _transactionRepository.GetByIdAsync(id);
+            var transaction = await _transactionsRepository.GetByIdAsync(id);
             if (transaction == null)
             {
                 return ApiResponse.NotFound<FinancialTransaction>("Transaction not found");
             }
-            await _transactionRepository.DeleteAsync(id);
+            await _transactionsRepository.DeleteAsync(id);
             return ApiResponse.Success(transaction);
         }
        

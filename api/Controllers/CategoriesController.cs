@@ -17,13 +17,13 @@ namespace api.Controllers
     
     [ServiceFilter(typeof(ExecutionTimeFilter))]
     [ApiController]
-    [Route("api/category")]
-    public class CategoryController : ControllerBase
+    [Route("api/categories")]
+    public class CategoriesController : ControllerBase
     {
-        private readonly ICategoryRepository _categoryRepository;
-        public CategoryController(ICategoryRepository categoryRepository)
+        private readonly ICategoriesRepository _categoriesRepository;
+        public CategoriesController(ICategoriesRepository categoryRepository)
         {
-            _categoryRepository = categoryRepository;
+            _categoriesRepository = categoryRepository;
         }
         /// <summary>
         /// Get all categories.
@@ -32,7 +32,8 @@ namespace api.Controllers
         [HttpGet]
         public async Task<ApiResponse<List<Category>>> GetAll()
         {
-            var categories = await _categoryRepository.GetAllAsync();
+            var categories = await _categoriesRepository.GetAllAsync();
+
             return ApiResponse.Success(categories);
         }
         /// <summary>
@@ -45,7 +46,7 @@ namespace api.Controllers
         [HttpGet("{id:int}")]
         public async Task<ApiResponse<Category>> GetById([FromRoute] int id)
         {
-            var category = await _categoryRepository.GetByIdAsync(id);
+            var category = await _categoriesRepository.GetByIdAsync(id);
             if (category == null)
             {
                 return ApiResponse.NotFound<Category>("Category not found");
@@ -60,13 +61,13 @@ namespace api.Controllers
         [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(ApiResponse<Category>))]
         [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(ApiResponse<Category>))]
         [HttpPost]
-        public async Task<ApiResponse<Category>> Create([FromBody] CategoryDto categoryDto)
+        public async Task<ApiResponse<Category>> Create([FromBody] CategoryDto? categoryDto)
         {
             Category category = new Category
             {
-                Name = categoryDto.Name
+                Name = categoryDto?.Name
             };
-            await _categoryRepository.CreateAsync(category);
+            await _categoriesRepository.CreateAsync(category);
             return ApiResponse.Success(category);
         }
         /// <summary>
@@ -80,13 +81,13 @@ namespace api.Controllers
         [HttpPut("{id:int}")]
         public async Task<ApiResponse<Category>> Update([FromRoute] int id, [FromBody] CategoryDto categoryDto)
         {
-            var category = await _categoryRepository.GetByIdAsync(id);
+            var category = await _categoriesRepository.GetByIdAsync(id);
             if (category == null)
             {
                 return ApiResponse.NotFound<Category>("Category not found");
             }
             category.Name = categoryDto.Name;
-            var updatedCategory = await _categoryRepository.UpdateAsync(category);
+            var updatedCategory = await _categoriesRepository.UpdateAsync(category);
             return ApiResponse.Success(updatedCategory);
         }
         /// <summary>
@@ -98,9 +99,9 @@ namespace api.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(ApiResponse<Category>))]
         [HttpDelete("{id:int}")]
 
-        public async Task<ActionResult<ApiResponse<bool>>> Delete([FromRoute] int id)
+        public async Task<ApiResponse<bool>> Delete([FromRoute] int id)
         {
-            var success = await _categoryRepository.DeleteAsync(id);
+            var success = await _categoriesRepository.DeleteAsync(id);
             if (!success)
             {
                 return ApiResponse.NotFound<bool>("Category not found");
