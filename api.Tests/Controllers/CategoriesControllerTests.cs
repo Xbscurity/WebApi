@@ -6,22 +6,21 @@ using api.Repositories.Interfaces;
 using Moq;
 namespace api.Tests.Controllers
 {
-
-    public class CategoryControllerTests
+    public class CategoriesControllerTests
     {
-        private readonly Mock<ICategoriesRepository> _categoriesRepositoryMock;
+        private readonly Mock<ICategoriesRepository> _repositoryMock;
         private readonly CategoriesController _controller;
-        public CategoryControllerTests()
+        public CategoriesControllerTests()
         {
-            _categoriesRepositoryMock = new Mock<ICategoriesRepository>();
-            _controller = new CategoriesController(_categoriesRepositoryMock.Object);
+            _repositoryMock = new Mock<ICategoriesRepository>();
+            _controller = new CategoriesController(_repositoryMock.Object);
         }
         [Theory]
         [MemberData(nameof(GetAllCategoriesTestData))]
         public async Task GetAll_WithCategoriesOrEmpty_ReturnsExpectedCount(List<Category> categories, int expectedCount)
         {
             // Arrange
-            _categoriesRepositoryMock.Setup(s => s.GetAllAsync()).ReturnsAsync(categories);
+            _repositoryMock.Setup(s => s.GetAllAsync()).ReturnsAsync(categories);
 
             // Act
             var result = await _controller.GetAll();
@@ -42,7 +41,7 @@ namespace api.Tests.Controllers
             // Arrange
             var category = new Category { Id = 1, Name = "Category 1" };
             const int existingCategoryId = 1;
-            _categoriesRepositoryMock.Setup(r => r.GetByIdAsync(existingCategoryId)).ReturnsAsync(category);
+            _repositoryMock.Setup(r => r.GetByIdAsync(existingCategoryId)).ReturnsAsync(category);
 
             // Act
             var result = await _controller.GetById(1);
@@ -58,8 +57,8 @@ namespace api.Tests.Controllers
         public async Task GetById_CategoryNotFound_ReturnsNotFound()
         {
             // Arrange
-             int categoryNotFoundId = 999;
-            _categoriesRepositoryMock.Setup(r => r.GetByIdAsync(categoryNotFoundId)).ReturnsAsync((Category?)null);
+            int categoryNotFoundId = 999;
+            _repositoryMock.Setup(r => r.GetByIdAsync(categoryNotFoundId)).ReturnsAsync((Category?)null);
 
             // Act
             var result = await _controller.GetById(999);
@@ -70,14 +69,14 @@ namespace api.Tests.Controllers
             Assert.Equal("NOT_FOUND", response.Error.Code);
         }
         [Fact]
-        public async Task Create_ValidCategoryDto_ReturnsOk()
+        public async Task Create_ValidCategoryDto_ReturnsOkWithCreatedCategory()
         {
             // Arrange
             var categoryDto = new CategoryDto { Name = "New Category" };
 
             var createdCategory = new Category { Id = 1, Name = categoryDto.Name };
 
-            _categoriesRepositoryMock
+            _repositoryMock
                 .Setup(r => r.CreateAsync(It.IsAny<Category>()))
                 .Returns(Task.CompletedTask);
 
@@ -88,22 +87,22 @@ namespace api.Tests.Controllers
             Assert.IsType<ApiResponse<Category>>(response);
             Assert.Equal(categoryDto.Name, response.Data.Name);
             Assert.Null(response.Error);
-            _categoriesRepositoryMock.Verify(r => r.CreateAsync(It.Is<Category>(c => c.Name == categoryDto.Name)), Times.Once);
+            _repositoryMock.Verify(r => r.CreateAsync(It.Is<Category>(c => c.Name == categoryDto.Name)), Times.Once);
         }
         [Fact]
         public async Task Update_CategoryExists_ReturnsOkWithUpdatedCategory()
         {
             // Arrange
             var categoryDto = new CategoryDto { Name = "New Category" };
-            var existingCategoryId = 1;
-            var receivedCategory = new Category {Id = existingCategoryId};
+            int existingCategoryId = 1;
+            var receivedCategory = new Category { Id = existingCategoryId };
             var updatedCategory = new Category
             {
                 Id = existingCategoryId,
                 Name = categoryDto.Name
             };
-            _categoriesRepositoryMock.Setup(r => r.GetByIdAsync(existingCategoryId)).ReturnsAsync(receivedCategory);
-            _categoriesRepositoryMock.Setup(r => r.UpdateAsync(receivedCategory)).ReturnsAsync(updatedCategory);
+            _repositoryMock.Setup(r => r.GetByIdAsync(existingCategoryId)).ReturnsAsync(receivedCategory);
+            _repositoryMock.Setup(r => r.UpdateAsync(receivedCategory)).ReturnsAsync(updatedCategory);
 
             // Act
             var response = await _controller.Update(existingCategoryId, categoryDto);
@@ -119,8 +118,8 @@ namespace api.Tests.Controllers
         {
             // Arrange
             var categoryDto = new CategoryDto { Name = "New Category" };
-            var notExistingCategoryId = 999;
-            _categoriesRepositoryMock.Setup(r => r.GetByIdAsync(notExistingCategoryId)).ReturnsAsync((Category?)null);
+            int notExistingCategoryId = 999;
+            _repositoryMock.Setup(r => r.GetByIdAsync(notExistingCategoryId)).ReturnsAsync((Category?)null);
 
             // Act
             var response = await _controller.Update(notExistingCategoryId, categoryDto);
@@ -134,8 +133,8 @@ namespace api.Tests.Controllers
         public async Task Delete_CategoryExists_ReturnsOkwithTrue()
         {
             //Arrange
-            var existingCategoryId = 1;
-            _categoriesRepositoryMock.Setup(r => r.DeleteAsync(existingCategoryId)).ReturnsAsync(true);
+            int existingCategoryId = 1;
+            _repositoryMock.Setup(r => r.DeleteAsync(existingCategoryId)).ReturnsAsync(true);
 
             //Act
             var response = await _controller.Delete(existingCategoryId);
@@ -146,11 +145,11 @@ namespace api.Tests.Controllers
             Assert.Null(response.Error);
         }
         [Fact]
-        public async Task Delete_CategoryNotExists_ReturnsOkwithTrue()
+        public async Task Delete_CategoryNotExists_ReturnsNotFound()
         {
             //Arrange
-            var NotExistingCategoryId = 999;
-            _categoriesRepositoryMock.Setup(r => r.DeleteAsync(NotExistingCategoryId)).ReturnsAsync(false);
+            int NotExistingCategoryId = 999;
+            _repositoryMock.Setup(r => r.DeleteAsync(NotExistingCategoryId)).ReturnsAsync(false);
 
             //Act
             var response = await _controller.Delete(NotExistingCategoryId);

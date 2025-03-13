@@ -1,5 +1,5 @@
-using System.Text.Json;
 using api.Helpers;
+using System.Text.Json;
 
 namespace api.Middlewares
 {

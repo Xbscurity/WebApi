@@ -1,10 +1,10 @@
 ﻿using api.Data;
-using api.Helpers.Report;
 using api.Helpers;
+using api.Helpers.Report;
 using api.Models;
 using api.Repositories.Interfaces;
-using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore;
+using System.Linq.Expressions;
 
 namespace api.Repositories
 {

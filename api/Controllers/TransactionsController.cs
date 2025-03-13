@@ -1,12 +1,9 @@
-using System.Linq.Expressions;
-using api.Data;
 using api.Dtos;
 using api.Helpers;
 using api.Helpers.Report;
 using api.Models;
 using api.Repositories.Interfaces;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace api.Controllers
 {
@@ -149,6 +146,6 @@ namespace api.Controllers
             await _transactionsRepository.DeleteAsync(id);
             return ApiResponse.Success(transaction);
         }
-       
+
     }
 }

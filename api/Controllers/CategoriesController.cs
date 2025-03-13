@@ -1,20 +1,15 @@
-﻿using System.ComponentModel;
-using api.Converters;
-using api.Data;
-using api.Dtos;
+﻿using api.Dtos;
 using api.Dtos.Category;
 using api.Filters;
 using api.Helpers;
 using api.Models;
-using api.Repositories;
 using api.Repositories.Interfaces;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace api.Controllers
 {
 
-    
+
     [ServiceFilter(typeof(ExecutionTimeFilter))]
     [ApiController]
     [Route("api/categories")]
@@ -109,7 +104,7 @@ namespace api.Controllers
             return ApiResponse.Success(true);
         }
         [HttpGet("convert")]
-        public ApiResponse<TimeZoneRequest> GetTimeZoneInfo([FromQuery]TimeZoneRequest request)
+        public ApiResponse<TimeZoneRequest> GetTimeZoneInfo([FromQuery] TimeZoneRequest request)
         {
             if (request.TimeZone == null)
             {

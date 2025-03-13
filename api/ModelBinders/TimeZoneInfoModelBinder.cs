@@ -1,4 +1,3 @@
-using System.Security.Cryptography;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 namespace api.ModelBinders
@@ -8,8 +7,8 @@ namespace api.ModelBinders
         public static readonly TimeZoneInfoModelBinder Instance = new TimeZoneInfoModelBinder();
         private TimeZoneInfoModelBinder()
         {
-            
-        } 
+
+        }
         public Task BindModelAsync(ModelBindingContext bindingContext)
         {
             var valueProviderResult = bindingContext.ValueProvider.GetValue(bindingContext.ModelName);

@@ -1,5 +1,5 @@
-﻿using api.Helpers.Report;
-using api.Helpers;
+﻿using api.Helpers;
+using api.Helpers.Report;
 using api.Models;
 
 namespace api.Repositories.Interfaces

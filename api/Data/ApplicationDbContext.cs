@@ -7,17 +7,17 @@ namespace api.Data
     {
         public ApplicationDbContext(DbContextOptions options) : base(options)
         {
-            
+
         }
-        public DbSet<Category> Categories {get;set;}
-        public DbSet<FinancialTransaction> Transactions{get;set;}
+        public DbSet<Category> Categories { get; set; }
+        public DbSet<FinancialTransaction> Transactions { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
-{
-    modelBuilder.Entity<FinancialTransaction>()
-        .HasOne(t => t.Category)
-        .WithMany() 
-        .HasForeignKey(t => t.CategoryId)
-        .OnDelete(DeleteBehavior.SetNull); 
-}
+        {
+            modelBuilder.Entity<FinancialTransaction>()
+                .HasOne(t => t.Category)
+                .WithMany()
+                .HasForeignKey(t => t.CategoryId)
+                .OnDelete(DeleteBehavior.SetNull);
+        }
     }
 }

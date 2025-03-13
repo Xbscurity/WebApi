@@ -1,4 +1,3 @@
-using System.Net;
 using api.Helpers;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
@@ -17,7 +16,7 @@ namespace api.Filters
                     Message = "Server error occured"
                 }
             })
-            { StatusCode = StatusCodes.Status500InternalServerError}; //(int?)HttpStatusCode.InternalServerError
+            { StatusCode = StatusCodes.Status500InternalServerError }; //(int?)HttpStatusCode.InternalServerError
 
             context.ExceptionHandled = true;
         }

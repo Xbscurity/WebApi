@@ -1,13 +1,7 @@
-using System.ComponentModel;
-using api.Controllers;
-using api.Converters;
 using api.Data;
 using api.Filters;
-using api.ModelBinders;
 using api.Repositories;
 using api.Repositories.Interfaces;
-using api.Swagger;
-using Azure.Core.Extensions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
