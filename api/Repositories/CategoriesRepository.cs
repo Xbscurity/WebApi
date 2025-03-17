@@ -30,24 +30,16 @@ namespace api.Repositories
             await _context.SaveChangesAsync();
         }
 
-        public async Task<Category?> UpdateAsync(Category category)
+        public async Task UpdateAsync(Category category)
         {
             _context.Categories.Update(category);
             await _context.SaveChangesAsync();
-            return category;
         }
 
-        public async Task<bool> DeleteAsync(int id)
+        public async Task DeleteAsync(Category category)
         {
-            var category = await _context.Categories.FindAsync(id);
-            if (category == null)
-            {
-                return false;
-            }
-
             _context.Categories.Remove(category);
             await _context.SaveChangesAsync();
-            return true;
         }
     }
 }

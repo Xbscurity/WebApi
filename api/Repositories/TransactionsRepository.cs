@@ -57,40 +57,22 @@ namespace api.Repositories
             return await _context.Transactions.FindAsync(id);
         }
 
-        public async Task<FinancialTransaction> CreateAsync(FinancialTransaction transaction)
+        public async Task CreateAsync(FinancialTransaction transaction)
         {
             _context.Transactions.Add(transaction);
             await _context.SaveChangesAsync();
-            return transaction;
         }
 
-        public async Task<bool> UpdateAsync(int id, FinancialTransaction transaction)
+        public async Task UpdateAsync(FinancialTransaction transaction)
         {
-            var existingTransaction = await _context.Transactions.FindAsync(id);
-            if (existingTransaction == null)
-            {
-                return false;
-            }
-
-            existingTransaction.Amount = transaction.Amount;
-            existingTransaction.CategoryId = transaction.CategoryId;
-            existingTransaction.Comment = transaction.Comment;
-
+            _context.Update(transaction);
             await _context.SaveChangesAsync();
-            return true;
         }
 
-        public async Task<bool> DeleteAsync(int id)
+        public async Task DeleteAsync(FinancialTransaction transaction)
         {
-            var transaction = await _context.Transactions.FindAsync(id);
-            if (transaction == null)
-            {
-                return false;
-            }
-
             _context.Transactions.Remove(transaction);
             await _context.SaveChangesAsync();
-            return true;
         }
 
         private IQueryable<FinancialTransaction> GetFilteredTransactions(ReportQueryObject? dateRange)

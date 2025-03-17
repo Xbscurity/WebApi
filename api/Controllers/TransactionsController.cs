@@ -100,8 +100,8 @@ namespace api.Controllers
                 Amount = transactionDto.Amount,
                 Comment = transactionDto.Comment
             };
-            var createdTransaction = await _transactionsRepository.CreateAsync(transaction);
-            return ApiResponse.Success(createdTransaction);
+            await _transactionsRepository.CreateAsync(transaction);
+            return ApiResponse.Success(transaction);
         }
         /// <summary>
         /// UpdateAsync an existing financial transaction.
@@ -125,7 +125,7 @@ namespace api.Controllers
                 Amount = transactionDto.Amount,
                 Comment = transactionDto.Comment
             };
-            await _transactionsRepository.UpdateAsync(id, transaction);
+            await _transactionsRepository.UpdateAsync(transaction);
             return ApiResponse.Success(transaction);
         }
         /// <summary>
@@ -136,15 +136,15 @@ namespace api.Controllers
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(ApiResponse<FinancialTransaction>))]
         [HttpDelete("{id}")]
-        public async Task<ApiResponse<FinancialTransaction>> Delete([FromRoute] int id)
+        public async Task<ApiResponse<bool>> Delete([FromRoute] int id)
         {
             var transaction = await _transactionsRepository.GetByIdAsync(id);
             if (transaction == null)
             {
-                return ApiResponse.NotFound<FinancialTransaction>("Transaction not found");
+                return ApiResponse.NotFound<bool>("Transaction not found");
             }
-            await _transactionsRepository.DeleteAsync(id);
-            return ApiResponse.Success(transaction);
+            await _transactionsRepository.DeleteAsync(transaction);
+            return ApiResponse.Success(true);
         }
 
     }

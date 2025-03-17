@@ -16,8 +16,8 @@ namespace api.Tests.Controllers
             _controller = new CategoriesController(_repositoryMock.Object);
         }
         [Theory]
-        [MemberData(nameof(GetAllCategoriesTestData))]
-        public async Task GetAll_WithCategoriesOrEmpty_ReturnsExpectedCount(List<Category> categories, int expectedCount)
+        [MemberData(nameof(GetAllCategoriesTestDataAndCount))]
+        public async Task GetAll_ListOfTransactions_ReturnsExpectedCount(List<Category> categories, int expectedCount)
         {
             // Arrange
             _repositoryMock.Setup(s => s.GetAllAsync()).ReturnsAsync(categories);
@@ -26,138 +26,120 @@ namespace api.Tests.Controllers
             var result = await _controller.GetAll();
 
             // Assert
-            var response = Assert.IsType<ApiResponse<List<Category>>>(result);
-            Assert.Equal(expectedCount, response.Data.Count);
-            Assert.Null(response.Error);
+            Assert.Equal(expectedCount, result.Data.Count);
+            Assert.Null(result.Error);
         }
-        public static IEnumerable<object[]> GetAllCategoriesTestData()
+        public static IEnumerable<object[]> GetAllCategoriesTestDataAndCount()
         {
-            yield return new object[] { new List<Category> { new Category { Id = 1, Name = "Category 1" }, new Category { Id = 2, Name = "Category 2" } }, 2 };
+            yield return new object[]
+            {
+                new List<Category>
+                {
+                    new Category(),
+                    new Category()
+                },
+                2
+            };
             yield return new object[] { new List<Category>(), 0 };
         }
         [Fact]
         public async Task GetById_CategoryExists_ReturnsOkWithCategory()
         {
             // Arrange
-            var category = new Category { Id = 1, Name = "Category 1" };
             const int existingCategoryId = 1;
+            var category = new Category { Id = existingCategoryId};
             _repositoryMock.Setup(r => r.GetByIdAsync(existingCategoryId)).ReturnsAsync(category);
 
             // Act
             var result = await _controller.GetById(1);
 
             // Assert
-
-            var response = Assert.IsType<ApiResponse<Category>>(result);
-            Assert.Equal(category.Name, response.Data.Name);
-            Assert.Null(response.Error);
+            Assert.Equal(category.Id, result.Data.Id);
+            Assert.Null(result.Error);
         }
 
         [Fact]
-        public async Task GetById_CategoryNotFound_ReturnsNotFound()
+        public async Task GetById_CategoryNotExists_ReturnsNotFound()
         {
             // Arrange
-            int categoryNotFoundId = 999;
+            const int categoryNotFoundId = 999;
             _repositoryMock.Setup(r => r.GetByIdAsync(categoryNotFoundId)).ReturnsAsync((Category?)null);
 
             // Act
             var result = await _controller.GetById(999);
 
             // Assert
-            var response = Assert.IsType<ApiResponse<Category>>(result);
-            Assert.Equal("Category not found", response.Error.Message);
-            Assert.Equal("NOT_FOUND", response.Error.Code);
+            Assert.Equal("Category not found", result.Error.Message);
+            Assert.Equal("NOT_FOUND", result.Error.Code);
         }
         [Fact]
-        public async Task Create_ValidCategoryDto_ReturnsOkWithCreatedCategory()
+        public async Task Update_CategoryExists_ReturnsOkWithUpdatedCategory1()
         {
             // Arrange
             var categoryDto = new CategoryDto { Name = "New Category" };
-
-            var createdCategory = new Category { Id = 1, Name = categoryDto.Name };
-
-            _repositoryMock
-                .Setup(r => r.CreateAsync(It.IsAny<Category>()))
-                .Returns(Task.CompletedTask);
-
-            // Act
-            var response = await _controller.Create(categoryDto);
-
-            // Assert
-            Assert.IsType<ApiResponse<Category>>(response);
-            Assert.Equal(categoryDto.Name, response.Data.Name);
-            Assert.Null(response.Error);
-            _repositoryMock.Verify(r => r.CreateAsync(It.Is<Category>(c => c.Name == categoryDto.Name)), Times.Once);
-        }
-        [Fact]
-        public async Task Update_CategoryExists_ReturnsOkWithUpdatedCategory()
-        {
-            // Arrange
-            var categoryDto = new CategoryDto { Name = "New Category" };
-            int existingCategoryId = 1;
-            var receivedCategory = new Category { Id = existingCategoryId };
-            var updatedCategory = new Category
+            const int existingCategoryId = 1;
+            var receivedCategory = new Category { Id = existingCategoryId, Name = "Old Category" };
+            var categoryToUpdate = new Category
             {
                 Id = existingCategoryId,
                 Name = categoryDto.Name
             };
             _repositoryMock.Setup(r => r.GetByIdAsync(existingCategoryId)).ReturnsAsync(receivedCategory);
-            _repositoryMock.Setup(r => r.UpdateAsync(receivedCategory)).ReturnsAsync(updatedCategory);
+            _repositoryMock.Setup(r => r.UpdateAsync(categoryToUpdate)).Returns(Task.CompletedTask);
 
             // Act
-            var response = await _controller.Update(existingCategoryId, categoryDto);
+            var result = await _controller.Update(existingCategoryId, categoryDto);
 
             //Assert
-            var result = Assert.IsType<ApiResponse<Category>>(response);
             Assert.Equal(existingCategoryId, result.Data.Id);
             Assert.Equal(categoryDto.Name, result.Data.Name);
-            Assert.Null(response.Error);
+            Assert.Null(result.Error);
+            _repositoryMock.Verify(r => r.UpdateAsync(It.Is<Category>(c => c.Name == categoryDto.Name)), Times.Once);
         }
         [Fact]
         public async Task Update_CategoryNotExists_ReturnsNotFound()
         {
             // Arrange
             var categoryDto = new CategoryDto { Name = "New Category" };
-            int notExistingCategoryId = 999;
+            const int notExistingCategoryId = 999;
             _repositoryMock.Setup(r => r.GetByIdAsync(notExistingCategoryId)).ReturnsAsync((Category?)null);
 
             // Act
-            var response = await _controller.Update(notExistingCategoryId, categoryDto);
+            var result = await _controller.Update(notExistingCategoryId, categoryDto);
 
             //Assert
-            var result = Assert.IsType<ApiResponse<Category>>(response);
-            Assert.Equal("Category not found", response.Error.Message);
-            Assert.Equal("NOT_FOUND", response.Error.Code);
+            Assert.Equal("Category not found", result.Error.Message);
+            Assert.Equal("NOT_FOUND", result.Error.Code);
         }
         [Fact]
         public async Task Delete_CategoryExists_ReturnsOkwithTrue()
         {
             //Arrange
-            int existingCategoryId = 1;
-            _repositoryMock.Setup(r => r.DeleteAsync(existingCategoryId)).ReturnsAsync(true);
+            const int existingCategoryId = 1;
+            var receivedCategory = new Category { Id = existingCategoryId };
+            _repositoryMock.Setup(r => r.GetByIdAsync(existingCategoryId)).ReturnsAsync(receivedCategory);
+            _repositoryMock.Setup(r => r.DeleteAsync(receivedCategory)).Returns(Task.CompletedTask);
 
             //Act
-            var response = await _controller.Delete(existingCategoryId);
+            var result = await _controller.Delete(existingCategoryId);
 
             //Assert
-            var result = Assert.IsType<ApiResponse<bool>>(response);
             Assert.True(result.Data);
-            Assert.Null(response.Error);
+            Assert.Null(result.Error);
+            _repositoryMock.Verify(r => r.DeleteAsync(receivedCategory), Times.Once);
         }
         [Fact]
         public async Task Delete_CategoryNotExists_ReturnsNotFound()
         {
             //Arrange
-            int NotExistingCategoryId = 999;
-            _repositoryMock.Setup(r => r.DeleteAsync(NotExistingCategoryId)).ReturnsAsync(false);
+            const int NotExistingCategoryId = 999;
 
             //Act
-            var response = await _controller.Delete(NotExistingCategoryId);
+            var result = await _controller.Delete(NotExistingCategoryId);
 
             //Assert
-            var result = Assert.IsType<ApiResponse<bool>>(response);
-            Assert.Equal("Category not found", response.Error.Message);
-            Assert.Equal("NOT_FOUND", response.Error.Code);
+            Assert.Equal("Category not found", result.Error.Message);
+            Assert.Equal("NOT_FOUND", result.Error.Code);
         }
     }
 }

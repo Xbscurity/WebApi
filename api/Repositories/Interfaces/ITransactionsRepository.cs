@@ -11,8 +11,8 @@ namespace api.Repositories.Interfaces
         Task<List<GroupedReportDto>> GetReportByCategoryAndDateAsync(ReportQueryObject? dateRange);
         Task<List<FinancialTransaction>> GetAllAsync();
         Task<FinancialTransaction?> GetByIdAsync(int id);
-        Task<FinancialTransaction> CreateAsync(FinancialTransaction transaction);
-        Task<bool> UpdateAsync(int id, FinancialTransaction transaction);
-        Task<bool> DeleteAsync(int id);
+        Task CreateAsync(FinancialTransaction transaction);
+        Task UpdateAsync(FinancialTransaction transaction);
+        Task DeleteAsync(FinancialTransaction transaction);
     }
 }

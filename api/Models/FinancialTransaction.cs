@@ -10,6 +10,6 @@ namespace api.Models
         [Column(TypeName = "decimal(18,2)")]
         public decimal Amount { get; set; }
         public string Comment { get; set; } = string.Empty;
-        public DateTime Date { get; set; } = DateTime.Now;
+        public DateTime Date { get; set; }
     }
 }

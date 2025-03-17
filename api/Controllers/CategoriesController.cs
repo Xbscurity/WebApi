@@ -56,11 +56,11 @@ namespace api.Controllers
         [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(ApiResponse<Category>))]
         [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(ApiResponse<Category>))]
         [HttpPost]
-        public async Task<ApiResponse<Category>> Create([FromBody] CategoryDto? categoryDto)
+        public async Task<ApiResponse<Category>> Create([FromBody] CategoryDto categoryDto)
         {
             Category category = new Category
             {
-                Name = categoryDto?.Name
+                Name = categoryDto.Name!
             };
             await _categoriesRepository.CreateAsync(category);
             return ApiResponse.Success(category);
@@ -82,8 +82,8 @@ namespace api.Controllers
                 return ApiResponse.NotFound<Category>("Category not found");
             }
             category.Name = categoryDto.Name;
-            var updatedCategory = await _categoriesRepository.UpdateAsync(category);
-            return ApiResponse.Success(updatedCategory);
+            await _categoriesRepository.UpdateAsync(category);
+            return ApiResponse.Success(category);
         }
         /// <summary>
         /// DeleteAsync an existing category.
@@ -96,11 +96,12 @@ namespace api.Controllers
 
         public async Task<ApiResponse<bool>> Delete([FromRoute] int id)
         {
-            var success = await _categoriesRepository.DeleteAsync(id);
-            if (!success)
+            var category = await _categoriesRepository.GetByIdAsync(id);
+            if (category == null)
             {
                 return ApiResponse.NotFound<bool>("Category not found");
             }
+            await _categoriesRepository.DeleteAsync(category);
             return ApiResponse.Success(true);
         }
         [HttpGet("convert")]

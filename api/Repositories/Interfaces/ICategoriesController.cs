@@ -7,7 +7,7 @@ namespace api.Repositories.Interfaces
         Task<List<Category>> GetAllAsync();
         Task<Category?> GetByIdAsync(int id);
         Task CreateAsync(Category category);
-        Task<Category> UpdateAsync(Category category);
-        Task<bool> DeleteAsync(int id);
+        Task UpdateAsync(Category category);
+        Task DeleteAsync(Category category);
     }
 }
