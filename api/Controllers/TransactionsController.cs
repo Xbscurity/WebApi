@@ -38,8 +38,7 @@ namespace api.Controllers
             {
                 ReportType.Category => await _transactionsRepository.GetReportByCategoryAsync(dateRange),
                 ReportType.Date => await _transactionsRepository.GetReportByDateAsync(dateRange),
-                ReportType.CategoryAndDate => await _transactionsRepository.GetReportByCategoryAndDateAsync(dateRange),
-                _ => new List<GroupedReportDto>()
+                ReportType.CategoryAndDate => await _transactionsRepository.GetReportByCategoryAndDateAsync(dateRange)
             };
             return ApiResponse.Success(report);
         }
