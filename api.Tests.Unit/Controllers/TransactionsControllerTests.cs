@@ -1,7 +1,6 @@
 ﻿using api.Controllers;
 using api.Dtos;
-using api.Helpers;
-using api.Helpers.Report;
+using api.Enums;
 using api.Models;
 using api.Repositories.Interfaces;
 using Moq;
@@ -83,9 +82,11 @@ namespace api.Tests.Controllers
             { CategoryId = 1, Amount = 100, Comment = "test" };
             var receivedFinancialTransaction = new FinancialTransaction { Id = existingFinancialTransactionId };
             var financialTransactionToUpdate = new FinancialTransaction
-            { 
-                Id = existingFinancialTransactionId, CategoryId = financialTransactionDto.CategoryId,
-                Amount = financialTransactionDto.Amount, Comment = financialTransactionDto.Comment                  
+            {
+                Id = existingFinancialTransactionId,
+                CategoryId = financialTransactionDto.CategoryId,
+                Amount = financialTransactionDto.Amount,
+                Comment = financialTransactionDto.Comment
             };
             _repositoryMock.Setup(r => r.GetByIdAsync(existingFinancialTransactionId)).ReturnsAsync(receivedFinancialTransaction);
             _repositoryMock.Setup(r => r.UpdateAsync(financialTransactionToUpdate)).Returns(Task.CompletedTask);
@@ -96,7 +97,11 @@ namespace api.Tests.Controllers
             // Assert
             Assert.Equivalent(financialTransactionToUpdate, result.Data);
             Assert.Null(result.Error);
-            _repositoryMock.Verify(r => r.UpdateAsync(It.Is<FinancialTransaction>(t => FinancialTransactionsAreEqual(financialTransactionToUpdate, t))), Times.Once);
+            _repositoryMock.Verify(r => r.UpdateAsync(It.Is<FinancialTransaction>(t =>
+                t.Amount == financialTransactionDto.Amount &&
+                t.Comment == financialTransactionDto.Comment &&
+                t.CategoryId == financialTransactionDto.CategoryId
+            )), Times.Once);
         }
         [Fact]
         public async Task Update_TransactionNotExists_ReturnsNotFound()
@@ -120,7 +125,7 @@ namespace api.Tests.Controllers
             // Arrange
             const int existingFinancialTransactionId = 1;
             var receivedFinancialTransaction = new FinancialTransaction()
-            {CategoryId = 1, Amount = 100, Comment = "test" };
+            { CategoryId = 1, Amount = 100, Comment = "test" };
             _repositoryMock.Setup(r => r.GetByIdAsync(existingFinancialTransactionId)).ReturnsAsync(receivedFinancialTransaction);
             _repositoryMock.Setup(r => r.DeleteAsync(receivedFinancialTransaction)).Returns(Task.CompletedTask);
 
@@ -145,9 +150,44 @@ namespace api.Tests.Controllers
             Assert.Equal("Transaction not found", result.Error.Message);
             Assert.Equal("NOT_FOUND", result.Error.Code);
         }
-        private bool FinancialTransactionsAreEqual(FinancialTransaction expected, FinancialTransaction actual)
+        [Fact]
+        public async Task GetReport_ReportTypeCategory_CallsGetReportByCategoryAsync()
         {
-            return expected.CategoryId == actual.CategoryId && expected.Amount == actual.Amount && expected.Comment == actual.Comment;
+            // Arrange
+            ReportType reportType = ReportType.Category;
+
+            // Act
+            await _controller.GetReport(null, reportType);
+
+            // Assert
+            _repositoryMock.Verify(r => r.GetReportByCategoryAsync(null), Times.Once);
+
+        }
+        [Fact]
+        public async Task GetReport_ReportTypeDate_CallsGetReportByDateAsync()
+        {
+            // Arrange
+            ReportType reportType = ReportType.Date;
+
+            // Act
+            await _controller.GetReport(null, reportType);
+
+            // Assert
+            _repositoryMock.Verify(r => r.GetReportByDateAsync(null), Times.Once);
+
+        }
+        [Fact]
+        public async Task GetReport_ReportTypeCategoryAndDate_CallsGetReportByCategoryAndDateAsync()
+        {
+            // Arrange
+            ReportType reportType = ReportType.CategoryAndDate;
+
+            // Act
+            await _controller.GetReport(null, reportType);
+
+            // Assert
+            _repositoryMock.Verify(r => r.GetReportByCategoryAndDateAsync(null), Times.Once);
+
         }
     }
 }
