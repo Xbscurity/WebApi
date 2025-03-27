@@ -4,6 +4,7 @@ using api.Helpers;
 using api.Helpers.Report;
 using api.Models;
 using api.Repositories.Interfaces;
+using api.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
@@ -14,9 +15,11 @@ namespace api.Controllers
     public class TransactionsController : ControllerBase
     {
         private readonly ITransactionsRepository _transactionsRepository;
-        public TransactionsController(ITransactionsRepository transactionRepository)
+        private readonly ITimeProvider _timeProvider;
+        public TransactionsController(ITransactionsRepository transactionRepository, ITimeProvider timeProvider)
         {
             _transactionsRepository = transactionRepository;
+            _timeProvider = timeProvider;
         }
         /// <summary>
         /// Get a report by specified group
@@ -81,7 +84,7 @@ namespace api.Controllers
     public async Task<ApiResponse<FinancialTransaction>> Create([FromBody] FinancialTransactionDto transactionDto)
     {
 
-        FinancialTransaction transaction = new FinancialTransaction
+        FinancialTransaction transaction = new FinancialTransaction(_timeProvider)
         {
             CategoryId = transactionDto.CategoryId,
             Amount = transactionDto.Amount,
@@ -105,7 +108,7 @@ namespace api.Controllers
         {
             return ApiResponse.NotFound<FinancialTransaction>("Transaction not found");
         }
-        FinancialTransaction transaction = new FinancialTransaction
+        FinancialTransaction transaction = new FinancialTransaction(_timeProvider)
         {
             Id = id,
             CategoryId = transactionDto.CategoryId,
@@ -133,6 +136,12 @@ namespace api.Controllers
         await _transactionsRepository.DeleteAsync(transaction);
         return ApiResponse.Success(true);
     }
+        [HttpGet("time")]
+        public async Task<ApiResponse<DateTimeOffset>> GetTime()
+        {
+
+            return ApiResponse.Success(_timeProvider.UtcNow);
+        }
 
 }
 }

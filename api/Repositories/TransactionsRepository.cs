@@ -30,7 +30,7 @@ namespace api.Repositories
         {
             return await GetGroupedTransactions(
                 dateRange,
-                t => new { t.Date.Month, t.Date.Year },
+                t => new { t.CreatedAt.Month, t.CreatedAt.Year },
                 key => new ReportKey { Month = key.Month, Year = key.Year }
             );
         }
@@ -39,7 +39,7 @@ namespace api.Repositories
         {
             return await GetGroupedTransactions(
                 dateRange,
-                t => new { Category = t.Category.Name ?? "No category", t.Date.Month, t.Date.Year },
+                t => new { Category = t.Category.Name ?? "No category", t.CreatedAt.Month, t.CreatedAt.Year },
                 key => new ReportKey { Category = key.Category, Month = key.Month, Year = key.Year }
             );
         }
@@ -84,11 +84,11 @@ namespace api.Repositories
 
             if (dateRange?.StartDate != null)
             {
-                transactions = transactions.Where(t => t.Date >= dateRange.StartDate);
+                transactions = transactions.Where(t => t.CreatedAt >= dateRange.StartDate);
             }
             if (dateRange?.EndDate != null)
             {
-                transactions = transactions.Where(t => t.Date <= dateRange.EndDate);
+                transactions = transactions.Where(t => t.CreatedAt <= dateRange.EndDate);
             }
 
             return transactions;
@@ -109,7 +109,7 @@ namespace api.Repositories
                     Transactions = group.Select(transaction => new ReportTransactionDto
                     {
                         Category = transaction.Category.Name ?? "No category",
-                        Date = transaction.Date,
+                        CreatedAt = transaction.CreatedAt,
                         Amount = transaction.Amount,
                         Comment = transaction.Comment
                     }).ToList()

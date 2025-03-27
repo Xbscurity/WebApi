@@ -1,3 +1,4 @@
+using api.Services.Interfaces;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace api.Models
@@ -10,6 +11,11 @@ namespace api.Models
         [Column(TypeName = "decimal(18,2)")]
         public decimal Amount { get; set; }
         public string Comment { get; set; } = string.Empty;
-        public DateTime Date { get; set; }
+        public DateTimeOffset CreatedAt { get; set; }
+        private FinancialTransaction() { }
+        public FinancialTransaction(ITimeProvider timeProvider)
+        {
+            CreatedAt = timeProvider.UtcNow;
+        }
     }
 }

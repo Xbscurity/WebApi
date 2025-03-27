@@ -3,6 +3,8 @@ using api.Dtos;
 using api.Enums;
 using api.Models;
 using api.Repositories.Interfaces;
+using api.Services.Interfaces;
+using Microsoft.CodeAnalysis.Options;
 using Moq;
 
 namespace api.Tests.Controllers
@@ -10,11 +12,16 @@ namespace api.Tests.Controllers
     public class TransactionsControllerTests
     {
         private readonly Mock<ITransactionsRepository> _repositoryMock;
+        private readonly Mock<ITimeProvider> _timeStub;
         private readonly TransactionsController _controller;
         public TransactionsControllerTests()
         {
             _repositoryMock = new Mock<ITransactionsRepository>();
-            _controller = new TransactionsController(_repositoryMock.Object);
+            _timeStub = new Mock<ITimeProvider>();
+            var fixedTime = new DateTimeOffset(2025, 1, 1, 12, 0, 0, TimeSpan.Zero);
+            _timeStub.Setup(t => t.UtcNow).Returns(fixedTime);
+
+            _controller = new TransactionsController(_repositoryMock.Object, _timeStub.Object);
         }
 
         [Theory]
@@ -33,12 +40,16 @@ namespace api.Tests.Controllers
         }
         public static IEnumerable<object[]> GetAllTransactionsTestDataAndCount()
         {
+            var fixedTime = new DateTimeOffset(2025, 1, 1, 12, 0, 0, TimeSpan.Zero);
+
+            var timeProviderMock = new Mock<ITimeProvider>();
+            timeProviderMock.Setup(t => t.UtcNow).Returns(fixedTime);
             yield return new object[]
             {
                 new List<FinancialTransaction>
                 {
-                    new FinancialTransaction(),
-                    new FinancialTransaction()
+                    new FinancialTransaction(timeProviderMock.Object),
+                    new FinancialTransaction(timeProviderMock.Object)
                 },
                 2
             };
@@ -49,7 +60,7 @@ namespace api.Tests.Controllers
         {
             // Arrange
             int existingFinancialTransactionId = 1;
-            var existingFinancialTransaction = new FinancialTransaction { Id = existingFinancialTransactionId };
+            var existingFinancialTransaction = new FinancialTransaction(_timeStub.Object) { Id = existingFinancialTransactionId };
             _repositoryMock.Setup(r => r.GetByIdAsync(existingFinancialTransactionId)).ReturnsAsync(existingFinancialTransaction);
 
             // Act
@@ -80,8 +91,8 @@ namespace api.Tests.Controllers
             const int existingFinancialTransactionId = 1;
             var financialTransactionDto = new FinancialTransactionDto
             { CategoryId = 1, Amount = 100, Comment = "test" };
-            var receivedFinancialTransaction = new FinancialTransaction { Id = existingFinancialTransactionId };
-            var financialTransactionToUpdate = new FinancialTransaction
+            var receivedFinancialTransaction = new FinancialTransaction(_timeStub.Object) { Id = existingFinancialTransactionId };
+            var financialTransactionToUpdate = new FinancialTransaction(_timeStub.Object)
             {
                 Id = existingFinancialTransactionId,
                 CategoryId = financialTransactionDto.CategoryId,
@@ -124,7 +135,7 @@ namespace api.Tests.Controllers
         {
             // Arrange
             const int existingFinancialTransactionId = 1;
-            var receivedFinancialTransaction = new FinancialTransaction()
+            var receivedFinancialTransaction = new FinancialTransaction(_timeStub.Object)
             { CategoryId = 1, Amount = 100, Comment = "test" };
             _repositoryMock.Setup(r => r.GetByIdAsync(existingFinancialTransactionId)).ReturnsAsync(receivedFinancialTransaction);
             _repositoryMock.Setup(r => r.DeleteAsync(receivedFinancialTransaction)).Returns(Task.CompletedTask);

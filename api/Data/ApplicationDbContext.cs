@@ -14,10 +14,17 @@ namespace api.Data
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<FinancialTransaction>()
-                .HasOne(t => t.Category)
+                .HasOne(transaction => transaction.Category)
                 .WithMany()
-                .HasForeignKey(t => t.CategoryId)
+                .HasForeignKey(transaction => transaction.CategoryId)
                 .OnDelete(DeleteBehavior.SetNull);
+
+            modelBuilder.Entity<FinancialTransaction>()
+            .Property(t => t.CreatedAt)
+            .HasConversion(
+                source => source.ToUniversalTime(),
+                stored => stored
+            );
         }
     }
 }
