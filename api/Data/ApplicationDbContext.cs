@@ -20,11 +20,14 @@ namespace api.Data
                 .OnDelete(DeleteBehavior.SetNull);
 
             modelBuilder.Entity<FinancialTransaction>()
-            .Property(t => t.CreatedAt)
-            .HasConversion(
-                source => source.ToUniversalTime(),
-                stored => stored
-            );
+      .Property(t => t.CreatedAt)
+      .HasColumnType("timestamptz");
+            modelBuilder.Entity<FinancialTransaction>()
+           .Property(t => t.CreatedAt)
+           .HasConversion(
+               source => source.ToUniversalTime(),
+               stored => stored.ToLocalTime()
+           );
         }
     }
 }

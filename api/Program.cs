@@ -14,7 +14,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers(options =>
 {
-    //options.Filters.Add<ExceptionFilter>();
+    options.Filters.Add<ExceptionFilter>();
     options.Filters.Add<ValidationFilter>();
     options.Filters.Add<StatusCodeFilter>();
     //options.ModelBinderProviders.Insert(0, new TimeZoneInfoModeBinderProvider());
@@ -36,7 +36,7 @@ builder.Services.AddSwaggerGen(options =>
 });
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
 {
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"));
 });
 //TypeDescriptor.AddAttributes(typeof(TimeZoneInfo), new TypeConverterAttribute(typeof(TimeZoneInfoConverter)));
 var app = builder.Build();
