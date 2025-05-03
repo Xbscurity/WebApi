@@ -1,6 +1,6 @@
-﻿using api.Services.Interfaces;
+﻿using api.Providers.Interfaces;
 
-namespace api.Services
+namespace api.Providers
 {
     public class UtcTimeProvider : ITimeProvider
     {

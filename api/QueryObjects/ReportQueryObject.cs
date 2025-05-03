@@ -1,4 +1,4 @@
-namespace api.Helpers
+namespace api.QueryObjects
 {
     public class ReportQueryObject
     {

@@ -1,8 +1,6 @@
 ﻿using api.Data;
-using api.Helpers;
 using api.Models;
 using api.Repositories;
-using api.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Moq;
 
@@ -11,7 +9,7 @@ namespace api.Tests.Unit.Repositories
     public class TransactionsRepositoryTests : IDisposable
     {
         private readonly ApplicationDbContext _context;
-        private readonly TransactionsRepository _repository;
+        private readonly TransactionRepository _repository;
         private readonly Mock<ITimeProvider> _timeStub;
         public TransactionsRepositoryTests()
         {
@@ -21,7 +19,7 @@ namespace api.Tests.Unit.Repositories
             .Options;
 
             _context = new ApplicationDbContext(options);
-            _repository = new TransactionsRepository(_context);
+            _repository = new TransactionRepository(_context);
             _timeStub = new Mock<ITimeProvider>();
             var fixedTime = new DateTimeOffset(2025, 1, 1, 12, 0, 0, TimeSpan.Zero);
             _timeStub.Setup(t => t.UtcNow).Returns(fixedTime);

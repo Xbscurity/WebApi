@@ -1,4 +1,4 @@
-using api.Services.Interfaces;
+using api.Providers.Interfaces;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace api.Models

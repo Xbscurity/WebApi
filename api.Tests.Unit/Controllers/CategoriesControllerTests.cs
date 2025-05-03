@@ -1,6 +1,4 @@
 ﻿using api.Controllers;
-using api.Dtos.Category;
-using api.Helpers;
 using api.Models;
 using api.Repositories.Interfaces;
 using Moq;
@@ -8,11 +6,11 @@ namespace api.Tests.Controllers
 {
     public class CategoriesControllerTests
     {
-        private readonly Mock<ICategoriesRepository> _repositoryMock;
-        private readonly CategoriesController _controller;
+        private readonly Mock<ICategoryRepository> _repositoryMock;
+        private readonly CategoryController _controller;
         public CategoriesControllerTests()
         {
-            _repositoryMock = new Mock<ICategoriesRepository>();
+            _repositoryMock = new Mock<ICategoryRepository>();
             _controller = new CategoriesController(_repositoryMock.Object);
         }
         [Theory]
@@ -47,7 +45,7 @@ namespace api.Tests.Controllers
         {
             // Arrange
             const int existingCategoryId = 1;
-            var category = new Category { Id = existingCategoryId};
+            var category = new Category { Id = existingCategoryId };
             _repositoryMock.Setup(r => r.GetByIdAsync(existingCategoryId)).ReturnsAsync(category);
 
             // Act

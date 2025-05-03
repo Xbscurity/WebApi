@@ -1,16 +1,16 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace api.Dtos
+namespace api.Dtos.FinancialTransactions
 {
-    public class FinancialTransactionDto
+    public record FinancialTransactionInputDto
     {
         [Required]
-        public int CategoryId { get; set; }
+        public int CategoryId { get; init; }
         [Required]
         [Range(-100000000000, 100000000000)]
-        public decimal Amount { get; set; }
+        public decimal Amount { get; init; }
         [Required]
         [MaxLength(255, ErrorMessage = "Comment can not be over 255 characters")]
-        public string Comment { get; set; } = string.Empty;
+        public string Comment { get; init; } = string.Empty;
     }
 }

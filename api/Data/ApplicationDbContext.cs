@@ -13,6 +13,13 @@ namespace api.Data
         public DbSet<FinancialTransaction> Transactions { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            modelBuilder.Entity<Category>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Id)
+                      .ValueGeneratedOnAdd();
+            });
+
             modelBuilder.Entity<FinancialTransaction>()
                 .HasOne(transaction => transaction.Category)
                 .WithMany()
@@ -22,6 +29,7 @@ namespace api.Data
             modelBuilder.Entity<FinancialTransaction>()
       .Property(t => t.CreatedAt)
       .HasColumnType("timestamptz");
+
             modelBuilder.Entity<FinancialTransaction>()
            .Property(t => t.CreatedAt)
            .HasConversion(

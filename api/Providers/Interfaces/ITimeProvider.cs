@@ -1,4 +1,4 @@
-﻿namespace api.Services.Interfaces
+﻿namespace api.Providers.Interfaces
 {
     public interface ITimeProvider
     {

@@ -1,9 +1,12 @@
 using api.Data;
 using api.Filters;
+using api.Providers;
+using api.Providers.Interfaces;
 using api.Repositories;
 using api.Repositories.Interfaces;
 using api.Services;
 using api.Services.Interfaces;
+using api.Services.Transaction;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -24,8 +27,13 @@ builder.Services.Configure<ApiBehaviorOptions>(options =>
     options.SuppressModelStateInvalidFilter = true;
 });
 builder.Services.AddScoped<ExecutionTimeFilter>();
-builder.Services.AddScoped<ICategoriesRepository, CategoriesRepository>();
-builder.Services.AddScoped<ITransactionsRepository, TransactionsRepository>();
+builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
+builder.Services.AddScoped<ITransactionRepository, TransactionRepository>();
+builder.Services.AddScoped<ICategoryService, CategoryService>();
+builder.Services.AddScoped<ITransactionService, TransactionService>();
+builder.Services.AddScoped<IGroupingReportStrategy, GroupByCategoryStrategy>();
+builder.Services.AddScoped<IGroupingReportStrategy, GroupByDateStrategy>();
+builder.Services.AddScoped<IGroupingReportStrategy, GroupByDateAndCategoryStrategy>();
 builder.Services.AddSingleton<ITimeProvider, UtcTimeProvider>();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>

@@ -3,25 +3,23 @@ using api.Dtos;
 using api.Enums;
 using api.Models;
 using api.Repositories.Interfaces;
-using api.Services.Interfaces;
-using Microsoft.CodeAnalysis.Options;
 using Moq;
 
 namespace api.Tests.Controllers
 {
     public class TransactionsControllerTests
     {
-        private readonly Mock<ITransactionsRepository> _repositoryMock;
+        private readonly Mock<ITransactionRepository> _repositoryMock;
         private readonly Mock<ITimeProvider> _timeStub;
-        private readonly TransactionsController _controller;
+        private readonly TransactionController _controller;
         public TransactionsControllerTests()
         {
-            _repositoryMock = new Mock<ITransactionsRepository>();
+            _repositoryMock = new Mock<ITransactionRepository>();
             _timeStub = new Mock<ITimeProvider>();
             var fixedTime = new DateTimeOffset(2025, 1, 1, 12, 0, 0, TimeSpan.Zero);
             _timeStub.Setup(t => t.UtcNow).Returns(fixedTime);
 
-            _controller = new TransactionsController(_repositoryMock.Object, _timeStub.Object);
+            _controller = new TransactionController(_repositoryMock.Object, _timeStub.Object);
         }
 
         [Theory]
@@ -89,7 +87,7 @@ namespace api.Tests.Controllers
         {
             // Arrange
             const int existingFinancialTransactionId = 1;
-            var financialTransactionDto = new FinancialTransactionDto
+            var financialTransactionDto = new FinancialTransactionInputDto
             { CategoryId = 1, Amount = 100, Comment = "test" };
             var receivedFinancialTransaction = new FinancialTransaction(_timeStub.Object) { Id = existingFinancialTransactionId };
             var financialTransactionToUpdate = new FinancialTransaction(_timeStub.Object)
@@ -119,7 +117,7 @@ namespace api.Tests.Controllers
         {
             // Arrange
             const int notExistingFinancialTransactionId = 999;
-            var financialTransactionDto = new FinancialTransactionDto
+            var financialTransactionDto = new FinancialTransactionInputDto
             { CategoryId = 1, Amount = 100, Comment = "test" };
             _repositoryMock.Setup(t => t.GetByIdAsync(notExistingFinancialTransactionId)).ReturnsAsync((FinancialTransaction?)null);
 
@@ -165,7 +163,7 @@ namespace api.Tests.Controllers
         public async Task GetReport_ReportTypeCategory_CallsGetReportByCategoryAsync()
         {
             // Arrange
-            ReportType reportType = ReportType.Category;
+            GroupingReportStrategyKey reportType = GroupingReportStrategyKey.ByCategory;
 
             // Act
             await _controller.GetReport(null, reportType);
@@ -178,7 +176,7 @@ namespace api.Tests.Controllers
         public async Task GetReport_ReportTypeDate_CallsGetReportByDateAsync()
         {
             // Arrange
-            ReportType reportType = ReportType.Date;
+            GroupingReportStrategyKey reportType = GroupingReportStrategyKey.ByDate;
 
             // Act
             await _controller.GetReport(null, reportType);
@@ -191,7 +189,7 @@ namespace api.Tests.Controllers
         public async Task GetReport_ReportTypeCategoryAndDate_CallsGetReportByCategoryAndDateAsync()
         {
             // Arrange
-            ReportType reportType = ReportType.CategoryAndDate;
+            GroupingReportStrategyKey reportType = GroupingReportStrategyKey.ByCategoryAndDate;
 
             // Act
             await _controller.GetReport(null, reportType);

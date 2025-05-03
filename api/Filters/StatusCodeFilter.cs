@@ -1,3 +1,4 @@
+using api.Enums;
 using api.Helpers;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
@@ -12,7 +13,9 @@ namespace api.Filters
             {
                 context.HttpContext.Response.StatusCode = response.Error?.Code switch
                 {
-                    "NOT_FOUND" => StatusCodes.Status404NotFound, // (int)HttpStatusCode.NotFound,
+                    ErrorCodes.NotFound => StatusCodes.Status404NotFound, // (int)HttpStatusCode.NotFound,
+                    ErrorCodes.ValidationError => StatusCodes.Status422UnprocessableEntity,
+                    ErrorCodes.BadRequest => StatusCodes.Status400BadRequest,
                     _ => StatusCodes.Status200OK // (int)HttpStatusCode.OK
                 };
             }
