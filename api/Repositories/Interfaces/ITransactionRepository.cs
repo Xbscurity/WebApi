@@ -1,6 +1,4 @@
-﻿using api.Dtos.FinancialTransaction;
-using api.Models;
-using api.QueryObjects;
+﻿using api.Models;
 
 namespace api.Repositories.Interfaces
 {

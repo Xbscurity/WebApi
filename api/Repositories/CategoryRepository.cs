@@ -18,7 +18,10 @@ namespace api.Repositories
         {
             return await _context.Categories.AsNoTracking().ToListAsync();
         }
-
+        public IQueryable<Category> GetQueryable()
+        {
+            return _context.Categories.AsNoTracking();
+        }
         public async Task<Category?> GetByIdAsync(int id)
         {
             return await _context.Categories.FindAsync(id);
@@ -27,9 +30,7 @@ namespace api.Repositories
         public async Task CreateAsync(Category category)
         {
             await _context.Categories.AddAsync(category);
-            Console.WriteLine($"Category saved with Id: {category.Id}");
             await _context.SaveChangesAsync();
-            Console.WriteLine($"Category saved with IASDd: {category.Id}");
         }
 
         public async Task UpdateAsync(Category category)

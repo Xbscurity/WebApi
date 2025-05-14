@@ -1,5 +1,4 @@
-﻿using api.Enums;
-using api.Helpers;
+﻿using api.Helpers;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 
@@ -22,7 +21,7 @@ namespace api.Filters
                 {
                     Error = new Error
                     {
-                        Code = ErrorCodes.ValidationError,
+                        Code = "VALIDATION_ERROR",
                         Message = "Validation failed",
                         Data = errors
                     }

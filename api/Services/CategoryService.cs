@@ -1,5 +1,8 @@
 ﻿using api.Dtos;
+using api.Extensions;
+using api.Helpers;
 using api.Models;
+using api.QueryObjects;
 using api.Repositories.Interfaces;
 using api.Services.Interfaces;
 
@@ -14,9 +17,11 @@ namespace api.Services
             _categoryRepository = categoriesRepository;
         }
 
-        public async Task<List<Category>> GetAllAsync()
+        public async Task<PagedQuery<Category>> GetAllAsync(PaginationQueryObject queryObject)
         {
-            return await _categoryRepository.GetAllAsync();
+            var query = _categoryRepository.GetQueryable();
+            var result = query.ApplySorting(queryObject);
+            return await result.ToPagedQueryAsync(queryObject);
         }
 
         public async Task<Category?> GetByIdAsync(int id)

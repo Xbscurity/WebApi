@@ -1,7 +1,7 @@
 ﻿namespace api.Dtos.FinancialTransactions
 {
     public record FinancialTransactionOutputDto(
-        int Id, 
+        int Id,
         string? CategoryName,
         decimal Amount,
         string Comment,

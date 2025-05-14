@@ -12,7 +12,7 @@ namespace api.Extensions
             {
                 return null;
             }
-            return new FinancialTransactionOutputDto(     
+            return new FinancialTransactionOutputDto(
                 financialTransaction.Id,
                 financialTransaction.Category?.Name,
                 financialTransaction.Amount,

@@ -15,10 +15,11 @@ namespace api.Services.Transaction
             IQueryable<FinancialTransaction> transactions)
         {
             return await transactions
-                .GroupBy(t => new  { t.CreatedAt.Year, t.CreatedAt.Month })
+                .GroupBy(t => new { t.CreatedAt.Year, t.CreatedAt.Month })
                 .Select(group => new GroupedReportDto
                 {
-                    Key = new ReportKey{
+                    Key = new ReportKey
+                    {
                         Year = group.Key.Year,
                         Month = group.Key.Month
                     },

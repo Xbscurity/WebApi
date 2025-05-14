@@ -2,10 +2,9 @@
 using api.Dtos.FinancialTransactions;
 using api.Enums;
 using api.Extensions;
-using api.Models;
+using api.Helpers;
 using api.Providers.Interfaces;
 using api.QueryObjects;
-using api.Repositories;
 using api.Repositories.Interfaces;
 using api.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
@@ -41,11 +40,16 @@ namespace api.Services.Transaction
             await _transactionRepository.DeleteAsync(existingTransaction);
             return true;
         }
-
-        public async Task<List<FinancialTransactionOutputDto>> GetAllAsync()
+        public async Task<PagedData<FinancialTransactionOutputDto>> GetAllAsync(PaginationQueryObject queryObject)
         {
-            var result = await _transactionRepository.GetAllAsync();
-            return result.Select(t => t.ToOutputDto()).ToList();
+            var query = _transactionRepository.GetQueryableWithCategory();
+            var sortedQuery = query.ApplySorting(queryObject);
+            var result = await sortedQuery.Select(t => t.ToOutputDto()).ToPagedQueryAsync(queryObject);
+            return new PagedData<FinancialTransactionOutputDto>
+            {
+                Data = await result.Query.ToListAsync(),
+                Pagination = result.Pagination
+            };
         }
 
         public async Task<FinancialTransactionOutputDto?> GetByIdAsync(int id)
@@ -54,23 +58,16 @@ namespace api.Services.Transaction
             return transaction.ToOutputDto();
         }
 
-        public async Task<List<GroupedReportDto>> GetReportAsync(ReportQueryObject query, GroupingReportStrategyKey key)
+        public async Task<PagedData<GroupedReportDto>> GetReportAsync(ReportQueryObject queryObject)
         {
-            var strategy = _strategies[key];
-            var filteredTransactions = ApplyFiltering(query);
-            return await strategy.GroupAsync(filteredTransactions);
-        }
-        private IQueryable<FinancialTransaction> ApplyFiltering(ReportQueryObject? dataRange)
-        {
-            var transactions = _transactionRepository.GetQueryableWithCategory();
-
-            if (dataRange?.StartDate != null)
-                transactions = transactions.Where(t => t.CreatedAt >= dataRange.StartDate.Value);
-
-            if (dataRange?.EndDate != null)
-                transactions = transactions.Where(t => t.CreatedAt <= dataRange.EndDate.Value);
-
-            return transactions;
+            var strategy = _strategies[queryObject.Key];
+            var query = _transactionRepository.GetQueryableWithCategory();
+            var transactions = await query.ApplyFiltering(queryObject).ApplySorting(queryObject).ToPagedQueryAsync(queryObject);
+            return new PagedData<GroupedReportDto>
+            {
+                Data = await strategy.GroupAsync(transactions.Query),
+                Pagination = transactions.Pagination
+            };
         }
         public async Task<FinancialTransactionOutputDto?> UpdateAsync(int id, FinancialTransactionInputDto transaction)
         {

@@ -1,10 +1,7 @@
 ﻿using api.Data;
-using api.Dtos.FinancialTransaction;
 using api.Models;
-using api.QueryObjects;
 using api.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
-using System.Linq.Expressions;
 
 namespace api.Repositories
 {

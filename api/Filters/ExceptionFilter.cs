@@ -1,4 +1,3 @@
-using api.Enums;
 using api.Helpers;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
@@ -13,7 +12,7 @@ namespace api.Filters
             {
                 Error = new Error
                 {
-                    Code = ErrorCodes.InternalServerError,
+                    Code = "INTERNAL_ERROR",
                     Message = "Server error occured"
                 }
             })

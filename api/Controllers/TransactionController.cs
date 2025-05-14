@@ -1,10 +1,8 @@
 using api.Dtos.FinancialTransaction;
 using api.Dtos.FinancialTransactions;
-using api.Enums;
 using api.Helpers;
 using api.Models;
 using api.QueryObjects;
-using api.Repositories.Interfaces;
 using api.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
@@ -32,11 +30,18 @@ namespace api.Controllers
         /// <returns>A list of grouped reports.</returns>
         [HttpGet("report")]
         public async Task<ApiResponse<List<GroupedReportDto>>> GetReport(
-    [FromQuery] ReportQueryObject? dateRange,
-    [FromQuery] GroupingReportStrategyKey reportType = GroupingReportStrategyKey.ByCategory)
+    [FromQuery] ReportQueryObject? queryObject)
         {
-            var report = await _transactionsService.GetReportAsync(dateRange, reportType);
-            return ApiResponse.Success(report);
+            var validSortFields = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+              {
+                  "id", "category", "amount", "date"
+              };
+            if (!string.IsNullOrWhiteSpace(queryObject.SortBy) && !validSortFields.Contains(queryObject.SortBy.ToLower()))
+            {
+                return ApiResponse.BadRequest<List<GroupedReportDto>>($"SortBy '{queryObject.SortBy}' is not a valid field.");
+            }
+            var report = await _transactionsService.GetReportAsync(queryObject);
+            return ApiResponse.Success(report.Data, report.Pagination);
         }
         /// <summary>
         /// Get all transactions.
@@ -44,10 +49,18 @@ namespace api.Controllers
         /// <returns>A list of all transactions</returns>
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ApiResponse<FinancialTransaction>))]
         [HttpGet]
-        public async Task<ApiResponse<List<FinancialTransactionOutputDto>>> GetAll()
+        public async Task<ApiResponse<List<FinancialTransactionOutputDto>>> GetAll([FromQuery] PaginationQueryObject queryObject)
         {
-            var transactions = await _transactionsService.GetAllAsync();
-            return ApiResponse.Success(transactions);
+            var validSortFields = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+              {
+                  "id", "category", "amount", "date"
+              };
+            if (!string.IsNullOrWhiteSpace(queryObject.SortBy) && !validSortFields.Contains(queryObject.SortBy.ToLower()))
+            {
+                return ApiResponse.BadRequest<List<FinancialTransactionOutputDto>>($"SortBy '{queryObject.SortBy}' is not a valid field.");
+            }
+            var transactions = await _transactionsService.GetAllAsync(queryObject);
+            return ApiResponse.Success(transactions.Data, transactions.Pagination);
         }
         /// <summary>
         /// Get a specific transaction by its ID.
@@ -76,7 +89,7 @@ namespace api.Controllers
         [HttpPost]
         public async Task<ApiResponse<FinancialTransactionOutputDto>> Create([FromBody] FinancialTransactionInputDto transactionDto)
         {
-           var result = await _transactionsService.CreateAsync(transactionDto);
+            var result = await _transactionsService.CreateAsync(transactionDto);
             return ApiResponse.Success(result);
         }
         /// <summary>
@@ -89,7 +102,7 @@ namespace api.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(ApiResponse<FinancialTransaction>))]
         [HttpPut("{id:int}")]
         public async Task<ApiResponse<FinancialTransactionOutputDto>> Update([FromRoute] int id, [FromBody] FinancialTransactionInputDto transactionDto)
-        {           
+        {
             var result = await _transactionsService.UpdateAsync(id, transactionDto);
             if (result is null)
             {
@@ -107,7 +120,7 @@ namespace api.Controllers
         [HttpDelete("{id:int}")]
         public async Task<ApiResponse<bool>> Delete([FromRoute] int id)
         {
-           bool result = await _transactionsService.DeleteAsync(id);
+            bool result = await _transactionsService.DeleteAsync(id);
             if (result is false)
             {
                 return ApiResponse.NotFound<bool>("Transaction not found");
