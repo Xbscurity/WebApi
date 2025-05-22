@@ -14,6 +14,7 @@ namespace api.Repositories
         {
             _context = context;
         }
+
         public async Task<List<FinancialTransaction>> GetAllAsync()
         {
             return await _context.Transactions

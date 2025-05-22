@@ -13,10 +13,12 @@ namespace api.Controllers
     public class TransactionController : ControllerBase
     {
         private readonly ITransactionService _transactionsService;
+
         public TransactionController(ITransactionService transactionsService)
         {
             _transactionsService = transactionsService;
         }
+
         /// <summary>
         /// Get a report by specified group
         /// </summary>
@@ -34,7 +36,7 @@ namespace api.Controllers
         {
             var validSortFields = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
               {
-                  "id", "category", "amount", "date"
+                  "id", "category", "amount", "date",
               };
             if (!string.IsNullOrWhiteSpace(queryObject.SortBy) && !validSortFields.Contains(queryObject.SortBy))
             {
@@ -43,6 +45,7 @@ namespace api.Controllers
             var report = await _transactionsService.GetReportAsync(queryObject);
             return ApiResponse.Success(report.Data, report.Pagination);
         }
+
         /// <summary>
         /// Get all transactions.
         /// </summary>
@@ -53,15 +56,17 @@ namespace api.Controllers
         {
             var validSortFields = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
               {
-                  "id", "category", "amount", "date"
+                  "id", "category", "amount", "date",
               };
             if (!string.IsNullOrWhiteSpace(queryObject.SortBy) && !validSortFields.Contains(queryObject.SortBy))
             {
                 return ApiResponse.BadRequest<List<FinancialTransactionOutputDto>>($"SortBy '{queryObject.SortBy}' is not a valid field.");
             }
+
             var transactions = await _transactionsService.GetAllAsync(queryObject);
             return ApiResponse.Success(transactions.Data, transactions.Pagination);
         }
+
         /// <summary>
         /// Get a specific transaction by its ID.
         /// </summary>
@@ -77,8 +82,10 @@ namespace api.Controllers
             {
                 return ApiResponse.NotFound<FinancialTransactionOutputDto>("Transaction not found");
             }
+
             return ApiResponse.Success(transaction);
         }
+
         /// <summary>
         /// Create a new financial transaction.
         /// </summary>
@@ -92,6 +99,7 @@ namespace api.Controllers
             var result = await _transactionsService.CreateAsync(transactionDto);
             return ApiResponse.Success(result);
         }
+
         /// <summary>
         /// Update an existing financial transaction.
         /// </summary>
@@ -108,8 +116,10 @@ namespace api.Controllers
             {
                 return ApiResponse.NotFound<FinancialTransactionOutputDto>("Transaction not found");
             }
+
             return ApiResponse.Success(result);
         }
+
         /// <summary>
         /// Delete an existing financial transaction.
         /// </summary>
@@ -125,6 +135,7 @@ namespace api.Controllers
             {
                 return ApiResponse.NotFound<bool>("Transaction not found");
             }
+
             return ApiResponse.Success(result);
         }
 

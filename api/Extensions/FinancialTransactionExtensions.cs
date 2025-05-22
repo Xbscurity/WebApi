@@ -12,26 +12,29 @@ namespace api.Extensions
             {
                 return null;
             }
+
             return new FinancialTransactionOutputDto()
             {
                 Id = financialTransaction.Id,
                 CategoryName = financialTransaction.Category?.Name,
                 Amount = financialTransaction.Amount,
                 Comment = financialTransaction.Comment,
-                CreatedAt = financialTransaction.CreatedAt
+                CreatedAt = financialTransaction.CreatedAt,
             };
         }
+
         public static FinancialTransaction ToModel(this FinancialTransactionInputDto transactionInputDto, ITimeProvider timeProvider)
         {
             if (transactionInputDto is null)
             {
                 return null;
             }
+
             return new FinancialTransaction(timeProvider)
             {
                 Comment = transactionInputDto.Comment.Trim(),
                 Amount = transactionInputDto.Amount,
-                CategoryId = transactionInputDto.CategoryId
+                CategoryId = transactionInputDto.CategoryId,
             };
         }
     }

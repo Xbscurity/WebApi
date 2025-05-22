@@ -22,8 +22,8 @@ namespace api.Extensions
                 {
                     PageNumber = queryObject.Page,
                     PageSize = queryObject.Size,
-                    TotalItems = totalItems
-                }
+                    TotalItems = totalItems,
+                },
             };
         }
     }

@@ -23,7 +23,9 @@ namespace api.Tests.Unit.Services
             _timeStub.Setup(t => t.UtcNow).Returns(fixedTime);
 
             var strategiesStub = new List<IGroupingReportStrategy> { };
-            _transactionService = new TransactionService(_transactionRepositoryMock.Object, _timeStub.Object, strategiesStub);
+            _transactionService = new TransactionService(
+                _transactionRepositoryMock.Object,
+                _timeStub.Object, strategiesStub);
         }
 
         [Fact]
@@ -50,7 +52,8 @@ namespace api.Tests.Unit.Services
         {
             // Arrange
             const int existingTransactionId = 1;
-            var receivedTransaction = new FinancialTransaction(_timeStub.Object) { Id = existingTransactionId, Comment = "Test" };
+            var receivedTransaction = new FinancialTransaction(_timeStub.Object)
+            { Id = existingTransactionId, Comment = "Test" };
             var inputDto = new FinancialTransactionInputDto { Comment = "Updated" };
 
             _transactionRepositoryMock
@@ -58,7 +61,8 @@ namespace api.Tests.Unit.Services
                 .ReturnsAsync(receivedTransaction);
 
             _transactionRepositoryMock
-                .Setup(r => r.UpdateAsync(It.Is<FinancialTransaction>(t => t.Id == existingTransactionId && t.Comment == "Updated")))
+                .Setup(r => r.UpdateAsync(
+                    It.Is<FinancialTransaction>(t => t.Id == existingTransactionId && t.Comment == "Updated")))
                 .Returns(Task.CompletedTask);
 
             // Act

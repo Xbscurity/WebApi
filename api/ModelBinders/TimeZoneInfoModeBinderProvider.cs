@@ -10,6 +10,7 @@ namespace api.ModelBinders
             {
                 return TimeZoneInfoModelBinder.Instance;
             }
+
             return null;
         }
     }

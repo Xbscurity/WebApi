@@ -16,7 +16,10 @@ namespace api.Services.Transaction
         private readonly ITransactionRepository _transactionRepository;
         private readonly ITimeProvider _timeProvider;
         private readonly Dictionary<GroupingReportStrategyKey, IGroupingReportStrategy> _strategies;
-        public TransactionService(ITransactionRepository transactionsRepository, ITimeProvider timeProvider, IEnumerable<IGroupingReportStrategy> strategies)
+        public TransactionService(
+            ITransactionRepository transactionsRepository,
+            ITimeProvider timeProvider,
+            IEnumerable<IGroupingReportStrategy> strategies)
         {
             _transactionRepository = transactionsRepository;
             _timeProvider = timeProvider;
@@ -37,9 +40,11 @@ namespace api.Services.Transaction
             {
                 return false;
             }
+
             await _transactionRepository.DeleteAsync(existingTransaction);
             return true;
         }
+
         public async Task<PagedData<FinancialTransactionOutputDto>> GetAllAsync(PaginationQueryObject queryObject)
         {
             var query = _transactionRepository.GetQueryableWithCategory();
@@ -50,7 +55,7 @@ namespace api.Services.Transaction
             return new PagedData<FinancialTransactionOutputDto>
             {
                 Data = await result.Query.ToListAsync(),
-                Pagination = result.Pagination
+                Pagination = result.Pagination,
             };
         }
 
@@ -64,13 +69,17 @@ namespace api.Services.Transaction
         {
             var strategy = _strategies[queryObject.Key];
             var query = _transactionRepository.GetQueryableWithCategory();
-            var transactions = await query.ApplyFiltering(queryObject).ApplySorting(queryObject).ToPagedQueryAsync(queryObject);
+            var transactions = await query
+                .ApplyFiltering(queryObject)
+                .ApplySorting(queryObject)
+                .ToPagedQueryAsync(queryObject);
             return new PagedData<GroupedReportDto>
             {
                 Data = await strategy.GroupAsync(transactions.Query),
-                Pagination = transactions.Pagination
+                Pagination = transactions.Pagination,
             };
         }
+
         public async Task<FinancialTransactionOutputDto?> UpdateAsync(int id, FinancialTransactionInputDto transaction)
         {
             var existingTransaction = await _transactionRepository.GetByIdAsync(id);

@@ -13,10 +13,10 @@ namespace api.Filters
                 Error = new Error
                 {
                     Code = "INTERNAL_ERROR",
-                    Message = "Server error occured"
-                }
+                    Message = "Server error occured",
+                },
             })
-            { StatusCode = StatusCodes.Status500InternalServerError }; //(int?)HttpStatusCode.InternalServerError
+            { StatusCode = StatusCodes.Status500InternalServerError }; // (int?)HttpStatusCode.InternalServerError
 
             context.ExceptionHandled = true;
         }

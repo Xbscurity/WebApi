@@ -1,8 +1,8 @@
+using System.Diagnostics;
+using Microsoft.AspNetCore.Mvc.Filters;
+
 namespace api.Filters
 {
-    using Microsoft.AspNetCore.Mvc.Filters;
-    using System.Diagnostics;
-
     public class ExecutionTimeFilter : IActionFilter
     {
         private Stopwatch _stopwatch;

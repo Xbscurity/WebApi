@@ -19,10 +19,9 @@ namespace api.Filters
                 };
             }
         }
+
         public void OnResultExecuted(ResultExecutedContext context)
         {
-
         }
-
     }
 }

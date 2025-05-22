@@ -23,15 +23,17 @@ namespace api.Filters
                     {
                         Code = "VALIDATION_ERROR",
                         Message = "Validation failed",
-                        Data = errors
-                    }
+                        Data = errors,
+                    },
                 };
 
                 context.Result = new BadRequestObjectResult(response);
             }
         }
 
-        public void OnActionExecuted(ActionExecutedContext context) { }
+        public void OnActionExecuted(ActionExecutedContext context)
+        {
+        }
     }
 
 }

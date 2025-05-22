@@ -7,7 +7,10 @@ namespace api.Extensions
     {
         public static IQueryable<Category> ApplySorting(this IQueryable<Category> query, PaginationQueryObject queryObject)
         {
-            if (string.IsNullOrWhiteSpace(queryObject.SortBy)) return query;
+            if (string.IsNullOrWhiteSpace(queryObject.SortBy))
+            {
+                return query;
+            }
 
             queryObject.SortBy = queryObject.SortBy.ToLowerInvariant();
 
@@ -21,7 +24,10 @@ namespace api.Extensions
 
         public static IQueryable<FinancialTransaction> ApplySorting(this IQueryable<FinancialTransaction> query, PaginationQueryObject queryObject)
         {
-            if (string.IsNullOrWhiteSpace(queryObject.SortBy)) return query;
+            if (string.IsNullOrWhiteSpace(queryObject.SortBy))
+            {
+                return query;
+            }
 
             queryObject.SortBy = queryObject.SortBy.ToLowerInvariant();
 
@@ -36,13 +42,18 @@ namespace api.Extensions
                 _ => query
             };
         }
+
         public static IQueryable<FinancialTransaction> ApplyFiltering(this IQueryable<FinancialTransaction> query, ReportQueryObject? dataRange)
         {
             if (dataRange?.StartDate != null)
+            {
                 query = query.Where(t => t.CreatedAt >= dataRange.StartDate.Value);
+            }
 
             if (dataRange?.EndDate != null)
+            {
                 query = query.Where(t => t.CreatedAt <= dataRange.EndDate.Value);
+            }
 
             return query;
         }

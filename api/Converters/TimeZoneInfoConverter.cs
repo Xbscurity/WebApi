@@ -18,6 +18,7 @@ namespace api.Converters
             {
                 return timeZone;
             }
+
             return null;
         }
 

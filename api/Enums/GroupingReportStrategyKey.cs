@@ -3,7 +3,9 @@
     public enum GroupingReportStrategyKey
     {
         ByCategory = 1,
+
         ByDate = 2,
-        ByCategoryAndDate = 3
+
+        ByCategoryAndDate = 3,
     }
 }

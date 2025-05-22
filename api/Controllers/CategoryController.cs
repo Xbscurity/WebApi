@@ -8,18 +8,18 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace api.Controllers
 {
-
-
     [ServiceFilter(typeof(ExecutionTimeFilter))]
     [ApiController]
     [Route("api/categories")]
     public class CategoryController : ControllerBase
     {
         private readonly ICategoryService _categoryService;
+
         public CategoryController(ICategoryService categoriesService)
         {
             _categoryService = categoriesService;
         }
+
         /// <summary>
         /// Get all categories.
         /// </summary>
@@ -29,7 +29,7 @@ namespace api.Controllers
         {
             var validSortFields = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
     {
-        "id", "name"
+        "id", "name",
     };
 
             if (!string.IsNullOrWhiteSpace(queryObject.SortBy) && !validSortFields.Contains(queryObject.SortBy))
@@ -56,8 +56,10 @@ namespace api.Controllers
             {
                 return ApiResponse.NotFound<Category>("Category not found");
             }
+
             return ApiResponse.Success(category);
         }
+
         /// <summary>
         /// Create a new category.
         /// </summary>
@@ -71,6 +73,7 @@ namespace api.Controllers
             var result = await _categoryService.CreateAsync(categoryDto);
             return ApiResponse.Success(result);
         }
+
         /// <summary>
         /// Update an existing category.
         /// </summary>
@@ -87,8 +90,10 @@ namespace api.Controllers
             {
                 return ApiResponse.NotFound<Category>("Category not found");
             }
+
             return ApiResponse.Success(result);
         }
+
         /// <summary>
         /// Delete an existing category.
         /// </summary>
@@ -106,8 +111,10 @@ namespace api.Controllers
             {
                 return ApiResponse.NotFound<bool>("Category not found");
             }
+
             return ApiResponse.Success(true);
         }
+
         [HttpGet("convert")]
         public ApiResponse<TimeZoneRequest> GetTimeZoneInfo([FromQuery] TimeZoneRequest request)
         {

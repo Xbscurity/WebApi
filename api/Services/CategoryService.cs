@@ -25,7 +25,7 @@ namespace api.Services
             return new PagedData<Category>
             {
                 Data = await result.Query.ToListAsync(),
-                Pagination = result.Pagination
+                Pagination = result.Pagination,
             };
         }
 
@@ -38,7 +38,7 @@ namespace api.Services
         {
             Category category = new Category
             {
-                Name = categoryDto.Name!
+                Name = categoryDto.Name!,
             };
             await _categoryRepository.CreateAsync(category);
             return category;
@@ -51,6 +51,7 @@ namespace api.Services
             {
                 return null;
             }
+
             existingCategory.Name = categoryDto.Name!;
             await _categoryRepository.UpdateAsync(existingCategory);
             return existingCategory;
@@ -63,6 +64,7 @@ namespace api.Services
             {
                 return false;
             }
+
             await _categoryRepository.DeleteAsync(category);
             return true;
         }

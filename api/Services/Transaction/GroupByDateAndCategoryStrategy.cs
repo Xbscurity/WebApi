@@ -9,6 +9,7 @@ namespace api.Services.Transaction
     public class GroupByDateAndCategoryStrategy : IGroupingReportStrategy
     {
         public GroupingReportStrategyKey Key => GroupingReportStrategyKey.ByCategoryAndDate;
+
         public async Task<List<GroupedReportDto>> GroupAsync(
            IQueryable<Models.FinancialTransaction> transactions)
         {
@@ -26,7 +27,7 @@ namespace api.Services.Transaction
                     {
                         Year = group.Key.Year,
                         Month = group.Key.Month,
-                        Category = group.Key.Category
+                        Category = group.Key.Category,
                     },
                     Transactions = group.Select(transaction => new FinancialTransactionOutputDto()
                     {
@@ -34,8 +35,8 @@ namespace api.Services.Transaction
                         CategoryName = transaction.Category == null ? "No category" : transaction.Category.Name,
                         Amount = transaction.Amount,
                         Comment = transaction.Comment,
-                        CreatedAt = transaction.CreatedAt
-                    }).ToList()
+                        CreatedAt = transaction.CreatedAt,
+                    }).ToList(),
                 })
                 .ToListAsync();
         }

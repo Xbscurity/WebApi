@@ -14,13 +14,13 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-
 builder.Services.AddControllers(options =>
 {
     options.Filters.Add<ExceptionFilter>();
     options.Filters.Add<ValidationFilter>();
     options.Filters.Add<StatusCodeFilter>();
-    //options.ModelBinderProviders.Insert(0, new TimeZoneInfoModeBinderProvider());
+
+    // options.ModelBinderProviders.Insert(0, new TimeZoneInfoModeBinderProvider());
 });
 builder.Services.Configure<ApiBehaviorOptions>(options =>
 {
@@ -28,9 +28,9 @@ builder.Services.Configure<ApiBehaviorOptions>(options =>
 });
 builder.Services.AddScoped<ExecutionTimeFilter>();
 builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
-builder.Services.AddScoped<api.Repositories.Interfaces.ITransactionRepository, TransactionRepository>();
+builder.Services.AddScoped<ITransactionRepository, TransactionRepository>();
 builder.Services.AddScoped<ICategoryService, CategoryService>();
-builder.Services.AddScoped<api.Services.Interfaces.ITransactionService, TransactionService>();
+builder.Services.AddScoped<ITransactionService, TransactionService>();
 builder.Services.AddScoped<IGroupingReportStrategy, GroupByCategoryStrategy>();
 builder.Services.AddScoped<IGroupingReportStrategy, GroupByDateStrategy>();
 builder.Services.AddScoped<IGroupingReportStrategy, GroupByDateAndCategoryStrategy>();
@@ -40,20 +40,24 @@ builder.Services.AddSwaggerGen(options =>
 {
     var xmlFile = Path.Combine(AppContext.BaseDirectory, "ApiComments.xml");
     options.IncludeXmlComments(xmlFile);
-    //options.OperationFilter<CustomTimeZoneParameterFilter>();
+
+    // options.OperationFilter<CustomTimeZoneParameterFilter>();
 });
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
 {
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"));
 });
-//TypeDescriptor.AddAttributes(typeof(TimeZoneInfo), new TypeConverterAttribute(typeof(TimeZoneInfoConverter)));
+
+// TypeDescriptor.AddAttributes(typeof(TimeZoneInfo), new TypeConverterAttribute(typeof(TimeZoneInfoConverter)));
 var app = builder.Build();
 app.UseHttpsRedirection();
+
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
 app.MapControllers();
 app.Run();

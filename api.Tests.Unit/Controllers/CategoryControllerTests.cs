@@ -5,7 +5,7 @@ using api.Models;
 using api.QueryObjects;
 using api.Services.Interfaces;
 using Moq;
-namespace api.Tests.Controllers
+namespace api.Tests.Unit.Controllers
 {
     public class CategoriesControllerTests
     {
@@ -99,7 +99,7 @@ namespace api.Tests.Controllers
             // Act
             var result = await _controller.Update(existingCategoryId, categoryDto);
 
-            //Assert
+            // Assert
             Assert.Null(result.Error);
             Assert.Equal("Test", result.Data.Name);
         }
@@ -116,39 +116,39 @@ namespace api.Tests.Controllers
             // Act
             var result = await _controller.Update(notExistingCategoryId, categoryDto);
 
-            //Assert
+            // Assert
             Assert.Equal("Category not found", result.Error?.Message);
             Assert.Equal("NOT_FOUND", result.Error?.Code);
         }
         [Fact]
         public async Task Delete_CategoryExists_ReturnsOkwithTrue()
         {
-            //Arrange
+            // Arrange
             const int existingCategoryId = 1;
             _serviceMock
                 .Setup(s => s.DeleteAsync(existingCategoryId))
                 .ReturnsAsync(true);
 
-            //Act
+            // Act
             var result = await _controller.Delete(existingCategoryId);
 
-            //Assert
+            // Assert
             Assert.True(result.Data);
             Assert.Null(result.Error);
         }
         [Fact]
         public async Task Delete_CategoryNotExists_ReturnsNotFound()
         {
-            //Arrange
+            // Arrange
             const int NotExistingCategoryId = 999;
             _serviceMock
                 .Setup(s => s.DeleteAsync(NotExistingCategoryId))
                 .ReturnsAsync(false);
 
-            //Act
+            // Act
             var result = await _controller.Delete(NotExistingCategoryId);
 
-            //Assert
+            // Assert
             Assert.Equal("Category not found", result.Error?.Message);
             Assert.Equal("NOT_FOUND", result.Error?.Code);
         }

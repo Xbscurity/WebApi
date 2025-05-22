@@ -5,7 +5,7 @@ using api.QueryObjects;
 using api.Services.Interfaces;
 using Moq;
 
-namespace api.Tests.Controllers
+namespace api.Tests.Unit.Controllers
 {
     public class TransactionControllerTests
     {

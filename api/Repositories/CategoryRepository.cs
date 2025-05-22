@@ -18,10 +18,12 @@ namespace api.Repositories
         {
             return await _context.Categories.AsNoTracking().ToListAsync();
         }
+
         public IQueryable<Category> GetQueryable()
         {
             return _context.Categories.AsNoTracking();
         }
+
         public async Task<Category?> GetByIdAsync(int id)
         {
             return await _context.Categories.FindAsync(id);

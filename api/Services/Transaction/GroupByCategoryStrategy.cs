@@ -22,7 +22,7 @@ namespace api.Services.Transaction
                 {
                     Key = new ReportKey
                     {
-                        Category = group.Key
+                        Category = group.Key,
                     },
                     Transactions = group.Select(transaction => new FinancialTransactionOutputDto()
                     {
@@ -30,8 +30,8 @@ namespace api.Services.Transaction
                         CategoryName = transaction.Category == null ? "No category" : transaction.Category.Name,
                         Amount = transaction.Amount,
                         Comment = transaction.Comment,
-                        CreatedAt = transaction.CreatedAt
-                    }).ToList()
+                        CreatedAt = transaction.CreatedAt,
+                    }).ToList(),
                 })
                 .ToListAsync();
         }

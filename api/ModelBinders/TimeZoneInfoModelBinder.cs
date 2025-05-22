@@ -5,10 +5,11 @@ namespace api.ModelBinders
     public class TimeZoneInfoModelBinder : IModelBinder
     {
         public static readonly TimeZoneInfoModelBinder Instance = new TimeZoneInfoModelBinder();
+
         private TimeZoneInfoModelBinder()
         {
-
         }
+
         public Task BindModelAsync(ModelBindingContext bindingContext)
         {
             var valueProviderResult = bindingContext.ValueProvider.GetValue(bindingContext.ModelName);
@@ -25,6 +26,7 @@ namespace api.ModelBinders
                     bindingContext.ModelState.AddModelError(bindingContext.ModelName, "Invalid timezone");
                 }
             }
+
             return Task.CompletedTask;
         }
 
