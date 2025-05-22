@@ -23,14 +23,14 @@ namespace api.Services.Transaction
                         Year = group.Key.Year,
                         Month = group.Key.Month
                     },
-                    Transactions = group.Select(transaction => new FinancialTransactionOutputDto
-                    (
-                        transaction.Id,
-                        transaction.Category == null ? "No category" : transaction.Category.Name,
-                        transaction.Amount,
-                        transaction.Comment,
-                        transaction.CreatedAt
-                    )).ToList()
+                    Transactions = group.Select(transaction => new FinancialTransactionOutputDto()
+                    {
+                        Id = transaction.Id,
+                        CategoryName = transaction.Category == null ? "No category" : transaction.Category.Name,
+                        Amount = transaction.Amount,
+                        Comment = transaction.Comment,
+                        CreatedAt = transaction.CreatedAt
+                    }).ToList()
                 })
                 .ToListAsync();
         }

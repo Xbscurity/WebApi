@@ -5,7 +5,6 @@ using api.Models;
 using api.QueryObjects;
 using api.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace api.Controllers
 {
@@ -29,16 +28,19 @@ namespace api.Controllers
         public async Task<ApiResponse<List<Category>>> GetAll([FromQuery] PaginationQueryObject queryObject)
         {
             var validSortFields = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
-              {
-                  "id", "name"
-              };
-            if (!string.IsNullOrWhiteSpace(queryObject.SortBy) && !validSortFields.Contains(queryObject.SortBy.ToLower()))
+    {
+        "id", "name"
+    };
+
+            if (!string.IsNullOrWhiteSpace(queryObject.SortBy) && !validSortFields.Contains(queryObject.SortBy))
             {
                 return ApiResponse.BadRequest<List<Category>>($"SortBy '{queryObject.SortBy}' is not a valid field.");
             }
+
             var categories = await _categoryService.GetAllAsync(queryObject);
-            return ApiResponse.Success(await categories.Query.ToListAsync(), categories.Pagination);
+            return ApiResponse.Success(categories.Data, categories.Pagination);
         }
+
         /// <summary>
         /// Get a specific category by its ID.
         /// </summary>

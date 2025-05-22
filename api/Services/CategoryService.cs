@@ -5,6 +5,7 @@ using api.Models;
 using api.QueryObjects;
 using api.Repositories.Interfaces;
 using api.Services.Interfaces;
+using Microsoft.EntityFrameworkCore;
 
 namespace api.Services
 {
@@ -17,11 +18,15 @@ namespace api.Services
             _categoryRepository = categoriesRepository;
         }
 
-        public async Task<PagedQuery<Category>> GetAllAsync(PaginationQueryObject queryObject)
+        public async Task<PagedData<Category>> GetAllAsync(PaginationQueryObject queryObject)
         {
             var query = _categoryRepository.GetQueryable();
-            var result = query.ApplySorting(queryObject);
-            return await result.ToPagedQueryAsync(queryObject);
+            var result = await query.ApplySorting(queryObject).ToPagedQueryAsync(queryObject);
+            return new PagedData<Category>
+            {
+                Data = await result.Query.ToListAsync(),
+                Pagination = result.Pagination
+            };
         }
 
         public async Task<Category?> GetByIdAsync(int id)
@@ -48,19 +53,18 @@ namespace api.Services
             }
             existingCategory.Name = categoryDto.Name!;
             await _categoryRepository.UpdateAsync(existingCategory);
-
             return existingCategory;
         }
 
         public async Task<bool> DeleteAsync(int id)
         {
             var category = await _categoryRepository.GetByIdAsync(id);
-            if (category != null)
+            if (category is null)
             {
-                await _categoryRepository.DeleteAsync(category);
-                return true;
+                return false;
             }
-            return false;
+            await _categoryRepository.DeleteAsync(category);
+            return true;
         }
     }
 }

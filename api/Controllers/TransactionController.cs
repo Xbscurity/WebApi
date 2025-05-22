@@ -23,9 +23,9 @@ namespace api.Controllers
         /// <param name="dateRange">The date range for filtering the report.</param>
         /// <param name="reportType">
         /// The type of report to generate: 
-        /// 0 - "ByCategory" - Report grouped by category.
-        /// 1 - "ByDate" - Report grouped by date.  
-        /// 2 - "ByCategoryAndDate" - Report grouped by both category and date.
+        /// 1 - "ByCategory" - Report grouped by category.
+        /// 2 - "ByDate" - Report grouped by date.  
+        /// 3 - "ByCategoryAndDate" - Report grouped by both category and date.
         /// </param>
         /// <returns>A list of grouped reports.</returns>
         [HttpGet("report")]
@@ -36,7 +36,7 @@ namespace api.Controllers
               {
                   "id", "category", "amount", "date"
               };
-            if (!string.IsNullOrWhiteSpace(queryObject.SortBy) && !validSortFields.Contains(queryObject.SortBy.ToLower()))
+            if (!string.IsNullOrWhiteSpace(queryObject.SortBy) && !validSortFields.Contains(queryObject.SortBy))
             {
                 return ApiResponse.BadRequest<List<GroupedReportDto>>($"SortBy '{queryObject.SortBy}' is not a valid field.");
             }
@@ -55,7 +55,7 @@ namespace api.Controllers
               {
                   "id", "category", "amount", "date"
               };
-            if (!string.IsNullOrWhiteSpace(queryObject.SortBy) && !validSortFields.Contains(queryObject.SortBy.ToLower()))
+            if (!string.IsNullOrWhiteSpace(queryObject.SortBy) && !validSortFields.Contains(queryObject.SortBy))
             {
                 return ApiResponse.BadRequest<List<FinancialTransactionOutputDto>>($"SortBy '{queryObject.SortBy}' is not a valid field.");
             }

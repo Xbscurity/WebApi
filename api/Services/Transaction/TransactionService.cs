@@ -43,8 +43,10 @@ namespace api.Services.Transaction
         public async Task<PagedData<FinancialTransactionOutputDto>> GetAllAsync(PaginationQueryObject queryObject)
         {
             var query = _transactionRepository.GetQueryableWithCategory();
-            var sortedQuery = query.ApplySorting(queryObject);
-            var result = await sortedQuery.Select(t => t.ToOutputDto()).ToPagedQueryAsync(queryObject);
+            var result = await query
+                .ApplySorting(queryObject)
+                .Select(t => t.ToOutputDto())
+                .ToPagedQueryAsync(queryObject);
             return new PagedData<FinancialTransactionOutputDto>
             {
                 Data = await result.Query.ToListAsync(),

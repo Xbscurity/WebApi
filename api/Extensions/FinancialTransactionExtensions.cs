@@ -12,13 +12,14 @@ namespace api.Extensions
             {
                 return null;
             }
-            return new FinancialTransactionOutputDto(
-                financialTransaction.Id,
-                financialTransaction.Category?.Name,
-                financialTransaction.Amount,
-                financialTransaction.Comment,
-                financialTransaction.CreatedAt
-            );
+            return new FinancialTransactionOutputDto()
+            {
+                Id = financialTransaction.Id,
+                CategoryName = financialTransaction.Category?.Name,
+                Amount = financialTransaction.Amount,
+                Comment = financialTransaction.Comment,
+                CreatedAt = financialTransaction.CreatedAt
+            };
         }
         public static FinancialTransaction ToModel(this FinancialTransactionInputDto transactionInputDto, ITimeProvider timeProvider)
         {

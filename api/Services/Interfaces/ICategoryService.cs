@@ -7,7 +7,7 @@ namespace api.Services.Interfaces
 {
     public interface ICategoryService
     {
-        Task<PagedQuery<Category>> GetAllAsync(PaginationQueryObject queryObject);
+        Task<PagedData<Category>> GetAllAsync(PaginationQueryObject queryObject);
         Task<Category?> GetByIdAsync(int id);
         Task<Category> CreateAsync(CategoryDto category);
         Task<Category?> UpdateAsync(int id, CategoryDto category);

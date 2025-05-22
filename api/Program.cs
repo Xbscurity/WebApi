@@ -28,9 +28,9 @@ builder.Services.Configure<ApiBehaviorOptions>(options =>
 });
 builder.Services.AddScoped<ExecutionTimeFilter>();
 builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
-builder.Services.AddScoped<ITransactionRepository, TransactionRepository>();
+builder.Services.AddScoped<api.Repositories.Interfaces.ITransactionRepository, TransactionRepository>();
 builder.Services.AddScoped<ICategoryService, CategoryService>();
-builder.Services.AddScoped<ITransactionService, TransactionService>();
+builder.Services.AddScoped<api.Services.Interfaces.ITransactionService, TransactionService>();
 builder.Services.AddScoped<IGroupingReportStrategy, GroupByCategoryStrategy>();
 builder.Services.AddScoped<IGroupingReportStrategy, GroupByDateStrategy>();
 builder.Services.AddScoped<IGroupingReportStrategy, GroupByDateAndCategoryStrategy>();
