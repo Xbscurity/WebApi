@@ -1,5 +1,5 @@
-using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc.Filters;
+using System.Diagnostics;
 
 namespace api.Filters
 {

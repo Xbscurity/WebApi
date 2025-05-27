@@ -49,7 +49,7 @@ namespace api.Tests.Unit.Services
 
             _categoryRepositoryMock
                 .Setup(r => r.UpdateAsync(It.Is<Category>(c => c.Id == existingCategoryId && c.Name == "Updated")))
-                .Returns(Task.CompletedTask);
+                .Returns(Task.CompletedTask).Verifiable();
 
             // Act
             var result = await _categoryService.UpdateAsync(existingCategoryId, categoryDto);
@@ -58,9 +58,7 @@ namespace api.Tests.Unit.Services
             Assert.NotNull(result);
             Assert.Equal("Updated", result!.Name);
             Assert.Equal(existingCategoryId, result.Id);
-            _categoryRepositoryMock.Verify(r => r.UpdateAsync(
-             It.Is<Category>(c => c.Id == existingCategoryId && c.Name == "Updated")),
-             Times.Once);
+            _categoryRepositoryMock.Verify();
         }
 
         [Fact]
@@ -92,15 +90,14 @@ namespace api.Tests.Unit.Services
 
             _categoryRepositoryMock
                 .Setup(r => r.DeleteAsync(receivedCategory))
-                .Returns(Task.CompletedTask);
+                .Returns(Task.CompletedTask).Verifiable();
 
             // Act
             var result = await _categoryService.DeleteAsync(existingCategoryId);
 
             // Assert
             Assert.True(result);
-            _categoryRepositoryMock.Verify(r => r.DeleteAsync(receivedCategory),
-             Times.Once);
+            _categoryRepositoryMock.Verify();
         }
 
 

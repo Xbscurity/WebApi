@@ -63,7 +63,7 @@ namespace api.Tests.Unit.Services
             _transactionRepositoryMock
                 .Setup(r => r.UpdateAsync(
                     It.Is<FinancialTransaction>(t => t.Id == existingTransactionId && t.Comment == "Updated")))
-                .Returns(Task.CompletedTask);
+                .Returns(Task.CompletedTask).Verifiable();
 
             // Act
             var result = await _transactionService.UpdateAsync(existingTransactionId, inputDto);
@@ -72,9 +72,7 @@ namespace api.Tests.Unit.Services
             Assert.NotNull(result);
             Assert.Equal("Updated", result!.Comment);
             Assert.Equal(existingTransactionId, result.Id);
-            _transactionRepositoryMock.Verify(r => r.UpdateAsync(
-             It.Is<FinancialTransaction>(t => t.Id == existingTransactionId && t.Comment == "Updated")),
-             Times.Once);
+            _transactionRepositoryMock.Verify();
         }
 
         [Fact]
@@ -107,15 +105,14 @@ namespace api.Tests.Unit.Services
 
             _transactionRepositoryMock
                 .Setup(r => r.DeleteAsync(receivedCategory))
-                .Returns(Task.CompletedTask);
+                .Returns(Task.CompletedTask).Verifiable();
 
             // Act
             var result = await _transactionService.DeleteAsync(existingFinancialTransactionId);
 
             // Assert
             Assert.True(result);
-            _transactionRepositoryMock.Verify(r => r.DeleteAsync(receivedCategory),
-             Times.Once);
+            _transactionRepositoryMock.Verify();
         }
 
 
