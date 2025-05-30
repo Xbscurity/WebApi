@@ -3,6 +3,7 @@ using api.Models;
 using api.Repositories.Interfaces;
 using api.Services;
 using Moq;
+using Xunit.Sdk;
 
 namespace api.Tests.Unit.Services
 {
@@ -99,7 +100,6 @@ namespace api.Tests.Unit.Services
             Assert.True(result);
             _categoryRepositoryMock.Verify();
         }
-
 
     }
 }
