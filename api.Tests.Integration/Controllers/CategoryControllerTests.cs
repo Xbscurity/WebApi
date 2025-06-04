@@ -1,14 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.Http.Json;
+﻿using api.Tests.Integration.Collections.Fixtures;
 using System.Net;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace api.Tests.Integration.Category
 {
-    public class UsersApiTests : IClassFixture<IntegrationTestFixture>
+    [Collection("IntegrationTestCollection")]
+    public class UsersApiTests
     {
         private readonly IntegrationTestFixture _fixture;
         private readonly HttpClient _client;
@@ -20,8 +16,17 @@ namespace api.Tests.Integration.Category
         }
 
         [Fact]
+        public async Task GetById_NonExistingId_ReturnsNotFound()
+        {
+            await _fixture.ResetCheckpointAsync();
+
+            var response = await _client.GetAsync("/api/categories/999999");
+            Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        }
+        [Fact]
         public async Task GetUsers_ReturnsOk()
         {
+            await _fixture.ResetCheckpointAsync();
             // Act
             var response = await _client.GetAsync("/api/categories");
 

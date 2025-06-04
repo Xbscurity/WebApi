@@ -16,6 +16,7 @@ namespace api.Services.Transaction
         private readonly ITransactionRepository _transactionRepository;
         private readonly ITimeProvider _timeProvider;
         private readonly Dictionary<GroupingReportStrategyKey, IGroupingReportStrategy> _strategies;
+
         public TransactionService(
             ITransactionRepository transactionsRepository,
             ITimeProvider timeProvider,
@@ -80,16 +81,17 @@ namespace api.Services.Transaction
             };
         }
 
-        public async Task<FinancialTransactionOutputDto?> UpdateAsync(int id, FinancialTransactionInputDto transaction)
+        public async Task<FinancialTransactionOutputDto?> UpdateAsync(int id, FinancialTransactionInputDto transactionDto)
         {
             var existingTransaction = await _transactionRepository.GetByIdAsync(id);
             if (existingTransaction is null)
             {
                 return null;
             }
-            existingTransaction.CategoryId = transaction.CategoryId;
-            existingTransaction.Amount = transaction.Amount;
-            existingTransaction.Comment = transaction.Comment;
+
+            existingTransaction.CategoryId = transactionDto.CategoryId;
+            existingTransaction.Amount = transactionDto.Amount;
+            existingTransaction.Comment = transactionDto.Comment.Trim();
             await _transactionRepository.UpdateAsync(existingTransaction);
             return existingTransaction.ToOutputDto();
         }

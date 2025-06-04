@@ -18,9 +18,8 @@ namespace api.Services.Transaction
                 {
                     transactions.CreatedAt.Year,
                     transactions.CreatedAt.Month,
-                    Category = transactions.Category == null ? "No category" : transactions.Category.Name,
-                }
-                )
+                    Category = transactions.Category == null ? "No category" : transactions.Category.Name.Trim(),
+                })
                 .Select(group => new GroupedReportDto
                 {
                     Key = new ReportKey

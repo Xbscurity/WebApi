@@ -9,7 +9,7 @@ namespace api.Extensions
         {
             if (string.IsNullOrWhiteSpace(queryObject.SortBy))
             {
-                return query;
+                return query.OrderBy(c => c.Id);
             }
 
             queryObject.SortBy = queryObject.SortBy.ToLowerInvariant();
@@ -18,7 +18,7 @@ namespace api.Extensions
             {
                 "id" => queryObject.IsDescending ? query.OrderByDescending(c => c.Id) : query.OrderBy(c => c.Id),
                 "name" => queryObject.IsDescending ? query.OrderByDescending(c => c.Name) : query.OrderBy(c => c.Name),
-                _ => query
+                _ => query.OrderBy(c => c.Id)
             };
         }
 
@@ -26,7 +26,7 @@ namespace api.Extensions
         {
             if (string.IsNullOrWhiteSpace(queryObject.SortBy))
             {
-                return query;
+                return query.OrderBy(o => o.Id);
             }
 
             queryObject.SortBy = queryObject.SortBy.ToLowerInvariant();
@@ -39,7 +39,7 @@ namespace api.Extensions
                  : query.OrderBy(o => o.Category != null ? o.Category.Name : null),
                 "amount" => queryObject.IsDescending ? query.OrderByDescending(o => o.Amount) : query.OrderBy(o => o.Amount),
                 "date" => queryObject.IsDescending ? query.OrderByDescending(o => o.CreatedAt) : query.OrderBy(o => o.CreatedAt),
-                _ => query
+                _ => query.OrderBy(o => o.Id)
             };
         }
 

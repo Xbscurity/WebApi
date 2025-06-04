@@ -115,15 +115,15 @@ namespace api.Controllers
             return ApiResponse.Success(true);
         }
 
-        [HttpGet("convert")]
-        public ApiResponse<TimeZoneRequest> GetTimeZoneInfo([FromQuery] TimeZoneRequest request)
-        {
-            if (request.TimeZone is null)
-            {
-                return ApiResponse.NotFound<TimeZoneRequest>("Invalid or missing timezone.");
-            }
+        //[HttpGet("convert")]
+        //public ApiResponse<TimeZoneRequest> GetTimeZoneInfo([FromQuery] TimeZoneRequest request)
+        //{
+        //    if (request.TimeZone is null)
+        //    {
+        //        return ApiResponse.NotFound<TimeZoneRequest>("Invalid or missing timezone.");
+        //    }
 
-            return ApiResponse.Success(request);
-        }
+        //    return ApiResponse.Success(request);
+        //}
     }
 }

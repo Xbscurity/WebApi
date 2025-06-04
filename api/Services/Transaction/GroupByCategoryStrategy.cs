@@ -16,8 +16,7 @@ namespace api.Services.Transaction
         {
             return await transactions
                 .GroupBy(t =>
-                    t.Category == null ? "No category" : t.Category.Name
-                )
+                    t.Category == null ? "No category" : t.Category.Name.Trim())
                 .Select(group => new GroupedReportDto
                 {
                     Key = new ReportKey

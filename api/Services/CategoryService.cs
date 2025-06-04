@@ -38,7 +38,7 @@ namespace api.Services
         {
             Category category = new Category
             {
-                Name = categoryDto.Name!,
+                Name = categoryDto.Name!.Trim(),
             };
             await _categoryRepository.CreateAsync(category);
             return category;
@@ -52,7 +52,7 @@ namespace api.Services
                 return null;
             }
 
-            existingCategory.Name = categoryDto.Name!;
+            existingCategory.Name = categoryDto.Name!.Trim();
             await _categoryRepository.UpdateAsync(existingCategory);
             return existingCategory;
         }

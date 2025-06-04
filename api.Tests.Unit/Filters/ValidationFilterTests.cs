@@ -48,8 +48,8 @@ namespace api.Tests.Unit.Filters
             var filter = new ValidationFilter();
             var modelErrors = new Dictionary<string, string[]>
             {
-                { "Name", new[] { "Name is required" } },
-                { "Age", new[] { "Age must be positive" } }
+                { "Name", ["Name is required"] },
+                { "Age", ["Age must be positive"] }
             };
             var context = CreateContext(false, modelErrors);
 
