@@ -1,4 +1,5 @@
 ﻿using api.Data;
+using api.Tests.Integration.TestControllers;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
@@ -21,7 +22,10 @@ namespace api.Tests.Integration.Factories
 
                 services.AddDbContext<ApplicationDbContext>(options =>
                     options.UseNpgsql(ConnectionString));
-                var sp = services.BuildServiceProvider();
+
+                services.AddControllers()
+           .AddApplicationPart(typeof(TestExceptionController).Assembly)
+           .AddControllersAsServices();
             });
 
         }

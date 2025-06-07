@@ -21,7 +21,7 @@ namespace api.Tests.Unit.Services
         {
             // Arrange
             const int notExistingCategoryId = 999;
-            var categoryDto = new CategoryDto { Name = "Anything" };
+            var categoryDto = new CategoryInputDto { Name = "Anything" };
             _categoryRepositoryMock
                 .Setup(r => r.GetByIdAsync(notExistingCategoryId))
                 .ReturnsAsync((Category?)null);
@@ -41,7 +41,7 @@ namespace api.Tests.Unit.Services
             // Arrange
             const int existingCategoryId = 1;
             var receivedCategory = new Category { Id = existingCategoryId, Name = "Test" };
-            var categoryDto = new CategoryDto { Name = "Updated" };
+            var categoryDto = new CategoryInputDto { Name = "Updated" };
 
             _categoryRepositoryMock
                 .Setup(r => r.GetByIdAsync(existingCategoryId))

@@ -34,7 +34,7 @@ namespace api.Services
             return await _categoryRepository.GetByIdAsync(id);
         }
 
-        public async Task<Category> CreateAsync(CategoryDto categoryDto)
+        public async Task<Category> CreateAsync(CategoryInputDto categoryDto)
         {
             Category category = new Category
             {
@@ -44,7 +44,7 @@ namespace api.Services
             return category;
         }
 
-        public async Task<Category?> UpdateAsync(int id, CategoryDto categoryDto)
+        public async Task<Category?> UpdateAsync(int id, CategoryInputDto categoryDto)
         {
             var existingCategory = await _categoryRepository.GetByIdAsync(id);
             if (existingCategory is null)

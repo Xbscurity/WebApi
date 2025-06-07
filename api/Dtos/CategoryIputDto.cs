@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace api.Dtos
 {
-    public record CategoryDto
+    public record CategoryInputDto
     {
         [Required]
         [MinLength(3, ErrorMessage = "Name must be at least 3 characters")]

@@ -90,7 +90,7 @@ namespace api.Tests.Unit.Controllers
         {
             // Arrange
             const int existingCategoryId = 1;
-            var categoryDto = new CategoryDto() { Name = "Test" };
+            var categoryDto = new CategoryInputDto() { Name = "Test" };
             var updatedCategory = new Category() { Id = 1, Name = "Test" };
             _serviceMock
                 .Setup(s => s.UpdateAsync(existingCategoryId, categoryDto))
@@ -107,7 +107,7 @@ namespace api.Tests.Unit.Controllers
         public async Task Update_CategoryNotExists_ReturnsNotFound()
         {
             // Arrange
-            var categoryDto = new CategoryDto { Name = "New Category" };
+            var categoryDto = new CategoryInputDto { Name = "New Category" };
             const int notExistingCategoryId = 999;
             _serviceMock
                 .Setup(s => s.UpdateAsync(notExistingCategoryId, categoryDto))

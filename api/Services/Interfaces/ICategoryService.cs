@@ -11,9 +11,9 @@ namespace api.Services.Interfaces
 
         Task<Category?> GetByIdAsync(int id);
 
-        Task<Category> CreateAsync(CategoryDto category);
+        Task<Category> CreateAsync(CategoryInputDto category);
 
-        Task<Category?> UpdateAsync(int id, CategoryDto category);
+        Task<Category?> UpdateAsync(int id, CategoryInputDto category);
 
         Task<bool> DeleteAsync(int id);
     }

@@ -27,7 +27,7 @@ namespace api.Filters
                     },
                 };
 
-                context.Result = new BadRequestObjectResult(response);
+                context.Result = new UnprocessableEntityObjectResult(response);
             }
         }
 

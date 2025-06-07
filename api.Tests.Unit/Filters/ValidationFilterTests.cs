@@ -57,7 +57,7 @@ namespace api.Tests.Unit.Filters
             filter.OnActionExecuting(context);
 
             // Assert
-            var result = Assert.IsType<BadRequestObjectResult>(context.Result);
+            var result = Assert.IsType<UnprocessableEntityObjectResult>(context.Result);
             var response = Assert.IsType<ApiResponse<object>>(result.Value);
 
             Assert.Equal("VALIDATION_ERROR", response.Error?.Code);

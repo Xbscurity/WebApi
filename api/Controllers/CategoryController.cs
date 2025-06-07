@@ -68,7 +68,7 @@ namespace api.Controllers
         [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(ApiResponse<Category>))]
         [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(ApiResponse<Category>))]
         [HttpPost]
-        public async Task<ApiResponse<Category>> Create([FromBody] CategoryDto categoryDto)
+        public async Task<ApiResponse<Category>> Create([FromBody] CategoryInputDto categoryDto)
         {
             var result = await _categoryService.CreateAsync(categoryDto);
             return ApiResponse.Success(result);
@@ -83,7 +83,7 @@ namespace api.Controllers
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(ApiResponse<Category>))]
         [HttpPut("{id:int}")]
-        public async Task<ApiResponse<Category>> Update([FromRoute] int id, [FromBody] CategoryDto categoryDto)
+        public async Task<ApiResponse<Category>> Update([FromRoute] int id, [FromBody] CategoryInputDto categoryDto)
         {
             var result = await _categoryService.UpdateAsync(id, categoryDto);
             if (result is null)
@@ -105,7 +105,6 @@ namespace api.Controllers
 
         public async Task<ApiResponse<bool>> Delete([FromRoute] int id)
         {
-
             var result = await _categoryService.DeleteAsync(id);
             if (result is false)
             {

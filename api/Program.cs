@@ -35,7 +35,6 @@ builder.Services.AddScoped<IGroupingReportStrategy, GroupByCategoryStrategy>();
 builder.Services.AddScoped<IGroupingReportStrategy, GroupByDateStrategy>();
 builder.Services.AddScoped<IGroupingReportStrategy, GroupByDateAndCategoryStrategy>();
 builder.Services.AddSingleton<ITimeProvider, UtcTimeProvider>();
-builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {
     var xmlFile = Path.Combine(AppContext.BaseDirectory, "ApiComments.xml");
