@@ -1,13 +1,18 @@
 using api.Models;
+using api.Services.Interfaces;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace api.Data
 {
-    public class ApplicationDbContext : DbContext
+    public class ApplicationDbContext : IdentityDbContext<AppUser>
     {
-        public ApplicationDbContext(DbContextOptions options)
+        private readonly ICurrentUserService _currentUser;
+
+        public ApplicationDbContext(DbContextOptions options, ICurrentUserService currentUser)
             : base(options)
         {
+            _currentUser = currentUser;
         }
 
         public DbSet<Category> Categories { get; set; }
@@ -16,12 +21,7 @@ namespace api.Data
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<Category>(entity =>
-            {
-                entity.HasKey(e => e.Id);
-                entity.Property(e => e.Id)
-                      .ValueGeneratedOnAdd();
-            });
+            base.OnModelCreating(modelBuilder);
 
             modelBuilder.Entity<FinancialTransaction>()
                 .HasOne(transaction => transaction.Category)
@@ -37,8 +37,9 @@ namespace api.Data
            .Property(t => t.CreatedAt)
            .HasConversion(
                source => source.ToUniversalTime(),
-               stored => stored.ToLocalTime()
-           );
+               stored => stored.ToLocalTime());
+
+            //modelBuilder.Entity<Category>().HasQueryFilter(c => c.IsActive);
         }
     }
 }

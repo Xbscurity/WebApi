@@ -18,6 +18,9 @@ namespace api.Models
 
         public DateTimeOffset CreatedAt { get; set; }
 
+        public string AppUserId { get; set; }
+
+        public AppUser AppUser { get; set; }
 
         public FinancialTransaction(ITimeProvider timeProvider)
         {

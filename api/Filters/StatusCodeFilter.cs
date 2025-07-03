@@ -15,6 +15,8 @@ namespace api.Filters
                     "NOT_FOUND" => StatusCodes.Status404NotFound, // (int)HttpStatusCode.NotFound,
                     "VALIDATION_ERROR" => StatusCodes.Status422UnprocessableEntity,
                     "BAD_REQUEST" => StatusCodes.Status400BadRequest,
+                    "UNAUTHORIZED" => StatusCodes.Status401Unauthorized,
+                    "FORBIDDEN" => StatusCodes.Status403Forbidden,
                     _ => StatusCodes.Status200OK // (int)HttpStatusCode.OK
                 };
             }

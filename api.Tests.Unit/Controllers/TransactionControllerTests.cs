@@ -10,12 +10,12 @@ namespace api.Tests.Unit.Controllers
     public class TransactionControllerTests
     {
         private readonly Mock<ITransactionService> _serviceMock;
-        private readonly TransactionController _controller;
+        private readonly UserTransactionController _controller;
 
         public TransactionControllerTests()
         {
             _serviceMock = new Mock<ITransactionService>();
-            _controller = new TransactionController(_serviceMock.Object);
+            _controller = new UserTransactionController(_serviceMock.Object);
         }
 
         [Fact]
@@ -47,7 +47,7 @@ namespace api.Tests.Unit.Controllers
             };
             _serviceMock
                 .Setup(s => s.GetAllAsync(paginationQueryObject))
-                .ReturnsAsync(new PagedData<FinancialTransactionOutputDto>());
+                .ReturnsAsync(new PagedData<BaseFinancialTransactionOutputDto>());
 
             // Act
             var result = await _controller.GetAll(paginationQueryObject);
@@ -60,7 +60,7 @@ namespace api.Tests.Unit.Controllers
         {
             // Arrange
             int existingFinancialTransactionId = 1;
-            var existingFinancialTransaction = new FinancialTransactionOutputDto()
+            var existingFinancialTransaction = new BaseFinancialTransactionOutputDto()
             { Id = existingFinancialTransactionId };
             _serviceMock
                 .Setup(s => s.GetByIdAsync(existingFinancialTransactionId))
@@ -80,7 +80,7 @@ namespace api.Tests.Unit.Controllers
             int notExistingFinancialTransactionId = 999;
             _serviceMock
                 .Setup(s => s.GetByIdAsync(notExistingFinancialTransactionId))
-                .ReturnsAsync((FinancialTransactionOutputDto?)null);
+                .ReturnsAsync((BaseFinancialTransactionOutputDto?)null);
 
             // Act
             var result = await _controller.GetById(notExistingFinancialTransactionId);
@@ -95,9 +95,9 @@ namespace api.Tests.Unit.Controllers
         {
             // Arrange
             const int existingFinancialTransactionId = 1;
-            var financialTransactionInputDto = new FinancialTransactionInputDto
+            var financialTransactionInputDto = new BaseFinancialTransactionInputDto
             { Comment = "test" };
-            var updatedFinancialTransactionOutputDto = new FinancialTransactionOutputDto()
+            var updatedFinancialTransactionOutputDto = new BaseFinancialTransactionOutputDto()
             {
                 Id = existingFinancialTransactionId,
                 Comment = financialTransactionInputDto.Comment
@@ -118,11 +118,11 @@ namespace api.Tests.Unit.Controllers
         {
             // Arrange
             const int notExistingFinancialTransactionId = 999;
-            var financialTransactionInputDto = new FinancialTransactionInputDto
+            var financialTransactionInputDto = new BaseFinancialTransactionInputDto
             { Comment = "test" };
             _serviceMock
                 .Setup(t => t.UpdateAsync(notExistingFinancialTransactionId, financialTransactionInputDto))
-                .ReturnsAsync((FinancialTransactionOutputDto?)null);
+                .ReturnsAsync((BaseFinancialTransactionOutputDto?)null);
 
             // Act
             var result = await _controller.Update(notExistingFinancialTransactionId, financialTransactionInputDto);
@@ -193,7 +193,7 @@ namespace api.Tests.Unit.Controllers
             };
             _serviceMock
                 .Setup(s => s.GetAllAsync(reportQueryObject))
-                .ReturnsAsync(new PagedData<FinancialTransactionOutputDto>());
+                .ReturnsAsync(new PagedData<BaseFinancialTransactionOutputDto>());
 
             // Act
             var result = await _controller.GetAll(reportQueryObject);

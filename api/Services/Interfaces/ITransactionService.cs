@@ -2,21 +2,26 @@
 using api.Dtos.FinancialTransactions;
 using api.Helpers;
 using api.QueryObjects;
+using System.Security.Claims;
 
 namespace api.Services.Interfaces
 {
     public interface ITransactionService
     {
-        Task<PagedData<FinancialTransactionOutputDto>> GetAllAsync(PaginationQueryObject queryObject);
+        Task<PagedData<BaseFinancialTransactionOutputDto>> GetAllForUserAsync(ClaimsPrincipal user, PaginationQueryObject queryObject);
 
-        Task<FinancialTransactionOutputDto?> GetByIdAsync(int id);
+        Task<PagedData<BaseFinancialTransactionOutputDto>> GetAllForAdminAsync(ClaimsPrincipal user, PaginationQueryObject queryObject, string appUserId);
 
-        Task<FinancialTransactionOutputDto> CreateAsync(FinancialTransactionInputDto transaction);
+        Task<BaseFinancialTransactionOutputDto?> GetByIdAsync(ClaimsPrincipal user, int id);
 
-        Task<FinancialTransactionOutputDto?> UpdateAsync(int id, FinancialTransactionInputDto transaction);
+        Task<BaseFinancialTransactionOutputDto> CreateForAdminAsync(ClaimsPrincipal user, AdminFinancialTransactionInputDto transaction);
 
-        Task<bool> DeleteAsync(int id);
+        Task<BaseFinancialTransactionOutputDto> CreateForUserAsync(ClaimsPrincipal user, BaseFinancialTransactionInputDto transaction);
 
-        Task<PagedData<GroupedReportDto>> GetReportAsync(ReportQueryObject? queryObject);
+        Task<BaseFinancialTransactionOutputDto?> UpdateAsync(ClaimsPrincipal user, int id, BaseFinancialTransactionInputDto transaction);
+
+        Task<bool> DeleteAsync(ClaimsPrincipal user, int id);
+
+        Task<PagedData<GroupedReportDto>> GetReportAsync(ClaimsPrincipal user, ReportQueryObject? queryObject);
     }
 }

@@ -36,7 +36,7 @@ namespace api.Tests.Unit.Services
         {
             // Arrange
             const int notExistingCategoryId = 999;
-            var inputDto = new FinancialTransactionInputDto { Comment = "Anything" };
+            var inputDto = new BaseFinancialTransactionInputDto { Comment = "Anything" };
             _transactionRepositoryMock
                 .Setup(r => r.GetByIdAsync(notExistingCategoryId))
                 .ReturnsAsync((FinancialTransaction?)null);
@@ -57,7 +57,7 @@ namespace api.Tests.Unit.Services
             const int existingTransactionId = 1;
             var receivedTransaction = new FinancialTransaction(_timeStub.Object)
             { Id = existingTransactionId, Comment = "Test" };
-            var inputDto = new FinancialTransactionInputDto { Comment = "Updated" };
+            var inputDto = new BaseFinancialTransactionInputDto { Comment = "Updated" };
 
             _transactionRepositoryMock
                 .Setup(r => r.GetByIdAsync(existingTransactionId))

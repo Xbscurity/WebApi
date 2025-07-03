@@ -25,7 +25,7 @@ namespace api.Repositories
 
         public async Task<FinancialTransaction?> GetByIdAsync(int id)
         {
-            return await _context.Transactions.FindAsync(id);
+            return await _context.Transactions.Include(t => t.Category).FirstOrDefaultAsync();
         }
 
         public async Task CreateAsync(FinancialTransaction transaction)

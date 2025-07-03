@@ -10,11 +10,11 @@ namespace api.Tests.Unit.Controllers
     public class CategoriesControllerTests
     {
         private readonly Mock<ICategoryService> _serviceMock;
-        private readonly CategoryController _controller;
+        private readonly UserCategoryController _controller;
         public CategoriesControllerTests()
         {
             _serviceMock = new Mock<ICategoryService>();
-            _controller = new CategoryController(_serviceMock.Object);
+            _controller = new UserCategoryController(_serviceMock.Object);
         }
         [Fact]
         public async Task GetAll_InvalidSortByField_ReturnsBadRequest()

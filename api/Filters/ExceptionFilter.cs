@@ -1,11 +1,19 @@
 using api.Helpers;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
+using System;
 
 namespace api.Filters
 {
     public class ExceptionFilter : IExceptionFilter
     {
+        private readonly IWebHostEnvironment _env;
+
+        public ExceptionFilter(IWebHostEnvironment env)
+        {
+            _env = env;
+        }
+
         public void OnException(ExceptionContext context)
         {
             context.Result = new ObjectResult(new ApiResponse
@@ -14,6 +22,7 @@ namespace api.Filters
                 {
                     Code = "INTERNAL_ERROR",
                     Message = "Server error occured",
+                    Data = _env.IsDevelopment() ? context.Exception.ToString() : string.Empty,
                 },
             })
             { StatusCode = StatusCodes.Status500InternalServerError }; // (int?)HttpStatusCode.InternalServerError
