@@ -1,6 +1,5 @@
 ﻿using api.Extensions;
 using api.Services.Interfaces;
-using System.Security.Claims;
 
 namespace api.Services
 {

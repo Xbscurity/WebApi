@@ -1,6 +1,4 @@
-﻿using api.Models;
-
-namespace api.Dtos.Category
+﻿namespace api.Dtos.Category
 {
     public class BaseCategoryOutputDto
     {

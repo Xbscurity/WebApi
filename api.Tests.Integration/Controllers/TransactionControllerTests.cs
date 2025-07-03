@@ -1,5 +1,4 @@
-﻿using api.Dtos;
-using api.Dtos.FinancialTransaction;
+﻿using api.Dtos.FinancialTransaction;
 using api.Dtos.FinancialTransactions;
 using api.Helpers;
 using api.Tests.Integration.Collections.Fixtures;

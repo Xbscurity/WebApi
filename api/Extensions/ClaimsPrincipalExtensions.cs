@@ -1,6 +1,4 @@
-﻿using api.Models;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
+﻿using System.Security.Claims;
 
 namespace api.Extensions
 {

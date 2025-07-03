@@ -55,12 +55,12 @@ namespace api.Controllers
         {
             var query = await _userManager.Users
                 .Select(u => new UserDto
-            {
-                Id = u.Id,
-                Email = u.Email,
-                UserName = u.UserName,
-                IsBanned = u.IsBanned,
-            })
+                {
+                    Id = u.Id,
+                    Email = u.Email,
+                    UserName = u.UserName,
+                    IsBanned = u.IsBanned,
+                })
                 .ToPagedQueryAsync(queryObject);
 
             var result = new PagedData<UserDto>

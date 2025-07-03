@@ -1,9 +1,7 @@
 using api.Constants;
 using api.Dtos.FinancialTransaction;
 using api.Dtos.FinancialTransactions;
-using api.Extensions;
 using api.Helpers;
-using api.Models;
 using api.QueryObjects;
 using api.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;

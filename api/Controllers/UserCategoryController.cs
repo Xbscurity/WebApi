@@ -3,7 +3,6 @@ using api.Dtos.Category;
 using api.Extensions;
 using api.Filters;
 using api.Helpers;
-using api.Models;
 using api.QueryObjects;
 using api.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
@@ -47,7 +46,7 @@ namespace api.Controllers
             return ApiResponse.Success(result);
         }
 
-        
+
 
         //[HttpGet("convert")]
         //public ApiResponse<TimeZoneRequest> GetTimeZoneInfo([FromQuery] TimeZoneRequest request)

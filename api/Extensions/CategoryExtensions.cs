@@ -1,7 +1,5 @@
 ﻿using api.Dtos.Category;
-using api.Dtos.FinancialTransactions;
 using api.Models;
-using api.Providers.Interfaces;
 
 namespace api.Extensions
 {

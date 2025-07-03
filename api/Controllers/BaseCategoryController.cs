@@ -1,11 +1,6 @@
 ﻿using api.Dtos.Category;
-using api.Filters;
 using api.Helpers;
-using api.Models;
-using api.QueryObjects;
 using api.Services.Interfaces;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace api.Controllers

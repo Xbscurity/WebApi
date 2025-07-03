@@ -1,13 +1,11 @@
-﻿using api.Dtos.Account;
+﻿using api.Constants;
+using api.Dtos.Account;
 using api.Helpers;
 using api.Models;
+using api.Services.Interfaces;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using api.Constants;
-using api.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.AspNetCore.Authorization;
-using api.Dtos.UserManagement;
 
 namespace api.Controllers
 {
@@ -43,16 +41,16 @@ namespace api.Controllers
             var roleResult = await _userManager.AddToRoleAsync(appUser, Roles.User);
 
             if (!roleResult.Succeeded)
-                {
-                    throw new Exception(roleResult.Errors.Aggregate(string.Empty, (acc, e) => acc + $"{e.Code} = {e.Description}; "));
-                }
+            {
+                throw new Exception(roleResult.Errors.Aggregate(string.Empty, (acc, e) => acc + $"{e.Code} = {e.Description}; "));
+            }
 
             var userDto = new NewUserDto
-                    {
-                        UserName = registerDto.UserName,
-                        Email = registerDto.Email,
-                        Token = await _tokenService.CreateToken(appUser),
-                    };
+            {
+                UserName = registerDto.UserName,
+                Email = registerDto.Email,
+                Token = await _tokenService.CreateToken(appUser),
+            };
             return ApiResponse.Success(userDto);
         }
 

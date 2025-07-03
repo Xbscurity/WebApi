@@ -1,5 +1,4 @@
 ﻿using api.Models;
-using System.Runtime.CompilerServices;
 
 namespace api.Services.Interfaces
 {

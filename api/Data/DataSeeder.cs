@@ -1,6 +1,5 @@
 ﻿using api.Models;
 using Microsoft.AspNetCore.Identity;
-using System;
 
 namespace api.Data
 {

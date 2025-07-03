@@ -1,5 +1,4 @@
-﻿using api.Dtos;
-using api.Helpers;
+﻿using api.Helpers;
 using api.Models;
 using api.Tests.Integration.Collections.Fixtures;
 using Microsoft.AspNetCore.Http;

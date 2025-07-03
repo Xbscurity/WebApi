@@ -1,8 +1,6 @@
 ﻿using api.Dtos.FinancialTransactions;
 using api.Helpers;
 using api.Services.Interfaces;
-using api.Services.Transaction;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace api.Controllers

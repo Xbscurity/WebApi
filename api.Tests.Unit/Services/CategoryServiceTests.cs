@@ -1,5 +1,4 @@
-﻿using api.Dtos;
-using api.Models;
+﻿using api.Models;
 using api.Repositories.Interfaces;
 using api.Services;
 using Moq;

@@ -1,7 +1,6 @@
 ﻿using api.Helpers;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authorization.Policy;
-using System.Text.Json;
 
 namespace api.Middlewares
 {
@@ -18,20 +17,14 @@ namespace api.Middlewares
             if (authorizeResult.Forbidden)
             {
                 context.Response.StatusCode = StatusCodes.Status403Forbidden;
-                context.Response.ContentType = "application/json";
-
-                var response = ApiResponse.Forbidden<object>();
-                await context.Response.WriteAsync(JsonSerializer.Serialize(response));
+                await context.Response.WriteAsJsonAsync(ApiResponse.Forbidden<object>());
                 return;
             }
 
             if (authorizeResult.Challenged)
             {
                 context.Response.StatusCode = StatusCodes.Status401Unauthorized;
-                context.Response.ContentType = "application/json";
-
-                var response = ApiResponse.Unauthorized<object>();
-                await context.Response.WriteAsync(JsonSerializer.Serialize(response));
+                await context.Response.WriteAsJsonAsync(ApiResponse.Unauthorized<object>());
                 return;
             }
 
