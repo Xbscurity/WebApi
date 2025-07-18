@@ -74,7 +74,7 @@ namespace api.Services.Transaction
             return true;
         }
 
-        public async Task<PagedData<BaseFinancialTransactionOutputDto>> GetAllForAdminAsync(ClaimsPrincipal user, PaginationQueryObject queryObject, string? appUserId)
+        public async Task<PagedData<BaseFinancialTransactionOutputDto>> GetAllForAdminAsync(PaginationQueryObject queryObject, string? appUserId = null)
         {
             var query = _transactionRepository.GetQueryableWithCategory();
             var sortedTransactionDtos = query
@@ -84,6 +84,7 @@ namespace api.Services.Transaction
             {
                 sortedTransactionDtos = sortedTransactionDtos.Where(t => t.AppUserId == appUserId);
             }
+
             var result = await sortedTransactionDtos.ToPagedQueryAsync(queryObject);
             return new PagedData<BaseFinancialTransactionOutputDto>
             {

@@ -1,3 +1,4 @@
+using api.Constants;
 using api.Helpers;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
@@ -12,11 +13,11 @@ namespace api.Filters
             {
                 context.HttpContext.Response.StatusCode = response.Error?.Code switch
                 {
-                    "NOT_FOUND" => StatusCodes.Status404NotFound, // (int)HttpStatusCode.NotFound,
-                    "VALIDATION_ERROR" => StatusCodes.Status422UnprocessableEntity,
-                    "BAD_REQUEST" => StatusCodes.Status400BadRequest,
-                    "UNAUTHORIZED" => StatusCodes.Status401Unauthorized,
-                    "FORBIDDEN" => StatusCodes.Status403Forbidden,
+                    ErrorCodes.NotFound => StatusCodes.Status404NotFound, // (int)HttpStatusCode.NotFound,
+                    ErrorCodes.ValidationError => StatusCodes.Status422UnprocessableEntity,
+                    ErrorCodes.BadRequest => StatusCodes.Status400BadRequest,
+                    ErrorCodes.Unauthorized => StatusCodes.Status401Unauthorized,
+                    ErrorCodes.Forbidden => StatusCodes.Status403Forbidden,
                     _ => StatusCodes.Status200OK // (int)HttpStatusCode.OK
                 };
             }

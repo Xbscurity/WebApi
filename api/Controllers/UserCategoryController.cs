@@ -7,6 +7,7 @@ using api.QueryObjects;
 using api.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Serilog;
 
 namespace api.Controllers
 {
@@ -24,6 +25,7 @@ namespace api.Controllers
         [HttpGet]
         public virtual async Task<ApiResponse<List<BaseCategoryOutputDto>>> GetAll([FromQuery] PaginationQueryObject queryObject, [FromQuery] bool includeInactive = false)
         {
+            Log.Warning("On Category controller Get All method");
             var validSortFields = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
     {
         "id", "name",

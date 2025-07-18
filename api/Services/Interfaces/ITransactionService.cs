@@ -10,7 +10,7 @@ namespace api.Services.Interfaces
     {
         Task<PagedData<BaseFinancialTransactionOutputDto>> GetAllForUserAsync(ClaimsPrincipal user, PaginationQueryObject queryObject);
 
-        Task<PagedData<BaseFinancialTransactionOutputDto>> GetAllForAdminAsync(ClaimsPrincipal user, PaginationQueryObject queryObject, string appUserId);
+        Task<PagedData<BaseFinancialTransactionOutputDto>> GetAllForAdminAsync(PaginationQueryObject queryObject, string? appUserId = null);
 
         Task<BaseFinancialTransactionOutputDto?> GetByIdAsync(ClaimsPrincipal user, int id);
 

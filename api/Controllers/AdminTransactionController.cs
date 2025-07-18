@@ -33,7 +33,7 @@ namespace api.Controllers
                 return ApiResponse.BadRequest<List<BaseFinancialTransactionOutputDto>>($"SortBy '{queryObject.SortBy}' is not a valid field.");
             }
 
-            var transactions = await _transactionService.GetAllForUserAsync(User, queryObject);
+            var transactions = await _transactionService.GetAllForAdminAsync(queryObject);
             return ApiResponse.Success(transactions.Data, transactions.Pagination);
         }
 

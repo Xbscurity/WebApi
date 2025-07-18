@@ -1,4 +1,6 @@
 
+using api.Constants;
+
 namespace api.Helpers
 {
     public class ApiResponse
@@ -19,7 +21,7 @@ namespace api.Helpers
                 {
                     Message = message,
                     Data = errorData,
-                    Code = "NOT_FOUND",
+                    Code = ErrorCodes.NotFound,
                 },
             };
 
@@ -30,7 +32,7 @@ namespace api.Helpers
                 {
                     Message = message,
                     Data = errorData,
-                    Code = "BAD_REQUEST",
+                    Code = ErrorCodes.BadRequest,
                 },
             };
 
@@ -39,9 +41,9 @@ namespace api.Helpers
     {
         Error = new Error
         {
-            Code = "UNAUTHORIZED",
             Message = message,
             Data = errorData,
+            Code = ErrorCodes.Unauthorized,
         },
     };
 
@@ -50,9 +52,9 @@ namespace api.Helpers
     {
         Error = new Error
         {
-            Code = "FORBIDDEN",
             Message = message,
             Data = errorData,
+            Code = ErrorCodes.Forbidden,
         },
     };
     }
