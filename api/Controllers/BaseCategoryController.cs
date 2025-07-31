@@ -1,6 +1,6 @@
 ﻿using api.Dtos.Category;
 using api.Helpers;
-using api.Services.Interfaces;
+using api.Services.Categories;
 using Microsoft.AspNetCore.Mvc;
 
 namespace api.Controllers

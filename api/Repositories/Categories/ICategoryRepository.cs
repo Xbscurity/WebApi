@@ -1,6 +1,6 @@
 ﻿using api.Models;
 
-namespace api.Repositories.Interfaces
+namespace api.Repositories.Categories
 {
     public interface ICategoryRepository
     {

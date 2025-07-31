@@ -1,6 +1,6 @@
 ﻿using api.Models;
-using api.Repositories.Interfaces;
-using api.Services;
+using api.Repositories.Categories;
+using api.Services.Categories;
 using Moq;
 
 namespace api.Tests.Unit.Services

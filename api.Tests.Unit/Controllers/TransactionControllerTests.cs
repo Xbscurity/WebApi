@@ -2,7 +2,7 @@
 using api.Dtos.FinancialTransactions;
 using api.Helpers;
 using api.QueryObjects;
-using api.Services.Interfaces;
+using api.Services.Transaction;
 using Moq;
 
 namespace api.Tests.Unit.Controllers

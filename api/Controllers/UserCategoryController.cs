@@ -4,7 +4,7 @@ using api.Extensions;
 using api.Filters;
 using api.Helpers;
 using api.QueryObjects;
-using api.Services.Interfaces;
+using api.Services.Categories;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Serilog;

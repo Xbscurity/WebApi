@@ -2,7 +2,7 @@
 using api.Helpers;
 using api.Models;
 using api.QueryObjects;
-using api.Services.Interfaces;
+using api.Services.Categories;
 using Moq;
 namespace api.Tests.Unit.Controllers
 {

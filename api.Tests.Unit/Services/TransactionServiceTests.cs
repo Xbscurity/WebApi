@@ -4,7 +4,6 @@ using api.Models;
 using api.Providers.Interfaces;
 using api.QueryObjects;
 using api.Repositories.Interfaces;
-using api.Services.Interfaces;
 using api.Services.Transaction;
 using MockQueryable.Moq;
 using Moq;

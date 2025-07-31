@@ -7,8 +7,8 @@ using api.Helpers;
 using api.Models;
 using api.Providers.Interfaces;
 using api.QueryObjects;
+using api.Repositories.Categories;
 using api.Repositories.Interfaces;
-using api.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 

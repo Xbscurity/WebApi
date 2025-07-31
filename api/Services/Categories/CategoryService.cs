@@ -4,12 +4,11 @@ using api.Extensions;
 using api.Helpers;
 using api.Models;
 using api.QueryObjects;
-using api.Repositories.Interfaces;
-using api.Services.Interfaces;
+using api.Repositories.Categories;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 
-namespace api.Services
+namespace api.Services.Categories
 {
     public class CategoryService : ICategoryService
     {
@@ -26,9 +25,9 @@ namespace api.Services
             var userId = user.GetUserId();
             var query = _categoryRepository.GetQueryable()
         .Where(c =>
-            (c.AppUserId == userId && (includeInactive || c.IsActive))
+            c.AppUserId == userId && (includeInactive || c.IsActive)
             ||
-            (c.AppUserId == null && c.IsActive));
+            c.AppUserId == null && c.IsActive);
 
             var result = await query.ApplySorting(queryObject).Select(c => c.ToOutputDto()).ToPagedQueryAsync(queryObject);
             return new PagedData<BaseCategoryOutputDto>
@@ -38,7 +37,7 @@ namespace api.Services
             };
         }
 
-        public async Task<PagedData<Category>> GetAllForAdminAsync(PaginationQueryObject queryObject, string? userId)
+        public async Task<PagedData<Models.Category>> GetAllForAdminAsync(PaginationQueryObject queryObject, string? userId)
         {
             var query = _categoryRepository.GetQueryable();
             if (userId != null)
@@ -47,7 +46,7 @@ namespace api.Services
             }
 
             var result = await query.ApplySorting(queryObject).IgnoreQueryFilters().ToPagedQueryAsync(queryObject);
-            return new PagedData<Category>
+            return new PagedData<Models.Category>
             {
                 Data = await result.Query.ToListAsync(),
                 Pagination = result.Pagination,

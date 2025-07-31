@@ -19,6 +19,8 @@ namespace api.Data
 
         public DbSet<FinancialTransaction> Transactions { get; set; }
 
+        public DbSet<RefreshToken> RefreshTokens { get; set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -39,7 +41,9 @@ namespace api.Data
                source => source.ToUniversalTime(),
                stored => stored.ToLocalTime());
 
-            //modelBuilder.Entity<Category>().HasQueryFilter(c => c.IsActive);
+            modelBuilder.Entity<RefreshToken>()
+     .HasIndex(rt => rt.TokenHash)
+     .IsUnique();
         }
     }
 }

@@ -4,7 +4,7 @@ using api.Helpers;
 using api.QueryObjects;
 using System.Security.Claims;
 
-namespace api.Services.Interfaces
+namespace api.Services.Transaction
 {
     public interface ITransactionService
     {

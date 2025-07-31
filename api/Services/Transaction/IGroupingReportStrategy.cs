@@ -2,7 +2,7 @@
 using api.Enums;
 using api.Models;
 
-namespace api.Services.Interfaces
+namespace api.Services.Transaction
 {
     public interface IGroupingReportStrategy
     {

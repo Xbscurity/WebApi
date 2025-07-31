@@ -4,7 +4,7 @@ using api.Models;
 using api.QueryObjects;
 using System.Security.Claims;
 
-namespace api.Services.Interfaces
+namespace api.Services.Categories
 {
     public interface ICategoryService
     {

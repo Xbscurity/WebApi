@@ -1,7 +1,6 @@
 ﻿using api.Dtos.FinancialTransaction;
 using api.Dtos.FinancialTransactions;
 using api.Enums;
-using api.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
 namespace api.Services.Transaction

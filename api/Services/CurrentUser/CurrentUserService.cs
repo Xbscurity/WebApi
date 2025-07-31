@@ -1,7 +1,7 @@
 ﻿using api.Extensions;
 using api.Services.Interfaces;
 
-namespace api.Services
+namespace api.Services.CurrentUser
 {
     public class CurrentUserService : ICurrentUserService
     {
