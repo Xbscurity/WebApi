@@ -8,6 +8,7 @@ using api.Providers;
 using api.Providers.Interfaces;
 using api.Repositories.Categories;
 using api.Repositories.Interfaces;
+using api.Services.Background;
 using api.Services.Categories;
 using api.Services.CurrentUser;
 using api.Services.Interfaces;
@@ -51,10 +52,15 @@ builder.Services.AddScoped<IGroupingReportStrategy, GroupByCategoryStrategy>();
 builder.Services.AddScoped<IGroupingReportStrategy, GroupByDateStrategy>();
 builder.Services.AddScoped<IGroupingReportStrategy, GroupByDateAndCategoryStrategy>();
 builder.Services.AddScoped<ITokenService, TokenService>();
+
 builder.Services.AddHttpContextAccessor();
+
 builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
 builder.Services.AddSingleton<IAuthorizationMiddlewareResultHandler, CustomAuthorizationMiddlewareResultHandler>();
 builder.Services.AddSingleton<ITimeProvider, UtcTimeProvider>();
+
+builder.Services.AddHostedService<RefreshTokenCleanupService>();
+
 builder.Services.AddSwaggerGen(options =>
 {
     var xmlFile = Path.Combine(AppContext.BaseDirectory, "ApiComments.xml");

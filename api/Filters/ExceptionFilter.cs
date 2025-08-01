@@ -24,7 +24,7 @@ namespace api.Filters
                     Data = _env.IsDevelopment() ? context.Exception.ToString() : string.Empty,
                 },
             })
-            { StatusCode = StatusCodes.Status500InternalServerError }; // (int?)HttpStatusCode.InternalServerError
+            { StatusCode = StatusCodes.Status500InternalServerError };
 
             context.ExceptionHandled = true;
         }
