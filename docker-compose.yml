@@ -44,6 +44,18 @@ services:
       - postgres
     volumes:
     - pgadmin_data:/var/lib/pgadmin
+
+  seq:
+    image: datalust/seq
+    ports:
+      - "5341:80"
+    environment:
+      - ACCEPT_EULA=Y
+      - SEQ_FIRSTRUN_ADMINPASSWORD=admin123
+    volumes:
+      - seq-data:/data
+
 volumes:
   pgdata:
   pgadmin_data:
+  seq-data:  

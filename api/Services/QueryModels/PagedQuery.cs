@@ -1,4 +1,6 @@
-﻿namespace api.Helpers
+﻿using api.Responses;
+
+namespace api.Services.QueryModels
 {
     public class PagedQuery<T>
     {

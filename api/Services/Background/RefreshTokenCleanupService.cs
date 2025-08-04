@@ -1,5 +1,4 @@
 ﻿using api.Data;
-using System;
 
 namespace api.Services.Background
 {

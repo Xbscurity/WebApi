@@ -1,6 +1,6 @@
 ﻿using api.Dtos.FinancialTransaction;
 using api.Dtos.FinancialTransactions;
-using api.Helpers;
+using api.Responses;
 using api.Tests.Integration.Collections.Fixtures;
 using System.Net;
 using System.Net.Http.Json;

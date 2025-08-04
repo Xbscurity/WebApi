@@ -1,5 +1,5 @@
 ﻿using api.Dtos.Category;
-using api.Helpers;
+using api.Responses;
 using api.Services.Categories;
 using Microsoft.AspNetCore.Mvc;
 

@@ -1,5 +1,4 @@
 ﻿using api.Filters;
-using api.Helpers;
 using api.Tests.Unit.Helpers;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;

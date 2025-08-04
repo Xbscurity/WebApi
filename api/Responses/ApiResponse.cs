@@ -1,7 +1,6 @@
-
 using api.Constants;
 
-namespace api.Helpers
+namespace api.Responses
 {
     public class ApiResponse
     {

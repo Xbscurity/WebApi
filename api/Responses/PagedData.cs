@@ -1,4 +1,4 @@
-﻿namespace api.Helpers
+﻿namespace api.Responses
 {
     public class PagedData<T>
     {

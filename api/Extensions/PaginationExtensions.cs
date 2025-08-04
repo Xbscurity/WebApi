@@ -1,5 +1,6 @@
-﻿using api.Helpers;
-using api.QueryObjects;
+﻿using api.QueryObjects;
+using api.Responses;
+using api.Services.QueryModels;
 using Microsoft.EntityFrameworkCore;
 
 namespace api.Extensions
