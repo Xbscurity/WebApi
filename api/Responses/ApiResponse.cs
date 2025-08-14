@@ -4,7 +4,7 @@ namespace api.Responses
 {
     public class ApiResponse
     {
-        public Error? Error { get; set; }
+        public ApiError? Error { get; set; }
 
         public static ApiResponse<T> Success<T>(T data, Pagination pagination = null) =>
             new()
@@ -16,7 +16,7 @@ namespace api.Responses
         public static ApiResponse<T> NotFound<T>(string message = "Entity Not Found", object errorData = null) =>
             new()
             {
-                Error = new Error
+                Error = new ApiError
                 {
                     Message = message,
                     Data = errorData,
@@ -27,7 +27,7 @@ namespace api.Responses
         public static ApiResponse<T> BadRequest<T>(string message = "Invalid Request", object errorData = null) =>
             new()
             {
-                Error = new Error
+                Error = new ApiError
                 {
                     Message = message,
                     Data = errorData,
@@ -38,7 +38,7 @@ namespace api.Responses
         public static ApiResponse<T> Unauthorized<T>(string message = "Unauthorized access", object errorData = null) =>
     new()
     {
-        Error = new Error
+        Error = new ApiError
         {
             Message = message,
             Data = errorData,
@@ -49,7 +49,7 @@ namespace api.Responses
         public static ApiResponse<T> Forbidden<T>(string message = "Access denied", object errorData = null) =>
     new()
     {
-        Error = new Error
+        Error = new ApiError
         {
             Message = message,
             Data = errorData,

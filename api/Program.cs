@@ -24,16 +24,15 @@ using Serilog;
 using Serilog.Events;
 using System.IdentityModel.Tokens.Jwt;
 using System.Text;
-using System.Text.Json;
-
 try
 {
+
     Log.Logger = new LoggerConfiguration()
     .MinimumLevel.Debug()
     .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
     .MinimumLevel.Override("System", LogEventLevel.Warning)
     .WriteTo.Seq("http://seq")
-    .WriteTo.Console()
+    .WriteTo.Console(outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}] {Message:lj} (IP: {ClientIp}, UA: {UserAgent}){NewLine}{Exception}")
     .Enrich.FromLogContext()
     .Enrich.WithMachineName()
     .Enrich.WithEnvironmentName()
@@ -50,23 +49,18 @@ try
     builder.Host.UseSerilog();
     builder.Services.AddControllers(options =>
     {
-        options.Filters.Add<ExceptionFilter>();
         options.Filters.Add<ValidationFilter>();
         options.Filters.Add<StatusCodeFilter>();
-
-        // options.ModelBinderProviders.Insert(0, new TimeZoneInfoModeBinderProvider());
-    }).AddJsonOptions(options =>
-    {
-        options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
     });
+
     builder.Services.Configure<ApiBehaviorOptions>(options =>
     {
         options.SuppressModelStateInvalidFilter = true;
     });
-    builder.Services.AddScoped<ExecutionTimeFilter>();
+
     builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
-    builder.Services.AddScoped<ITransactionRepository, TransactionRepository>();
     builder.Services.AddScoped<ICategoryService, CategoryService>();
+    builder.Services.AddScoped<ITransactionRepository, TransactionRepository>();
     builder.Services.AddScoped<ITransactionService, TransactionService>();
     builder.Services.AddScoped<IGroupingReportStrategy, GroupByCategoryStrategy>();
     builder.Services.AddScoped<IGroupingReportStrategy, GroupByDateStrategy>();
@@ -131,6 +125,8 @@ try
     {
         options.TokenValidationParameters = new TokenValidationParameters
         {
+            NameClaimType = JwtRegisteredClaimNames.Name,
+
             ValidateIssuer = true,
             ValidIssuer = builder.Configuration["JWT:Issuer"],
             ValidateAudience = true,
@@ -141,7 +137,6 @@ try
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JWT:SigningKey"])),
             RequireSignedTokens = true,
             ValidAlgorithms = new[] { SecurityAlgorithms.HmacSha512 },
-            NameClaimType = JwtRegisteredClaimNames.Sub,
         };
     });
 
@@ -162,6 +157,9 @@ try
 
     // TypeDescriptor.AddAttributes(typeof(TimeZoneInfo), new TypeConverterAttribute(typeof(TimeZoneInfoConverter)));
     var app = builder.Build();
+
+    app.UseMiddleware<ErrorHandlingMiddleware>();
+
     using (var scope = app.Services.CreateScope())
     {
         var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
@@ -169,6 +167,7 @@ try
     }
 
     app.MapHealthChecks("/health");
+
     using (var scope = app.Services.CreateScope())
     {
         var services = scope.ServiceProvider;
@@ -180,9 +179,19 @@ try
         await DataSeeder.SeedAppDataAsync(context);
     }
 
-    //app.UseHttpsRedirection();
     app.UseAuthentication();
     app.UseAuthorization();
+
+    app.UseMiddleware<LogEnrichmentMiddleware>();
+
+    app.UseSerilogRequestLogging(options =>
+    {
+        options.EnrichDiagnosticContext = (diagnosticContext, httpContext) =>
+        {
+            var userAgent = httpContext.Request.Headers["User-Agent"].ToString();
+            diagnosticContext.Set("UserAgent", userAgent);
+        };
+    });
 
     // Configure the HTTP request pipeline.
     if (app.Environment.IsDevelopment())

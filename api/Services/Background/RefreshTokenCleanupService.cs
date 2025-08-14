@@ -1,14 +1,17 @@
 ﻿using api.Data;
+using Microsoft.EntityFrameworkCore;
 
 namespace api.Services.Background
 {
     public class RefreshTokenCleanupService : BackgroundService
     {
         private readonly IServiceScopeFactory _scopeFactory;
+        private readonly ILogger<RefreshTokenCleanupService> _logger;
 
-        public RefreshTokenCleanupService(IServiceScopeFactory scopeFactory)
+        public RefreshTokenCleanupService(IServiceScopeFactory scopeFactory, ILogger<RefreshTokenCleanupService> logger)
         {
             _scopeFactory = scopeFactory;
+            _logger = logger;
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -23,12 +26,20 @@ namespace api.Services.Background
                     var expired = db.RefreshTokens
                         .Where(r => r.ExpiresAt < DateTimeOffset.UtcNow);
 
-                    db.RefreshTokens.RemoveRange(expired);
-                    await db.SaveChangesAsync(stoppingToken);
+                    var deletedCount = await expired.ExecuteDeleteAsync();
+
+                    if (deletedCount > 0)
+                    {
+                        _logger.LogInformation("Removed {Count} expired refresh tokens", deletedCount);
+                    }
+                    else
+                    {
+                        _logger.LogDebug("No expired refresh tokens found to remove");
+                    }
                 }
                 catch (Exception ex)
                 {
-
+                    _logger.LogError(ex, "Error occurred while cleaning up expired refresh tokens");
                 }
 
                 await Task.Delay(TimeSpan.FromHours(1), stoppingToken);

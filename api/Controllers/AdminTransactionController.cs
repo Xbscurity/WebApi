@@ -1,7 +1,6 @@
 ﻿using api.Constants;
 using api.Dtos.FinancialTransaction;
 using api.Dtos.FinancialTransactions;
-using api.Filters;
 using api.QueryObjects;
 using api.Responses;
 using api.Services.Transaction;
@@ -11,7 +10,6 @@ using Microsoft.AspNetCore.Mvc;
 namespace api.Controllers
 {
     [Authorize(Policy = Policies.Admin)]
-    [ServiceFilter(typeof(ExecutionTimeFilter))]
     [ApiController]
     [Route("api/admin/transactions")]
     public class AdminTransactionController : BaseTransactionController

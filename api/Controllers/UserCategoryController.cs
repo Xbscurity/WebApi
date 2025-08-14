@@ -1,31 +1,36 @@
 ﻿using api.Constants;
 using api.Dtos.Category;
 using api.Extensions;
-using api.Filters;
 using api.QueryObjects;
 using api.Responses;
 using api.Services.Categories;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Serilog;
 
 namespace api.Controllers
 {
     [Authorize(Policy = Policies.UserNotBanned)]
-    [ServiceFilter(typeof(ExecutionTimeFilter))]
     [ApiController]
     [Route("api/user/categories")]
     public class UserCategoryController : BaseCategoryController
     {
-        public UserCategoryController(ICategoryService categoryService)
+        private readonly ILogger<UserCategoryController> _logger;
+
+        public UserCategoryController(ICategoryService categoryService, ILogger<UserCategoryController> logger)
             : base(categoryService)
         {
+            _logger = logger;
         }
 
         [HttpGet]
         public virtual async Task<ApiResponse<List<BaseCategoryOutputDto>>> GetAll([FromQuery] PaginationQueryObject queryObject, [FromQuery] bool includeInactive = false)
         {
-            Log.Warning("On Category controller Get All method");
+            foreach (var claim in User.Claims)
+            {
+                _logger.LogInformation("Claim: {Type} = {Value}", claim.Type, claim.Value);
+            }
+            _logger.LogInformation(User.Identity.Name);
+            _logger.LogWarning("On Category controller Get All method");
             var validSortFields = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
     {
         "id", "name",

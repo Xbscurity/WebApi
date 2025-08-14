@@ -1,6 +1,6 @@
 namespace api.Responses
 {
-    public class Error
+    public class ApiError
     {
         public string Code { get; set; }
 

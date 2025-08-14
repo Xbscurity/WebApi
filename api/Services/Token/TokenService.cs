@@ -29,9 +29,7 @@ namespace api.Services.Token
         {
             var claims = new List<Claim>
             {
-                new Claim(JwtRegisteredClaimNames.Sub, appUser.Id),
-                new Claim(JwtRegisteredClaimNames.Email, appUser.Email),
-                new Claim(JwtRegisteredClaimNames.GivenName, appUser.UserName),
+    new Claim(JwtRegisteredClaimNames.Sub, appUser.Id),
             };
             var roles = await _userManager.GetRolesAsync(appUser);
             foreach (var role in roles)
@@ -43,7 +41,7 @@ namespace api.Services.Token
             var tokenDescriptor = new SecurityTokenDescriptor
             {
                 Subject = new ClaimsIdentity(claims),
-                Expires = DateTime.UtcNow.AddHours(1),
+                Expires = DateTime.UtcNow.AddMinutes(30),
                 SigningCredentials = creds,
                 Issuer = _config["JWT:Issuer"],
                 Audience = _config["JWT:Audience"],

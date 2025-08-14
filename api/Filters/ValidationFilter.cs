@@ -19,7 +19,7 @@ namespace api.Filters
 
                 var response = new ApiResponse<object>
                 {
-                    Error = new Error
+                    Error = new ApiError
                     {
                         Code = "VALIDATION_ERROR",
                         Message = "Validation failed",

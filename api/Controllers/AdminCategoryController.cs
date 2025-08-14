@@ -1,7 +1,6 @@
 ﻿using api.Constants;
 using api.Dtos.Category;
 using api.Extensions;
-using api.Filters;
 using api.Models;
 using api.QueryObjects;
 using api.Responses;
@@ -12,7 +11,6 @@ using Microsoft.AspNetCore.Mvc;
 namespace api.Controllers
 {
     [Authorize(Policy = Policies.Admin)]
-    [ServiceFilter(typeof(ExecutionTimeFilter))]
     [ApiController]
     [Route("api/admin/categories")]
     public class AdminCategoryController : BaseCategoryController

@@ -36,7 +36,8 @@ namespace api.Data
                 {
                     UserName = "admin",
                     Email = adminEmail,
-                    EmailConfirmed = true
+                    EmailConfirmed = true,
+                    CreatedAt = DateTimeOffset.UtcNow,
                 };
 
                 var createResult = await userManager.CreateAsync(newAdmin, "Admin123!");
