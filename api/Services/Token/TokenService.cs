@@ -60,14 +60,14 @@ namespace api.Services.Token
         public RefreshToken GenerateRefreshTokenEntity(string plainToken, AppUser user, string? ipAddress)
         {
             var tokenHash = HashToken(plainToken);
-
-            return new RefreshToken
+            var newToken = new RefreshToken
             {
                 TokenHash = tokenHash,
                 UserId = user.Id,
                 CreatedByIp = ipAddress ?? "unknown",
                 ExpiresAt = DateTimeOffset.UtcNow.AddDays(7),
             };
+            return newToken;
         }
 
         public async Task SaveRefreshTokenAsync(RefreshToken token)
@@ -80,7 +80,7 @@ namespace api.Services.Token
         {
             if (string.IsNullOrWhiteSpace(refreshTokenPlain))
             {
-                return new RefreshTokenResult { Error = "No token supplied" };
+                return new RefreshTokenResult { Error = "No refresh token supplied" };
             }
 
             var hash = HashToken(refreshTokenPlain);
@@ -91,7 +91,7 @@ namespace api.Services.Token
 
             if (stored == null)
             {
-                return new RefreshTokenResult { Error = "Token not found" };
+                return new RefreshTokenResult { Error = "Refresh token not found" };
             }
 
             if (stored.RevokedAt != null)
@@ -101,12 +101,12 @@ namespace api.Services.Token
                     await RevokeDescendantTokensAsync(stored, ipAddress, "Attempted reuse of refresh token");
                 }
 
-                return new RefreshTokenResult { Error = "Token already revoked" };
+                return new RefreshTokenResult { Error = "Refresh token already revoked" };
             }
 
             if (stored.ExpiresAt <= DateTimeOffset.UtcNow)
             {
-                return new RefreshTokenResult { Error = "Token expired" };
+                return new RefreshTokenResult { Error = "Refresh token expired" };
             }
 
             var user = await _userManager.FindByIdAsync(stored.UserId);
@@ -125,8 +125,7 @@ namespace api.Services.Token
             stored.Reason = "Replaced by new token";
             stored.ReplacedByToken = newRefreshEntity.TokenHash;
 
-            _context.RefreshTokens.Add(newRefreshEntity);
-            await _context.SaveChangesAsync();
+            await SaveRefreshTokenAsync(newRefreshEntity);
 
             return new RefreshTokenResult
             {
@@ -136,7 +135,7 @@ namespace api.Services.Token
             };
         }
 
-        public async Task RevokeRefreshTokenAsync(string token, string? ipAddress)
+        public async Task RevokeRefreshTokenAsync(string token, string? ipAddress, string reason)
         {
             var tokenHash = HashToken(token);
 
@@ -150,10 +149,22 @@ namespace api.Services.Token
 
             refreshToken.RevokedAt = DateTimeOffset.UtcNow;
             refreshToken.RevokedByIp = ipAddress;
-            refreshToken.Reason = "User logout";
+            refreshToken.Reason = reason;
 
             await _context.SaveChangesAsync();
         }
+
+        public async Task RevokeAllRefreshTokensAsync(string userId, string? ipAddress, string reason)
+        {
+
+            await _context.RefreshTokens
+                .Where(rt => rt.UserId == userId && rt.RevokedAt == null)
+                .ExecuteUpdateAsync(setters => setters
+                    .SetProperty(rt => rt.RevokedAt, DateTimeOffset.UtcNow)
+                    .SetProperty(rt => rt.RevokedByIp, ipAddress)
+                    .SetProperty(rt => rt.Reason, reason));
+        }
+
 
         private string HashToken(string token)
         {

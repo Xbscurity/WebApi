@@ -66,7 +66,6 @@ try
     builder.Services.AddScoped<IGroupingReportStrategy, GroupByDateStrategy>();
     builder.Services.AddScoped<IGroupingReportStrategy, GroupByDateAndCategoryStrategy>();
     builder.Services.AddScoped<ITokenService, TokenService>();
-
     builder.Services.AddHttpContextAccessor();
 
     builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();

@@ -1,5 +1,4 @@
 using api.Models;
-using api.Services.Interfaces;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
@@ -7,12 +6,10 @@ namespace api.Data
 {
     public class ApplicationDbContext : IdentityDbContext<AppUser>
     {
-        private readonly ICurrentUserService _currentUser;
 
-        public ApplicationDbContext(DbContextOptions options, ICurrentUserService currentUser)
+        public ApplicationDbContext(DbContextOptions options)
             : base(options)
         {
-            _currentUser = currentUser;
         }
 
         public DbSet<Category> Categories { get; set; }

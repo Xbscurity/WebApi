@@ -1,12 +1,12 @@
 ﻿using api.Constants;
 using api.Dtos.Account;
+using api.Extensions;
 using api.Models;
 using api.Responses;
 using api.Services.Token;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace api.Controllers
 {
@@ -34,26 +34,29 @@ namespace api.Controllers
         [HttpPost("register")]
         public async Task<ApiResponse<NewUserDto>> Register([FromBody] RegisterDto registerDto)
         {
-            var user = new AppUser()
+            var user = new AppUser
             {
                 UserName = registerDto.UserName,
                 Email = registerDto.Email,
             };
+
             var createdUser = await _userManager.CreateAsync(user, registerDto.Password);
+
             if (!createdUser.Succeeded)
             {
-                var textError = string.Join("; ", createdUser.Errors.Select(e => e.Description));
-                _logger.LogWarning("User registration failed: {Errors}", textError);
-                return ApiResponse.BadRequest<NewUserDto>(textError);
+                var errors = createdUser.Errors.Select(e => new { e.Code, e.Description });
+                _logger.LogError("Failed to assign role to user: {@Errors}", errors);
+
+                return ApiResponse.BadRequest<NewUserDto>("Registration failed", errors);
             }
 
             var roleResult = await _userManager.AddToRoleAsync(user, Roles.User);
-
             if (!roleResult.Succeeded)
             {
-                var textError = string.Join("; ", roleResult.Errors.Select(e => $"{e.Code} = {e.Description}"));
-                _logger.LogError("Failed to assign role to user: {Errors}", textError);
-                throw new Exception(textError);
+                var errors = roleResult.Errors.Select(e => new { e.Code, e.Description });
+                _logger.LogError("Failed to assign role to user: {@Errors}", errors);
+
+                return ApiResponse.BadRequest<NewUserDto>("Failed to assign role", errors);
             }
 
             _logger.LogDebug("Role '{Role}' assigned successfully", Roles.User);
@@ -83,10 +86,10 @@ namespace api.Controllers
         public async Task<ApiResponse<NewUserDto>> Login([FromBody] LoginDto loginDto)
         {
 
-            var user = await _userManager.Users.FirstOrDefaultAsync(x => x.UserName == loginDto.UserName);
+            var user = await _userManager.FindByNameAsync(loginDto.UserName);
             if (user == null)
             {
-                _logger.LogWarning("Login failed: User not found");
+                _logger.LogWarning("User not found");
 
                 return ApiResponse.Unauthorized<NewUserDto>("Invalid username or password");
             }
@@ -94,7 +97,7 @@ namespace api.Controllers
             var result = await _signInManager.CheckPasswordSignInAsync(user, loginDto.Password, false);
             if (!result.Succeeded)
             {
-                _logger.LogWarning("Login failed: Invalid password");
+                _logger.LogWarning("Invalid password");
 
                 return ApiResponse.Unauthorized<NewUserDto>("Invalid username or password");
             }
@@ -124,7 +127,7 @@ namespace api.Controllers
             if (string.IsNullOrEmpty(refreshToken))
             {
                 _logger.LogWarning("No refresh token found in cookies");
-                return ApiResponse.Unauthorized<RefreshResponseDto>("No refresh token");
+                return ApiResponse.Unauthorized<RefreshResponseDto>("No refresh token found");
             }
 
             var result = await _tokenService.TryRefreshTokensAsync(refreshToken, GetClientIp());
@@ -145,12 +148,12 @@ namespace api.Controllers
         }
 
         [HttpPost("logout")]
-        public async Task<ApiResponse<object>> Logout()
+        public async Task<ApiResponse<string>> Logout()
         {
             var refreshToken = Request.Cookies["refreshToken"];
             if (!string.IsNullOrEmpty(refreshToken))
             {
-                await _tokenService.RevokeRefreshTokenAsync(refreshToken, GetClientIp());
+                await _tokenService.RevokeRefreshTokenAsync(refreshToken, GetClientIp(), "Logout");
                 Response.Cookies.Delete("refreshToken");
             }
             else
@@ -160,7 +163,7 @@ namespace api.Controllers
 
             _logger.LogInformation("Logout completed");
 
-            return ApiResponse.Success<object>(null);
+            return ApiResponse.Success("Logout completed");
         }
 
         [Authorize]
@@ -186,14 +189,53 @@ namespace api.Controllers
             return ApiResponse.Success(profileDto);
         }
 
-        private void SetRefreshTokenCookie(string token, DateTimeOffset expires)
+        [Authorize]
+        [HttpPost("change-password")]
+        public async Task<ApiResponse<string>> ChangePassword([FromBody] ChangePasswordDto dto)
         {
+            var user = await _userManager.GetUserAsync(User);
+
+            var passwordCheck = await _userManager.CheckPasswordAsync(user, dto.CurrentPassword);
+            if (!passwordCheck)
+            {
+                _logger.LogWarning("Invalid current password");
+                return ApiResponse.BadRequest<string>("Unable to change password");
+            }
+
+            var result = await _userManager.ChangePasswordAsync(user, dto.CurrentPassword, dto.NewPassword);
+            if (!result.Succeeded)
+            {
+                var errors = result.Errors.Select(e => new { e.Code, e.Description }).ToList();
+                _logger.LogWarning("Change password failed: {@Errors}", errors);
+
+                return ApiResponse.BadRequest<string>("Failed to change password", errors);
+            }
+
+            var userId = User.GetUserId();
+            await _tokenService.RevokeAllRefreshTokensAsync(userId, GetClientIp(), "Password changed");
+
+            var newRefreshToken = _tokenService.GenerateRefreshToken();
+            var refreshTokenEntity = _tokenService.GenerateRefreshTokenEntity(newRefreshToken, user, GetClientIp());
+            await _tokenService.SaveRefreshTokenAsync(refreshTokenEntity);
+
+            _logger.LogDebug("Refresh token saved for user");
+
+            SetRefreshTokenCookie(newRefreshToken);
+
+            _logger.LogInformation("Password changed successfully");
+            return ApiResponse.Success("Password changed successfully");
+        }
+
+        private void SetRefreshTokenCookie(string token, DateTimeOffset expires = default)
+        {
+            var expiry = (expires == default) ? DateTimeOffset.UtcNow.AddDays(7) : expires;
+
             Response.Cookies.Append("refreshToken", token, new CookieOptions
             {
                 HttpOnly = true,
                 Secure = !_env.IsDevelopment(),
                 SameSite = SameSiteMode.Strict,
-                Expires = expires.UtcDateTime,
+                Expires = expiry,
             });
         }
 

@@ -6,14 +6,16 @@ namespace api.Services.Token
     {
         Task<string> GenerateAccessTokenAsync(AppUser appUser);
 
-        public string GenerateRefreshToken();
+        string GenerateRefreshToken();
 
-        public RefreshToken GenerateRefreshTokenEntity(string plainToken, AppUser user, string? ipAddress);
+        RefreshToken GenerateRefreshTokenEntity(string plainToken, AppUser user, string? ipAddress);
 
-        public Task SaveRefreshTokenAsync(RefreshToken token);
+        Task SaveRefreshTokenAsync(RefreshToken token);
 
-        public Task<RefreshTokenResult> TryRefreshTokensAsync(string? refreshTokenPlain, string? ipAddress);
+        Task<RefreshTokenResult> TryRefreshTokensAsync(string? refreshTokenPlain, string? ipAddress);
 
-        Task RevokeRefreshTokenAsync(string token, string? ipAddress);
+        Task RevokeRefreshTokenAsync(string token, string? ipAddress, string reason);
+
+        Task RevokeAllRefreshTokensAsync(string userId, string? ipAddress, string reason);
     }
 }
