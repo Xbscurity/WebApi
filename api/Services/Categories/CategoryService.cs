@@ -1,12 +1,11 @@
-﻿using api.Constants;
-using api.Dtos.Category;
+﻿using api.Dtos.Category;
 using api.Extensions;
 using api.Models;
 using api.QueryObjects;
 using api.Repositories.Categories;
 using api.Responses;
+using api.Services.Common;
 using Microsoft.EntityFrameworkCore;
-using System.Security.Claims;
 
 namespace api.Services.Categories
 {
@@ -20,13 +19,14 @@ namespace api.Services.Categories
         }
 
         public async Task<PagedData<BaseCategoryOutputDto>> GetAllForUserAsync(
-            ClaimsPrincipal user, PaginationQueryObject queryObject, bool includeInactive)
+            CurrentUser user, PaginationQueryObject queryObject, bool includeInactive)
         {
-            var userId = user.GetUserId();
             var query = _categoryRepository.GetQueryable()
         .Where(c =>
-            c.AppUserId == userId && (includeInactive || c.IsActive)
+            // User's own categories (include inactive if requested)
+            c.AppUserId == user.UserId && (includeInactive || c.IsActive)
             ||
+            // All active global categories
             c.AppUserId == null && c.IsActive);
 
             var result = await query.ApplySorting(queryObject).Select(c => c.ToOutputDto()).ToPagedQueryAsync(queryObject);
@@ -37,7 +37,7 @@ namespace api.Services.Categories
             };
         }
 
-        public async Task<PagedData<Models.Category>> GetAllForAdminAsync(PaginationQueryObject queryObject, string? userId)
+        public async Task<PagedData<BaseCategoryOutputDto>> GetAllForAdminAsync(PaginationQueryObject queryObject, string? userId)
         {
             var query = _categoryRepository.GetQueryable();
             if (userId != null)
@@ -45,15 +45,16 @@ namespace api.Services.Categories
                 query = query.Where(c => c.AppUserId == userId);
             }
 
-            var result = await query.ApplySorting(queryObject).IgnoreQueryFilters().ToPagedQueryAsync(queryObject);
-            return new PagedData<Models.Category>
+            var pagedQuery = await query.ApplySorting(queryObject).ToPagedQueryAsync(queryObject);
+
+            return new PagedData<BaseCategoryOutputDto>
             {
-                Data = await result.Query.ToListAsync(),
-                Pagination = result.Pagination,
+                Data = await pagedQuery.Query.Select(c => c.ToOutputDto()).ToListAsync(),
+                Pagination = pagedQuery.Pagination,
             };
         }
 
-        public async Task<bool> ToggleActiveAsync(ClaimsPrincipal user, int id)
+        public async Task<bool> ToggleActiveAsync(CurrentUser user, int id)
         {
             var category = await _categoryRepository.GetByIdAsync(id);
             if (category == null)
@@ -61,7 +62,7 @@ namespace api.Services.Categories
                 return false;
             }
 
-            if (user.IsInRole(Roles.User) && category.AppUserId != user.GetUserId())
+            if (!CanAccessCategory(user, category))
             {
                 return false;
             }
@@ -72,7 +73,7 @@ namespace api.Services.Categories
             return true;
         }
 
-        public async Task<BaseCategoryOutputDto?> GetByIdAsync(ClaimsPrincipal user, int id)
+        public async Task<BaseCategoryOutputDto?> GetByIdAsync(CurrentUser user, int id)
         {
             var existingCategory = await _categoryRepository.GetByIdAsync(id);
             if (existingCategory == null)
@@ -80,7 +81,7 @@ namespace api.Services.Categories
                 return null;
             }
 
-            if (!HasAccess(user, existingCategory))
+            if (!CanAccessCategory(user, existingCategory, allowGlobal: true))
             {
                 return null;
             }
@@ -88,18 +89,18 @@ namespace api.Services.Categories
             return existingCategory.ToOutputDto();
         }
 
-        public async Task<BaseCategoryOutputDto> CreateForUserAsync(ClaimsPrincipal user, BaseCategoryInputDto categoryDto)
+        public async Task<BaseCategoryOutputDto> CreateForUserAsync(CurrentUser user, BaseCategoryInputDto categoryDto)
         {
             Category category = new Category
             {
                 Name = categoryDto.Name!.Trim(),
-                AppUserId = user.GetUserId(),
+                AppUserId = user.UserId,
             };
             await _categoryRepository.CreateAsync(category);
             return category.ToOutputDto();
         }
 
-        public async Task<Category> CreateForAdminAsync(ClaimsPrincipal user, AdminCategoryInputDto categoryDto)
+        public async Task<BaseCategoryOutputDto> CreateForAdminAsync(AdminCategoryInputDto categoryDto)
         {
             Category category = new Category
             {
@@ -107,10 +108,10 @@ namespace api.Services.Categories
                 AppUserId = categoryDto.AppUserId,
             };
             await _categoryRepository.CreateAsync(category);
-            return category;
+            return category.ToOutputDto();
         }
 
-        public async Task<BaseCategoryOutputDto?> UpdateAsync(ClaimsPrincipal user, int id, BaseCategoryInputDto categoryDto)
+        public async Task<BaseCategoryOutputDto?> UpdateAsync(CurrentUser user, int id, BaseCategoryInputDto categoryDto)
         {
 
             var existingCategory = await _categoryRepository.GetByIdAsync(id);
@@ -119,7 +120,7 @@ namespace api.Services.Categories
                 return null;
             }
 
-            if (!HasAccess(user, existingCategory))
+            if (!CanAccessCategory(user, existingCategory))
             {
                 return null;
             }
@@ -129,7 +130,7 @@ namespace api.Services.Categories
             return existingCategory.ToOutputDto();
         }
 
-        public async Task<bool> DeleteAsync(ClaimsPrincipal user, int id)
+        public async Task<bool> DeleteAsync(CurrentUser user, int id)
         {
             var existingCategory = await _categoryRepository.GetByIdAsync(id);
             if (existingCategory is null)
@@ -137,7 +138,7 @@ namespace api.Services.Categories
                 return false;
             }
 
-            if (!HasAccess(user, existingCategory))
+            if (!CanAccessCategory(user, existingCategory))
             {
                 return false;
             }
@@ -146,10 +147,12 @@ namespace api.Services.Categories
             return true;
         }
 
-        private bool HasAccess(ClaimsPrincipal user, Category category)
+        private bool CanAccessCategory(CurrentUser user, Category category, bool allowGlobal = false)
         {
-            var isAdmin = user.IsInRole(Roles.Admin);
-            return isAdmin || category.AppUserId == user.GetUserId() || category.AppUserId == null;
+            bool isOwner = category.AppUserId == user.UserId;
+            bool includeGlobal = allowGlobal && category.AppUserId == null;
+
+            return user.IsAdmin || isOwner || includeGlobal;
         }
     }
 }

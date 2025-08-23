@@ -1,29 +1,28 @@
 ﻿using api.Dtos.Category;
-using api.Models;
 using api.QueryObjects;
 using api.Responses;
-using System.Security.Claims;
+using api.Services.Common;
 
 namespace api.Services.Categories
 {
     public interface ICategoryService
     {
         Task<PagedData<BaseCategoryOutputDto>> GetAllForUserAsync(
-            ClaimsPrincipal user, PaginationQueryObject queryObject, bool includeInactive);
+            CurrentUser user, PaginationQueryObject queryObject, bool includeInactive);
 
-        Task<bool> ToggleActiveAsync(ClaimsPrincipal user, int id);
+        Task<bool> ToggleActiveAsync(CurrentUser user, int id);
 
-        Task<PagedData<Category>> GetAllForAdminAsync(PaginationQueryObject queryObject, string? userId);
+        Task<PagedData<BaseCategoryOutputDto>> GetAllForAdminAsync(PaginationQueryObject queryObject, string? userId);
 
-        Task<BaseCategoryOutputDto?> GetByIdAsync(ClaimsPrincipal user, int id);
+        Task<BaseCategoryOutputDto?> GetByIdAsync(CurrentUser user, int id);
 
-        Task<Category> CreateForAdminAsync(ClaimsPrincipal user, AdminCategoryInputDto category);
+        Task<BaseCategoryOutputDto> CreateForAdminAsync(AdminCategoryInputDto category);
 
-        Task<BaseCategoryOutputDto> CreateForUserAsync(ClaimsPrincipal user, BaseCategoryInputDto categoryDto);
+        Task<BaseCategoryOutputDto> CreateForUserAsync(CurrentUser user, BaseCategoryInputDto categoryDto);
 
-        Task<BaseCategoryOutputDto?> UpdateAsync(ClaimsPrincipal user, int id, BaseCategoryInputDto category);
+        Task<BaseCategoryOutputDto?> UpdateAsync(CurrentUser user, int id, BaseCategoryInputDto category);
 
-        Task<bool> DeleteAsync(ClaimsPrincipal user, int id);
+        Task<bool> DeleteAsync(CurrentUser user, int id);
 
     }
 }

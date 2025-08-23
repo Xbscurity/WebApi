@@ -41,7 +41,7 @@ namespace api.Controllers
                 return ApiResponse.BadRequest<List<BaseCategoryOutputDto>>($"SortBy '{queryObject.SortBy}' is not a valid field.");
             }
 
-            var categories = await _categoryService.GetAllForUserAsync(User, queryObject, includeInactive);
+            var categories = await _categoryService.GetAllForUserAsync(User.ToCurrentUser(), queryObject, includeInactive);
             return ApiResponse.Success(categories.Data, categories.Pagination);
         }
 
@@ -49,7 +49,7 @@ namespace api.Controllers
         public async Task<ApiResponse<BaseCategoryOutputDto>> Create([FromBody] BaseCategoryInputDto categoryDto)
         {
             var userId = User.GetUserId();
-            var result = await _categoryService.CreateForUserAsync(User, categoryDto);
+            var result = await _categoryService.CreateForUserAsync(User.ToCurrentUser(), categoryDto);
             return ApiResponse.Success(result);
         }
 

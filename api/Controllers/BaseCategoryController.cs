@@ -1,4 +1,5 @@
 ﻿using api.Dtos.Category;
+using api.Extensions;
 using api.Responses;
 using api.Services.Categories;
 using Microsoft.AspNetCore.Mvc;
@@ -17,7 +18,7 @@ namespace api.Controllers
         [HttpGet("{id:int}")]
         public virtual async Task<ApiResponse<BaseCategoryOutputDto>> GetById([FromRoute] int id)
         {
-            var category = await _categoryService.GetByIdAsync(User, id);
+            var category = await _categoryService.GetByIdAsync(User.ToCurrentUser(), id);
             if (category is null)
             {
                 return ApiResponse.NotFound<BaseCategoryOutputDto>("Category not found");
@@ -29,7 +30,7 @@ namespace api.Controllers
         [HttpDelete("{id:int}")]
         public virtual async Task<ApiResponse<bool>> Delete([FromRoute] int id)
         {
-            var result = await _categoryService.DeleteAsync(User, id);
+            var result = await _categoryService.DeleteAsync(User.ToCurrentUser(), id);
             if (result is false)
             {
                 return ApiResponse.NotFound<bool>("Category not found");
@@ -41,7 +42,7 @@ namespace api.Controllers
         [HttpPut("{id:int}")]
         public virtual async Task<ApiResponse<BaseCategoryOutputDto>> Update([FromRoute] int id, [FromBody] BaseCategoryInputDto categoryDto)
         {
-            var result = await _categoryService.UpdateAsync(User, id, categoryDto);
+            var result = await _categoryService.UpdateAsync(User.ToCurrentUser(), id, categoryDto);
             if (result is null)
             {
                 return ApiResponse.NotFound<BaseCategoryOutputDto>("Category not found");
@@ -53,7 +54,7 @@ namespace api.Controllers
         [HttpPatch("{id:int}/toggle-active")]
         public async Task<ApiResponse<bool>> ToggleActive([FromRoute] int id)
         {
-            var success = await _categoryService.ToggleActiveAsync(User, id);
+            var success = await _categoryService.ToggleActiveAsync(User.ToCurrentUser(), id);
             if (!success)
             {
                 return ApiResponse.NotFound<bool>("Category not found or access denied");

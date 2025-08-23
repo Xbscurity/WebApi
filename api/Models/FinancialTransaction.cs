@@ -20,7 +20,7 @@ namespace api.Models
 
         public string AppUserId { get; set; }
 
-        public AppUser AppUser { get; set; }
+        public AppUser? AppUser { get; set; }
 
         public FinancialTransaction(ITimeProvider timeProvider)
         {

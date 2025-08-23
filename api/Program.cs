@@ -10,8 +10,6 @@ using api.Repositories.Categories;
 using api.Repositories.Interfaces;
 using api.Services.Background;
 using api.Services.Categories;
-using api.Services.CurrentUser;
-using api.Services.Interfaces;
 using api.Services.Token;
 using api.Services.Transaction;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -68,7 +66,6 @@ try
     builder.Services.AddScoped<ITokenService, TokenService>();
     builder.Services.AddHttpContextAccessor();
 
-    builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
     builder.Services.AddSingleton<IAuthorizationMiddlewareResultHandler, CustomAuthorizationMiddlewareResultHandler>();
     builder.Services.AddSingleton<ITimeProvider, UtcTimeProvider>();
 

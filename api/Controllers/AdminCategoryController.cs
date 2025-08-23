@@ -1,7 +1,6 @@
 ﻿using api.Constants;
 using api.Dtos.Category;
 using api.Extensions;
-using api.Models;
 using api.QueryObjects;
 using api.Responses;
 using api.Services.Categories;
@@ -22,7 +21,7 @@ namespace api.Controllers
         }
 
         [HttpGet]
-        public async Task<ApiResponse<List<Category>>> GetAll([FromQuery] PaginationQueryObject queryObject, [FromQuery] string? userId = null)
+        public async Task<ApiResponse<List<BaseCategoryOutputDto>>> GetAll([FromQuery] PaginationQueryObject queryObject, [FromQuery] string? userId = null)
         {
             var validSortFields = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
     {
@@ -31,7 +30,7 @@ namespace api.Controllers
 
             if (!string.IsNullOrWhiteSpace(queryObject.SortBy) && !validSortFields.Contains(queryObject.SortBy))
             {
-                return ApiResponse.BadRequest<List<Category>>($"SortBy '{queryObject.SortBy}' is not a valid field.");
+                return ApiResponse.BadRequest<List<BaseCategoryOutputDto>>($"SortBy '{queryObject.SortBy}' is not a valid field.");
             }
 
             var categories = await _categoryService.GetAllForAdminAsync(queryObject, userId);
@@ -39,10 +38,10 @@ namespace api.Controllers
         }
 
         [HttpPost]
-        public async Task<ApiResponse<Category>> Create([FromBody] AdminCategoryInputDto categoryDto)
+        public async Task<ApiResponse<BaseCategoryOutputDto>> Create([FromBody] AdminCategoryInputDto categoryDto)
         {
             var userId = User.GetUserId();
-            var result = await _categoryService.CreateForAdminAsync(User, categoryDto);
+            var result = await _categoryService.CreateForAdminAsync(categoryDto);
             return ApiResponse.Success(result);
         }
     }
