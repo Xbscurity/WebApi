@@ -1,6 +1,6 @@
 ﻿namespace api.Dtos.UserManagement
 {
-    public class BanRequest
+    public class BanStatusDto
     {
         public bool IsBanned { get; set; }
     }

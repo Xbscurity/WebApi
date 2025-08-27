@@ -8,11 +8,15 @@ namespace api.Controllers
 {
     public abstract class BaseCategoryController : ControllerBase
     {
+        protected readonly ILogger _logger;
+
         protected readonly ICategoryService _categoryService;
 
-        public BaseCategoryController(ICategoryService categoriesService)
+
+        public BaseCategoryController(ICategoryService categoriesService, ILogger logger)
         {
             _categoryService = categoriesService;
+            _logger = logger;
         }
 
         [HttpGet("{id:int}")]
@@ -21,9 +25,10 @@ namespace api.Controllers
             var category = await _categoryService.GetByIdAsync(User.ToCurrentUser(), id);
             if (category is null)
             {
+                _logger.LogWarning("Category not found. CategoryId: {CategoryId}", id);
                 return ApiResponse.NotFound<BaseCategoryOutputDto>("Category not found");
             }
-
+            _logger.LogInformation("Returning category. CategoryId: {CategoryId}", category.Id);
             return ApiResponse.Success(category);
         }
 
@@ -33,9 +38,10 @@ namespace api.Controllers
             var result = await _categoryService.DeleteAsync(User.ToCurrentUser(), id);
             if (result is false)
             {
+                _logger.LogWarning("Category not found. CategoryId: {CategoryId}", id);
                 return ApiResponse.NotFound<bool>("Category not found");
             }
-
+            _logger.LogInformation("Category deleted. CategoryId: {CategoryId}", id);
             return ApiResponse.Success(true);
         }
 
@@ -45,9 +51,10 @@ namespace api.Controllers
             var result = await _categoryService.UpdateAsync(User.ToCurrentUser(), id, categoryDto);
             if (result is null)
             {
+                _logger.LogWarning("Category not found. CategoryId: {CategoryId}", id);
                 return ApiResponse.NotFound<BaseCategoryOutputDto>("Category not found");
             }
-
+            _logger.LogInformation("Category updated successfully. CategoryId: {CategoryId}", id);
             return ApiResponse.Success(result);
         }
 
@@ -57,9 +64,10 @@ namespace api.Controllers
             var success = await _categoryService.ToggleActiveAsync(User.ToCurrentUser(), id);
             if (!success)
             {
-                return ApiResponse.NotFound<bool>("Category not found or access denied");
+                _logger.LogWarning("Category not found. CategoryId: {CategoryId}", id);
+                return ApiResponse.NotFound<bool>("Category not found");
             }
-
+            _logger.LogInformation("Category toggled successfully. CategoryId: {CategoryId}", id);
             return ApiResponse.Success(success);
         }
     }

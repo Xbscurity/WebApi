@@ -12,6 +12,7 @@ using api.Services.Background;
 using api.Services.Categories;
 using api.Services.Token;
 using api.Services.Transaction;
+using api.Validation;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -65,7 +66,8 @@ try
     builder.Services.AddScoped<IGroupingReportStrategy, GroupByDateAndCategoryStrategy>();
     builder.Services.AddScoped<ITokenService, TokenService>();
     builder.Services.AddHttpContextAccessor();
-
+    builder.Services.AddSingleton<TransactionSortValidator>();
+    builder.Services.AddSingleton<CategorySortValidator>();
     builder.Services.AddSingleton<IAuthorizationMiddlewareResultHandler, CustomAuthorizationMiddlewareResultHandler>();
     builder.Services.AddSingleton<ITimeProvider, UtcTimeProvider>();
 

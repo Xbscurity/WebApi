@@ -4,6 +4,7 @@ using api.Dtos.FinancialTransactions;
 using api.QueryObjects;
 using api.Responses;
 using api.Services.Transaction;
+using api.Validation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -14,31 +15,44 @@ namespace api.Controllers
     [Route("api/admin/transactions")]
     public class AdminTransactionController : BaseTransactionController
     {
-        public AdminTransactionController(ITransactionService transactionService)
-            : base(transactionService)
+        private readonly TransactionSortValidator _sortValidator;
+
+        public AdminTransactionController(
+            ITransactionService transactionService,
+            TransactionSortValidator sortValidator,
+            ILogger<AdminTransactionController> logger)
+            : base(transactionService, logger)
         {
+            _sortValidator = sortValidator;
         }
 
         [HttpGet]
-        public async Task<ApiResponse<List<BaseFinancialTransactionOutputDto>>> GetAll([FromQuery] PaginationQueryObject queryObject)
+        public async Task<ApiResponse<List<BaseFinancialTransactionOutputDto>>> GetAll(
+            [FromQuery] PaginationQueryObject queryObject, [FromQuery] string? userId = null)
         {
-            var validSortFields = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
-              {
-                  "id", "category", "amount", "date",
-              };
-            if (!string.IsNullOrWhiteSpace(queryObject.SortBy) && !validSortFields.Contains(queryObject.SortBy))
+            if (!_sortValidator.IsValid(queryObject.SortBy))
             {
-                return ApiResponse.BadRequest<List<BaseFinancialTransactionOutputDto>>($"SortBy '{queryObject.SortBy}' is not a valid field.");
+                _logger.LogWarning(_sortValidator.GetErrorMessage(queryObject.SortBy!));
+                return ApiResponse.BadRequest<List<BaseFinancialTransactionOutputDto>>(
+                    _sortValidator.GetErrorMessage(queryObject.SortBy!));
             }
 
-            var transactions = await _transactionService.GetAllForAdminAsync(queryObject);
+            var transactions = await _transactionService.GetAllForAdminAsync(queryObject, userId);
+            _logger.LogInformation(
+                "Returning {Count} transactions. Page={PageNumber}, Size={PageSize}, SortBy={SortBy}, userId = {userId}",
+                transactions.Data.Count,
+                transactions.Pagination.PageNumber,
+                transactions.Pagination.PageSize,
+                queryObject.SortBy,
+                userId);
             return ApiResponse.Success(transactions.Data, transactions.Pagination);
         }
 
         [HttpPost]
-        public async Task<ApiResponse<BaseFinancialTransactionOutputDto>> Create([FromBody] AdminFinancialTransactionInputDto transactionDto)
+        public async Task<ApiResponse<BaseFinancialTransactionOutputDto>> Create([FromBody] AdminFinancialTransactionCreateInputDto transactionDto)
         {
-            var result = await _transactionService.CreateForAdminAsync(User, transactionDto);
+            var result = await _transactionService.CreateForAdminAsync(transactionDto, transactionDto.AppUserId!);
+            _logger.LogInformation("Created new transaction {transactionId} for user {UserId}", result.Id, result.AppUserId);
             return ApiResponse.Success(result);
         }
     }

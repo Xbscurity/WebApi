@@ -56,5 +56,20 @@ namespace api.Extensions
                 AppUserId = transactionInputDto.AppUserId,
             };
         }
+        public static FinancialTransaction ToModel(this AdminFinancialTransactionCreateInputDto transactionInputDto, ITimeProvider timeProvider)
+        {
+            if (transactionInputDto is null)
+            {
+                return null;
+            }
+
+            return new FinancialTransaction(timeProvider)
+            {
+                Comment = transactionInputDto.Comment.Trim(),
+                Amount = transactionInputDto.Amount,
+                CategoryId = transactionInputDto.CategoryId,
+                AppUserId = transactionInputDto.AppUserId,
+            };
+        }
     }
 }

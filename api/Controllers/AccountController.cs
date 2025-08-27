@@ -45,7 +45,7 @@ namespace api.Controllers
             if (!createdUser.Succeeded)
             {
                 var errors = createdUser.Errors.Select(e => new { e.Code, e.Description });
-                _logger.LogError("Failed to assign role to user: {@Errors}", errors);
+                _logger.LogError("Failed to create user: {@Errors}", errors);
 
                 return ApiResponse.BadRequest<NewUserDto>("Registration failed", errors);
             }
@@ -59,14 +59,10 @@ namespace api.Controllers
                 return ApiResponse.BadRequest<NewUserDto>("Failed to assign role", errors);
             }
 
-            _logger.LogDebug("Role '{Role}' assigned successfully", Roles.User);
-
             var accessToken = await _tokenService.GenerateAccessTokenAsync(user);
             var plainRefreshToken = _tokenService.GenerateRefreshToken();
             var refreshTokenEntity = _tokenService.GenerateRefreshTokenEntity(plainRefreshToken, user, GetClientIp());
             await _tokenService.SaveRefreshTokenAsync(refreshTokenEntity);
-
-            _logger.LogDebug("Refresh token saved for user");
 
             var userDto = new NewUserDto
             {

@@ -1,9 +1,9 @@
 ﻿using api.Constants;
 using api.Dtos.Category;
-using api.Extensions;
 using api.QueryObjects;
 using api.Responses;
 using api.Services.Categories;
+using api.Validation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -15,33 +15,43 @@ namespace api.Controllers
     public class AdminCategoryController : BaseCategoryController
     {
 
-        public AdminCategoryController(ICategoryService categoriesService)
-            : base(categoriesService)
+        private readonly CategorySortValidator _sortValidator;
+
+        public AdminCategoryController(
+            ICategoryService categoriesService,
+            ILogger<AdminCategoryController> logger,
+            CategorySortValidator sortValidator)
+            : base(categoriesService, logger)
         {
+            _sortValidator = sortValidator;
         }
 
         [HttpGet]
         public async Task<ApiResponse<List<BaseCategoryOutputDto>>> GetAll([FromQuery] PaginationQueryObject queryObject, [FromQuery] string? userId = null)
         {
-            var validSortFields = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
-    {
-        "id", "name",
-    };
 
-            if (!string.IsNullOrWhiteSpace(queryObject.SortBy) && !validSortFields.Contains(queryObject.SortBy))
+            if (!_sortValidator.IsValid(queryObject.SortBy))
             {
-                return ApiResponse.BadRequest<List<BaseCategoryOutputDto>>($"SortBy '{queryObject.SortBy}' is not a valid field.");
+                _logger.LogWarning(_sortValidator.GetErrorMessage(queryObject.SortBy));
+                return ApiResponse.BadRequest<List<BaseCategoryOutputDto>>(_sortValidator.GetErrorMessage(queryObject.SortBy));
             }
 
             var categories = await _categoryService.GetAllForAdminAsync(queryObject, userId);
+            _logger.LogInformation(
+                "Returning {Count} categories. , Page={PageNumber}, Size={PageSize}, SortBy={SortBy}, userId = {userId}",
+                categories.Data.Count,
+                categories.Pagination.PageNumber,
+                categories.Pagination.PageSize,
+                queryObject.SortBy,
+                userId);
             return ApiResponse.Success(categories.Data, categories.Pagination);
         }
 
         [HttpPost]
         public async Task<ApiResponse<BaseCategoryOutputDto>> Create([FromBody] AdminCategoryInputDto categoryDto)
         {
-            var userId = User.GetUserId();
             var result = await _categoryService.CreateForAdminAsync(categoryDto);
+            _logger.LogInformation("Created new category {categoryId} for user {UserId}", result.Id, result.AppUserId);
             return ApiResponse.Success(result);
         }
     }

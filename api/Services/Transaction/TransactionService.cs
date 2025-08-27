@@ -1,5 +1,4 @@
-﻿using api.Constants;
-using api.Dtos.FinancialTransaction;
+﻿using api.Dtos.FinancialTransaction;
 using api.Dtos.FinancialTransactions;
 using api.Enums;
 using api.Extensions;
@@ -10,8 +9,8 @@ using api.QueryObjects;
 using api.Repositories.Categories;
 using api.Repositories.Interfaces;
 using api.Responses;
+using api.Services.Common;
 using Microsoft.EntityFrameworkCore;
-using System.Security.Claims;
 
 namespace api.Services.Transaction
 {
@@ -34,14 +33,14 @@ namespace api.Services.Transaction
             _categoryRepository = categoryRepository;
         }
 
-        public async Task<BaseFinancialTransactionOutputDto> CreateForAdminAsync(ClaimsPrincipal user, AdminFinancialTransactionInputDto transactionDto)
+        public async Task<BaseFinancialTransactionOutputDto> CreateForAdminAsync(AdminFinancialTransactionCreateInputDto transactionDto, string userId)
         {
             var transaction = transactionDto.ToModel(_timeProvider);
             await _transactionRepository.CreateAsync(transaction);
             return transaction.ToOutputDto();
         }
 
-        public async Task<BaseFinancialTransactionOutputDto?> CreateForUserAsync(ClaimsPrincipal user, BaseFinancialTransactionInputDto transactionDto)
+        public async Task<BaseFinancialTransactionOutputDto?> CreateForUserAsync(CurrentUser user, BaseFinancialTransactionInputDto transactionDto)
         {
             var category = await _categoryRepository.GetByIdAsync(transactionDto.CategoryId);
             if (category == null || category.IsActive == false)
@@ -49,24 +48,24 @@ namespace api.Services.Transaction
                 return null;
             }
 
-            if (category.AppUserId != null && category.AppUserId != user.GetUserId())
+            if (category.AppUserId != null && category.AppUserId != user.UserId)
             {
                 return null;
             }
 
-            var transaction = transactionDto.ToModel(user.GetUserId(), _timeProvider);
+            var transaction = transactionDto.ToModel(user.UserId!, _timeProvider);
             await _transactionRepository.CreateAsync(transaction);
             return transaction.ToOutputDto();
         }
 
-        public async Task<bool> DeleteAsync(ClaimsPrincipal user, int id)
+        public async Task<bool> DeleteAsync(CurrentUser user, int id)
         {
             var existingTransaction = await _transactionRepository.GetByIdAsync(id);
             if (existingTransaction is null)
             {
                 return false;
             }
-            if (!HasAccess(user, existingTransaction))
+            if (!CanAccessTransaction(user, existingTransaction))
             {
                 return false;
             }
@@ -75,7 +74,7 @@ namespace api.Services.Transaction
             return true;
         }
 
-        public async Task<PagedData<BaseFinancialTransactionOutputDto>> GetAllForAdminAsync(PaginationQueryObject queryObject, string? appUserId = null)
+        public async Task<PagedData<BaseFinancialTransactionOutputDto>> GetAllForAdminAsync(PaginationQueryObject queryObject, string? appUserId)
         {
             var query = _transactionRepository.GetQueryableWithCategory();
             var sortedTransactionDtos = query
@@ -94,12 +93,12 @@ namespace api.Services.Transaction
             };
         }
 
-        public async Task<PagedData<BaseFinancialTransactionOutputDto>> GetAllForUserAsync(ClaimsPrincipal user, PaginationQueryObject queryObject)
+        public async Task<PagedData<BaseFinancialTransactionOutputDto>> GetAllForUserAsync(CurrentUser user, PaginationQueryObject queryObject)
         {
             var query = _transactionRepository.GetQueryableWithCategory();
             var result = await query
                 .ApplySorting(queryObject)
-                .Where(t => t.AppUserId == user.GetUserId())
+                .Where(t => t.AppUserId == user.UserId)
                 .Select(t => t.ToOutputDto())
                 .ToPagedQueryAsync(queryObject);
             return new PagedData<BaseFinancialTransactionOutputDto>
@@ -109,10 +108,10 @@ namespace api.Services.Transaction
             };
         }
 
-        public async Task<BaseFinancialTransactionOutputDto?> GetByIdAsync(ClaimsPrincipal user, int id)
+        public async Task<BaseFinancialTransactionOutputDto?> GetByIdAsync(CurrentUser user, int id)
         {
             var transaction = await _transactionRepository.GetByIdAsync(id);
-            if (!HasAccess(user, transaction))
+            if (!CanAccessTransaction(user, transaction))
             {
                 return null;
             }
@@ -120,7 +119,7 @@ namespace api.Services.Transaction
             return transaction.ToOutputDto();
         }
 
-        public async Task<PagedData<GroupedReportDto>> GetReportAsync(ClaimsPrincipal user, ReportQueryObject queryObject)
+        public async Task<PagedData<GroupedReportDto>> GetReportAsync(CurrentUser user, ReportQueryObject queryObject)
         {
             var strategy = _strategies[queryObject.Key];
             var query = _transactionRepository.GetQueryableWithCategory();
@@ -135,7 +134,7 @@ namespace api.Services.Transaction
             };
         }
 
-        public async Task<BaseFinancialTransactionOutputDto?> UpdateAsync(ClaimsPrincipal user, int id, BaseFinancialTransactionInputDto transactionDto)
+        public async Task<BaseFinancialTransactionOutputDto?> UpdateAsync(CurrentUser user, int id, BaseFinancialTransactionInputDto transactionDto)
         {
             var existingTransaction = await _transactionRepository.GetByIdAsync(id);
             if (existingTransaction is null)
@@ -143,7 +142,7 @@ namespace api.Services.Transaction
                 return null;
             }
 
-            if (!HasAccess(user, existingTransaction))
+            if (!CanAccessTransaction(user, existingTransaction))
             {
                 return null;
             }
@@ -155,10 +154,11 @@ namespace api.Services.Transaction
             return existingTransaction.ToOutputDto();
         }
 
-        private bool HasAccess(ClaimsPrincipal user, FinancialTransaction transaction)
+        private bool CanAccessTransaction(CurrentUser user, FinancialTransaction transaction)
         {
-            var isAdmin = user.IsInRole(Roles.Admin);
-            return isAdmin || transaction.AppUserId == user.GetUserId() || transaction.AppUserId == null;
+            bool isOwner = transaction.AppUserId == user.UserId;
+
+            return user.IsAdmin || isOwner;
         }
     }
 }

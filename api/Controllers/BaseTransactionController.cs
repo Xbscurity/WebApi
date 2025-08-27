@@ -1,4 +1,5 @@
 ﻿using api.Dtos.FinancialTransactions;
+using api.Extensions;
 using api.Responses;
 using api.Services.Transaction;
 using Microsoft.AspNetCore.Mvc;
@@ -8,45 +9,53 @@ namespace api.Controllers
     public abstract class BaseTransactionController : ControllerBase
     {
         protected readonly ITransactionService _transactionService;
+        protected readonly ILogger _logger;
 
-        public BaseTransactionController(ITransactionService transactionService)
+        public BaseTransactionController(ITransactionService transactionService, ILogger logger)
         {
             _transactionService = transactionService;
+            _logger = logger;
         }
 
         [HttpGet("{id:int}")]
         public async Task<ApiResponse<BaseFinancialTransactionOutputDto>> GetById([FromRoute] int id)
         {
-            var transaction = await _transactionService.GetByIdAsync(User, id);
+            var transaction = await _transactionService.GetByIdAsync(User.ToCurrentUser(), id);
             if (transaction == null)
             {
+                _logger.LogWarning("Transaction not found. TransactionId: {TransactionId}", id);
                 return ApiResponse.NotFound<BaseFinancialTransactionOutputDto>("Transaction not found");
             }
 
+            _logger.LogInformation("Returning transaction. TransactionId {TransactionId}", id);
             return ApiResponse.Success(transaction);
         }
 
         [HttpPut("{id:int}")]
         public async Task<ApiResponse<BaseFinancialTransactionOutputDto>> Update([FromRoute] int id, [FromBody] BaseFinancialTransactionInputDto transactionDto)
         {
-            var result = await _transactionService.UpdateAsync(User, id, transactionDto);
+            var result = await _transactionService.UpdateAsync(User.ToCurrentUser(), id, transactionDto);
             if (result is null)
             {
+                _logger.LogWarning("Transaction not found. TransactionId: {TransactionId}", id);
                 return ApiResponse.NotFound<BaseFinancialTransactionOutputDto>("Transaction not found");
             }
 
+            _logger.LogInformation("Transaction updated successfully. TransactionId: {TransactionId}", id);
             return ApiResponse.Success(result);
         }
 
         [HttpDelete("{id:int}")]
         public async Task<ApiResponse<bool>> Delete([FromRoute] int id)
         {
-            bool result = await _transactionService.DeleteAsync(User, id);
+            bool result = await _transactionService.DeleteAsync(User.ToCurrentUser(), id);
             if (result is false)
             {
+                _logger.LogWarning("Transaction not found. TransactionId: {TransactionId}", id);
                 return ApiResponse.NotFound<bool>("Transaction not found");
             }
 
+            _logger.LogInformation("Transaction deleted successfully. TransactionId: {TransactionId}", id);
             return ApiResponse.Success(result);
         }
     }
