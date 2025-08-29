@@ -28,17 +28,19 @@ namespace api.Controllers
 
         [HttpGet]
         public async Task<ApiResponse<List<BaseFinancialTransactionOutputDto>>> GetAll(
-            [FromQuery] PaginationQueryObject queryObject, [FromQuery] string? userId = null)
+            [FromQuery] PaginationQueryObject queryObject,
+            [FromQuery] string? userId = null)
         {
             if (!_sortValidator.IsValid(queryObject.SortBy))
             {
-                _logger.LogWarning(_sortValidator.GetErrorMessage(queryObject.SortBy!));
+                _logger.LogWarning(LoggingEvents.Transactions.Common.SortInvalid, _sortValidator.GetErrorMessage(queryObject.SortBy!));
                 return ApiResponse.BadRequest<List<BaseFinancialTransactionOutputDto>>(
                     _sortValidator.GetErrorMessage(queryObject.SortBy!));
             }
 
             var transactions = await _transactionService.GetAllForAdminAsync(queryObject, userId);
             _logger.LogInformation(
+                LoggingEvents.Transactions.Admin.GetAll,
                 "Returning {Count} transactions. Page={PageNumber}, Size={PageSize}, SortBy={SortBy}, userId = {userId}",
                 transactions.Data.Count,
                 transactions.Pagination.PageNumber,
@@ -49,10 +51,14 @@ namespace api.Controllers
         }
 
         [HttpPost]
-        public async Task<ApiResponse<BaseFinancialTransactionOutputDto>> Create([FromBody] AdminFinancialTransactionCreateInputDto transactionDto)
+        public async Task<ApiResponse<BaseFinancialTransactionOutputDto>> Create(
+            [FromBody] AdminFinancialTransactionCreateInputDto transactionDto)
         {
             var result = await _transactionService.CreateForAdminAsync(transactionDto, transactionDto.AppUserId!);
-            _logger.LogInformation("Created new transaction {transactionId} for user {UserId}", result.Id, result.AppUserId);
+            _logger.LogInformation(
+                LoggingEvents.Categories.Admin.Created,
+                "Created new transaction {transactionId} for user {UserId}",
+                result.Id, result.AppUserId);
             return ApiResponse.Success(result);
         }
     }

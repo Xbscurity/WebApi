@@ -29,17 +29,19 @@ namespace api.Controllers
         }
 
         [HttpGet]
-        public virtual async Task<ApiResponse<List<BaseCategoryOutputDto>>> GetAll([FromQuery] PaginationQueryObject queryObject, [FromQuery] bool includeInactive = false)
+        public virtual async Task<ApiResponse<List<BaseCategoryOutputDto>>> GetAll(
+            [FromQuery] PaginationQueryObject queryObject, [FromQuery] bool includeInactive = false)
         {
             if (!_sortValidator.IsValid(queryObject.SortBy))
             {
-                _logger.LogWarning(_sortValidator.GetErrorMessage(queryObject.SortBy!));
+                _logger.LogWarning(LoggingEvents.Categories.Common.SortInvalid, _sortValidator.GetErrorMessage(queryObject.SortBy!));
                 return ApiResponse.BadRequest<List<BaseCategoryOutputDto>>(_sortValidator.GetErrorMessage(queryObject.SortBy!));
             }
 
             var categories = await _categoryService.GetAllForUserAsync(User.ToCurrentUser(), queryObject, includeInactive);
 
             _logger.LogInformation(
+                LoggingEvents.Categories.User.GetAll,
                 "Returning {Count} categories. Page={PageNumber}, Size={PageSize}, SortBy={SortBy}",
                 categories.Data.Count,
                 categories.Pagination.PageNumber,
@@ -53,7 +55,7 @@ namespace api.Controllers
         {
             var userId = User.GetUserId();
             var result = await _categoryService.CreateForUserAsync(User.ToCurrentUser(), categoryDto);
-            _logger.LogInformation("Created new transaction {categoryId}", result.Id);
+            _logger.LogInformation(LoggingEvents.Categories.User.Created, "Created new transaction {categoryId}", result.Id);
             return ApiResponse.Success(result);
         }
 

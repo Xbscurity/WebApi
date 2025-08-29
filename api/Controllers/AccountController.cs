@@ -45,8 +45,8 @@ namespace api.Controllers
             if (!createdUser.Succeeded)
             {
                 var errors = createdUser.Errors.Select(e => new { e.Code, e.Description });
-                _logger.LogError("Failed to create user: {@Errors}", errors);
 
+                _logger.LogWarning(LoggingEvents.Users.Common.RegisterFailed, "Failed to create user: {@Errors}", errors);
                 return ApiResponse.BadRequest<NewUserDto>("Registration failed", errors);
             }
 
@@ -54,8 +54,8 @@ namespace api.Controllers
             if (!roleResult.Succeeded)
             {
                 var errors = roleResult.Errors.Select(e => new { e.Code, e.Description });
-                _logger.LogError("Failed to assign role to user: {@Errors}", errors);
 
+                _logger.LogError(LoggingEvents.Users.Common.RoleAssignFailed, "Failed to assign role to user: {@Errors}", errors);
                 return ApiResponse.BadRequest<NewUserDto>("Failed to assign role", errors);
             }
 
@@ -73,7 +73,7 @@ namespace api.Controllers
 
             SetRefreshTokenCookie(plainRefreshToken, refreshTokenEntity.ExpiresAt);
 
-            _logger.LogInformation("User registered successfully");
+            _logger.LogInformation(LoggingEvents.Users.Common.RegisterSuccess, "User registered successfully");
 
             return ApiResponse.Success(userDto);
         }
@@ -85,7 +85,7 @@ namespace api.Controllers
             var user = await _userManager.FindByNameAsync(loginDto.UserName);
             if (user == null)
             {
-                _logger.LogWarning("User not found");
+                _logger.LogWarning(LoggingEvents.Users.Common.LoginUserNotFound, "User not found");
 
                 return ApiResponse.Unauthorized<NewUserDto>("Invalid username or password");
             }
@@ -93,7 +93,7 @@ namespace api.Controllers
             var result = await _signInManager.CheckPasswordSignInAsync(user, loginDto.Password, false);
             if (!result.Succeeded)
             {
-                _logger.LogWarning("Invalid password");
+                _logger.LogWarning(LoggingEvents.Users.Common.LoginInvalidPassword, "Invalid password");
 
                 return ApiResponse.Unauthorized<NewUserDto>("Invalid username or password");
             }
@@ -111,7 +111,7 @@ namespace api.Controllers
 
             SetRefreshTokenCookie(plainRefreshToken, refreshTokenEntity.ExpiresAt);
 
-            _logger.LogInformation("User logged in successfully");
+            _logger.LogInformation(LoggingEvents.Users.Common.LoginSuccess, "User logged in successfully");
 
             return ApiResponse.Success(newUserDto);
         }
@@ -122,7 +122,7 @@ namespace api.Controllers
             var refreshToken = Request.Cookies["refreshToken"];
             if (string.IsNullOrEmpty(refreshToken))
             {
-                _logger.LogWarning("No refresh token found in cookies");
+                _logger.LogWarning(LoggingEvents.Users.Common.RefreshTokenMissing, "No refresh token found in cookies");
                 return ApiResponse.Unauthorized<RefreshResponseDto>("No refresh token found");
             }
 
@@ -130,13 +130,16 @@ namespace api.Controllers
 
             if (!result.IsSuccess)
             {
-                _logger.LogWarning("Refresh token validation failed. Reason = {Error}", result.Error);
+                _logger.LogWarning(
+                    LoggingEvents.Users.Common.RefreshTokenInvalid,
+                    "Refresh token validation failed. Reason = {Error}",
+                    result.Error);
                 return ApiResponse.Unauthorized<RefreshResponseDto>(result.Error!);
             }
 
             SetRefreshTokenCookie(result.NewRefreshToken, result.ExpiresAt!.Value);
 
-            _logger.LogInformation("Refresh token successfully updated");
+            _logger.LogInformation(LoggingEvents.Users.Common.RefreshTokenSuccess, "Refresh token successfully updated");
             return ApiResponse.Success(new RefreshResponseDto
             {
                 Token = result.NewAccessToken!,
@@ -152,13 +155,8 @@ namespace api.Controllers
                 await _tokenService.RevokeRefreshTokenAsync(refreshToken, GetClientIp(), "Logout");
                 Response.Cookies.Delete("refreshToken");
             }
-            else
-            {
-                _logger.LogWarning("No refresh token found");
-            }
 
-            _logger.LogInformation("Logout completed");
-
+            _logger.LogInformation(LoggingEvents.Users.Common.LogoutSuccess, "Logout completed");
             return ApiResponse.Success("Logout completed");
         }
 
@@ -167,14 +165,7 @@ namespace api.Controllers
         public async Task<ApiResponse<UserProfileDto>> GetProfile()
         {
             var user = await _userManager.GetUserAsync(User);
-            if (user == null)
-            {
-                _logger.LogWarning("No matching user found");
 
-                return ApiResponse.Unauthorized<UserProfileDto>("Unauthorized");
-            }
-
-            _logger.LogInformation("Profile returned successfully");
 
             var profileDto = new UserProfileDto
             {
@@ -182,6 +173,8 @@ namespace api.Controllers
                 Email = user.Email!,
                 CreatedAt = user.CreatedAt,
             };
+
+            _logger.LogInformation("Profile returned successfully");
             return ApiResponse.Success(profileDto);
         }
 
@@ -194,7 +187,7 @@ namespace api.Controllers
             var passwordCheck = await _userManager.CheckPasswordAsync(user, dto.CurrentPassword);
             if (!passwordCheck)
             {
-                _logger.LogWarning("Invalid current password");
+                _logger.LogWarning(LoggingEvents.Users.Common.ChangePasswordCurrentFailed, "Invalid current password");
                 return ApiResponse.BadRequest<string>("Unable to change password");
             }
 
@@ -202,8 +195,8 @@ namespace api.Controllers
             if (!result.Succeeded)
             {
                 var errors = result.Errors.Select(e => new { e.Code, e.Description }).ToList();
-                _logger.LogWarning("Change password failed: {@Errors}", errors);
 
+                _logger.LogWarning(LoggingEvents.Users.Common.ChangePasswordNewFailed, "Change password failed: {@Errors}", errors);
                 return ApiResponse.BadRequest<string>("Failed to change password", errors);
             }
 
@@ -218,7 +211,7 @@ namespace api.Controllers
 
             SetRefreshTokenCookie(newRefreshToken);
 
-            _logger.LogInformation("Password changed successfully");
+            _logger.LogInformation(LoggingEvents.Users.Common.ChangePasswordSuccess, "Password changed successfully");
             return ApiResponse.Success("Password changed successfully");
         }
 

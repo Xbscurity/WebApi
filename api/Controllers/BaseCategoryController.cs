@@ -1,4 +1,5 @@
-﻿using api.Dtos.Category;
+﻿using api.Constants;
+using api.Dtos.Category;
 using api.Extensions;
 using api.Responses;
 using api.Services.Categories;
@@ -25,10 +26,11 @@ namespace api.Controllers
             var category = await _categoryService.GetByIdAsync(User.ToCurrentUser(), id);
             if (category is null)
             {
-                _logger.LogWarning("Category not found. CategoryId: {CategoryId}", id);
+                _logger.LogWarning(LoggingEvents.Categories.Common.NotFound, "Category not found. CategoryId: {CategoryId}", id);
                 return ApiResponse.NotFound<BaseCategoryOutputDto>("Category not found");
             }
-            _logger.LogInformation("Returning category. CategoryId: {CategoryId}", category.Id);
+
+            _logger.LogInformation(LoggingEvents.Categories.Common.GetById, "Returning category. CategoryId: {CategoryId}", category.Id);
             return ApiResponse.Success(category);
         }
 
@@ -38,10 +40,11 @@ namespace api.Controllers
             var result = await _categoryService.DeleteAsync(User.ToCurrentUser(), id);
             if (result is false)
             {
-                _logger.LogWarning("Category not found. CategoryId: {CategoryId}", id);
+                _logger.LogWarning(LoggingEvents.Categories.Common.NotFound, "Category not found. CategoryId: {CategoryId}", id);
                 return ApiResponse.NotFound<bool>("Category not found");
             }
-            _logger.LogInformation("Category deleted. CategoryId: {CategoryId}", id);
+
+            _logger.LogInformation(LoggingEvents.Categories.Common.Deleted, "Category deleted. CategoryId: {CategoryId}", id);
             return ApiResponse.Success(true);
         }
 
@@ -51,10 +54,10 @@ namespace api.Controllers
             var result = await _categoryService.UpdateAsync(User.ToCurrentUser(), id, categoryDto);
             if (result is null)
             {
-                _logger.LogWarning("Category not found. CategoryId: {CategoryId}", id);
+                _logger.LogWarning(LoggingEvents.Categories.Common.NotFound, "Category not found. CategoryId: {CategoryId}", id);
                 return ApiResponse.NotFound<BaseCategoryOutputDto>("Category not found");
             }
-            _logger.LogInformation("Category updated successfully. CategoryId: {CategoryId}", id);
+            _logger.LogInformation(LoggingEvents.Categories.Common.Updated, "Category updated successfully. CategoryId: {CategoryId}", id);
             return ApiResponse.Success(result);
         }
 
@@ -64,10 +67,10 @@ namespace api.Controllers
             var success = await _categoryService.ToggleActiveAsync(User.ToCurrentUser(), id);
             if (!success)
             {
-                _logger.LogWarning("Category not found. CategoryId: {CategoryId}", id);
+                _logger.LogWarning(LoggingEvents.Categories.Common.NotFound, "Category not found. CategoryId: {CategoryId}", id);
                 return ApiResponse.NotFound<bool>("Category not found");
             }
-            _logger.LogInformation("Category toggled successfully. CategoryId: {CategoryId}", id);
+            _logger.LogInformation(LoggingEvents.Categories.Common.Toggled, "Category toggled successfully. CategoryId: {CategoryId}", id);
             return ApiResponse.Success(success);
         }
     }

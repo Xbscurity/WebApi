@@ -1,0 +1,101 @@
+﻿namespace api.Constants
+{
+    public static class LoggingEvents
+    {
+        // Users (1000–1499)
+        public static class Users
+        {
+            // Common (1000-1099)
+            public static class Common
+            {
+                public static readonly EventId RegisterSuccess = new(1000, nameof(RegisterSuccess));
+                public static readonly EventId RegisterFailed = new(1001, nameof(RegisterFailed));
+                public static readonly EventId RoleAssignFailed = new(1002, nameof(RoleAssignFailed));
+
+                public static readonly EventId LoginSuccess = new(1010, nameof(LoginSuccess));
+                public static readonly EventId LoginUserNotFound = new(1011, nameof(LoginUserNotFound));
+                public static readonly EventId LoginInvalidPassword = new(1012, nameof(LoginInvalidPassword));
+
+                public static readonly EventId RefreshTokenSuccess = new(1020, nameof(RefreshTokenSuccess));
+                public static readonly EventId RefreshTokenMissing = new(1021, nameof(RefreshTokenMissing));
+                public static readonly EventId RefreshTokenInvalid = new(1022, nameof(RefreshTokenInvalid));
+
+                public static readonly EventId LogoutSuccess = new(1030, nameof(LogoutSuccess));
+
+                public static readonly EventId ChangePasswordSuccess = new(1050, nameof(ChangePasswordSuccess));
+                public static readonly EventId ChangePasswordCurrentFailed = new(1051, nameof(ChangePasswordCurrentFailed));
+                public static readonly EventId ChangePasswordNewFailed = new(1052, nameof(ChangePasswordNewFailed));
+            }
+
+            // AdminUserManagementController(1100-1199)
+            public static class Admin
+            {
+                public static readonly EventId NotFound = new(1100, nameof(NotFound));
+                public static readonly EventId AdminBanAttempt = new(1101, nameof(AdminBanAttempt));
+                public static readonly EventId UserAlreadyBanned = new(1102, nameof(UserAlreadyBanned));
+                public static readonly EventId UserBanned = new(1103, nameof(UserBanned));
+                public static readonly EventId GetAll = new(1104, nameof(GetAll));
+            }
+        }
+
+        // Categories(1500-1999)
+        public static class Categories
+        {
+            // BaseCategoryController (1500–1599)
+            public static class Common
+            {
+                public static readonly EventId SortInvalid = new(1500, nameof(SortInvalid));
+                public static readonly EventId NotFound = new(1501, nameof(NotFound));
+                public static readonly EventId GetById = new(1502, nameof(GetById));
+                public static readonly EventId Deleted = new(1503, nameof(Deleted));
+                public static readonly EventId Updated = new(1504, nameof(Updated));
+                public static readonly EventId Toggled = new(1505, nameof(Toggled));
+            }
+
+            // AdminCategoryController (1600–1699)
+            public static class Admin
+            {
+                public static readonly EventId GetAll = new(1600, nameof(GetAll));
+                public static readonly EventId Created = new(1601, nameof(Created));
+            }
+
+            // UserCategoryController (1700–1799)
+            public static class User
+            {
+                public static readonly EventId GetAll = new(1700, nameof(GetAll));
+                public static readonly EventId Created = new(1701, nameof(Created));
+            }
+        }
+
+        // Transactions(2000-2499)
+        public static class Transactions
+        {
+
+            // BaseTransactionController (2001–2099)
+            public static class Common
+            {
+                public static readonly EventId SortInvalid = new(2000, nameof(SortInvalid));
+                public static readonly EventId NotFound = new(2001, nameof(NotFound));
+                public static readonly EventId GetById = new(2002, nameof(GetById));
+                public static readonly EventId Deleted = new(2003, nameof(Deleted));
+                public static readonly EventId Updated = new(2004, nameof(Updated));
+                public static readonly EventId Toggled = new(2005, nameof(Toggled));
+            }
+
+            // AdminTransactionController (2100–2199)
+            public static class Admin
+            {
+                public static readonly EventId GetAll = new(2100, nameof(GetAll));
+                public static readonly EventId Created = new(2101, nameof(Created));
+            }
+
+            // UserTransactionController (2200–2299)
+            public static class User
+            {
+                public static readonly EventId GetAll = new(2200, nameof(GetAll));
+                public static readonly EventId Created = new(2201, nameof(Created));
+                public static readonly EventId Report = new(2202, nameof(Report));
+            }
+        }
+    }
+}

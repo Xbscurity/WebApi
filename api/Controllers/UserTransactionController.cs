@@ -41,12 +41,13 @@ namespace api.Controllers
         {
             if (!_sortValidator.IsValid(queryObject.SortBy))
             {
-                _logger.LogWarning(_sortValidator.GetErrorMessage(queryObject.SortBy!));
+                _logger.LogWarning(LoggingEvents.Transactions.Common.SortInvalid, _sortValidator.GetErrorMessage(queryObject.SortBy!));
                 return ApiResponse.BadRequest<List<GroupedReportDto>>(_sortValidator.GetErrorMessage(queryObject.SortBy!));
             }
 
             var report = await _transactionService.GetReportAsync(User.ToCurrentUser(), queryObject);
             _logger.LogInformation(
+                LoggingEvents.Transactions.User.Report,
                 "Returning {Count} transactions. Strategy Key = {StrategyKey}, Page={PageNumber}, Size={PageSize}, SortBy={SortBy}",
                 report.Data.Count,
                 queryObject.Key,
@@ -61,12 +62,13 @@ namespace api.Controllers
         {
             if (!_sortValidator.IsValid(queryObject.SortBy))
             {
-                _logger.LogWarning(_sortValidator.GetErrorMessage(queryObject.SortBy!));
+                _logger.LogWarning(LoggingEvents.Transactions.Common.SortInvalid, _sortValidator.GetErrorMessage(queryObject.SortBy!));
                 return ApiResponse.BadRequest<List<BaseFinancialTransactionOutputDto>>(_sortValidator.GetErrorMessage(queryObject.SortBy!));
             }
 
             var transactions = await _transactionService.GetAllForUserAsync(User.ToCurrentUser(), queryObject);
             _logger.LogInformation(
+                LoggingEvents.Transactions.User.GetAll,
                 "Returning {Count} transactions. Page={PageNumber}, Size={PageSize}, SortBy={SortBy}",
                 transactions.Data.Count,
                 transactions.Pagination.PageNumber,
@@ -79,7 +81,7 @@ namespace api.Controllers
         public async Task<ApiResponse<BaseFinancialTransactionOutputDto>> Create([FromBody] BaseFinancialTransactionInputDto transactionDto)
         {
             var result = await _transactionService.CreateForUserAsync(User.ToCurrentUser(), transactionDto);
-            _logger.LogInformation("Created new transaction {transactionId}", result.Id);
+            _logger.LogInformation(LoggingEvents.Transactions.User.Created, "Created new transaction {transactionId}", result.Id);
             return ApiResponse.Success(result);
         }
     }

@@ -31,20 +31,23 @@ namespace api.Controllers
             var user = await _userManager.FindByIdAsync(userId);
             if (user == null)
             {
-                _logger.LogWarning("User not found");
+                _logger.LogWarning(LoggingEvents.Users.Admin.NotFound, "User not found");
                 return ApiResponse.NotFound<string>("User not found");
             }
 
             var roles = await _userManager.GetRolesAsync(user);
             if (roles.Contains(Roles.Admin))
             {
-                _logger.LogWarning("Attempt of banning administrator");
+                _logger.LogWarning(LoggingEvents.Users.Admin.AdminBanAttempt, "Attempt of banning administrator");
                 return ApiResponse.BadRequest<string>("You cannot modify the ban status of an administrator");
             }
 
             if (user.IsBanned == request.IsBanned)
             {
-                _logger.LogWarning("User is already {BanStatus}", request.IsBanned ? "banned" : "unbanned");
+                _logger.LogWarning(
+                    LoggingEvents.Users.Admin.UserAlreadyBanned,
+                    "User is already {BanStatus}",
+                    request.IsBanned ? "banned" : "unbanned");
                 return ApiResponse.BadRequest<string>($"User is already {(request.IsBanned ? "banned" : "unbanned")}");
             }
 
@@ -52,7 +55,10 @@ namespace api.Controllers
 
             await _userManager.UpdateAsync(user);
 
-            _logger.LogInformation("User is has been {BanStatus}", request.IsBanned ? "banned" : "unbanned");
+            _logger.LogInformation(
+                LoggingEvents.Users.Admin.UserBanned,
+                "User has been {BanStatus}",
+                request.IsBanned ? "banned" : "unbanned");
             return ApiResponse.Success($"User has been {(request.IsBanned ? "banned" : "unbanned")}");
         }
 
@@ -74,7 +80,7 @@ namespace api.Controllers
                 Data = await query.Query.ToListAsync(),
                 Pagination = query.Pagination,
             };
-            _logger.LogInformation("Returning {Count} users", result.Data.Count);
+            _logger.LogInformation(LoggingEvents.Users.Admin.GetAll, "Returning {Count} users", result.Data.Count);
             return ApiResponse.Success(result);
         }
     }

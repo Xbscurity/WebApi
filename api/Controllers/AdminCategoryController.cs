@@ -27,17 +27,20 @@ namespace api.Controllers
         }
 
         [HttpGet]
-        public async Task<ApiResponse<List<BaseCategoryOutputDto>>> GetAll([FromQuery] PaginationQueryObject queryObject, [FromQuery] string? userId = null)
+        public async Task<ApiResponse<List<BaseCategoryOutputDto>>> GetAll(
+            [FromQuery] PaginationQueryObject queryObject,
+            [FromQuery] string? userId = null)
         {
 
             if (!_sortValidator.IsValid(queryObject.SortBy))
             {
-                _logger.LogWarning(_sortValidator.GetErrorMessage(queryObject.SortBy));
+                _logger.LogWarning(LoggingEvents.Categories.Common.SortInvalid, _sortValidator.GetErrorMessage(queryObject.SortBy));
                 return ApiResponse.BadRequest<List<BaseCategoryOutputDto>>(_sortValidator.GetErrorMessage(queryObject.SortBy));
             }
 
             var categories = await _categoryService.GetAllForAdminAsync(queryObject, userId);
             _logger.LogInformation(
+                LoggingEvents.Categories.Admin.GetAll,
                 "Returning {Count} categories. , Page={PageNumber}, Size={PageSize}, SortBy={SortBy}, userId = {userId}",
                 categories.Data.Count,
                 categories.Pagination.PageNumber,
@@ -51,7 +54,10 @@ namespace api.Controllers
         public async Task<ApiResponse<BaseCategoryOutputDto>> Create([FromBody] AdminCategoryInputDto categoryDto)
         {
             var result = await _categoryService.CreateForAdminAsync(categoryDto);
-            _logger.LogInformation("Created new category {categoryId} for user {UserId}", result.Id, result.AppUserId);
+            _logger.LogInformation(
+                LoggingEvents.Categories.Admin.Created,
+                "Created new category {categoryId} for user {UserId}",
+                result.Id, result.AppUserId);
             return ApiResponse.Success(result);
         }
     }
