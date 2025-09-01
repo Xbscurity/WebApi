@@ -73,8 +73,6 @@ namespace api.Controllers
 
             SetRefreshTokenCookie(plainRefreshToken, refreshTokenEntity.ExpiresAt);
 
-            _logger.LogInformation(LoggingEvents.Users.Common.RegisterSuccess, "User registered successfully");
-
             return ApiResponse.Success(userDto);
         }
 
@@ -110,8 +108,6 @@ namespace api.Controllers
             };
 
             SetRefreshTokenCookie(plainRefreshToken, refreshTokenEntity.ExpiresAt);
-
-            _logger.LogInformation(LoggingEvents.Users.Common.LoginSuccess, "User logged in successfully");
 
             return ApiResponse.Success(newUserDto);
         }

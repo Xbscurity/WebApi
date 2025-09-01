@@ -8,21 +8,15 @@
             // Common (1000-1099)
             public static class Common
             {
-                public static readonly EventId RegisterSuccess = new(1000, nameof(RegisterSuccess));
                 public static readonly EventId RegisterFailed = new(1001, nameof(RegisterFailed));
                 public static readonly EventId RoleAssignFailed = new(1002, nameof(RoleAssignFailed));
 
-                public static readonly EventId LoginSuccess = new(1010, nameof(LoginSuccess));
                 public static readonly EventId LoginUserNotFound = new(1011, nameof(LoginUserNotFound));
                 public static readonly EventId LoginInvalidPassword = new(1012, nameof(LoginInvalidPassword));
 
-                public static readonly EventId RefreshTokenSuccess = new(1020, nameof(RefreshTokenSuccess));
                 public static readonly EventId RefreshTokenMissing = new(1021, nameof(RefreshTokenMissing));
                 public static readonly EventId RefreshTokenInvalid = new(1022, nameof(RefreshTokenInvalid));
 
-                public static readonly EventId LogoutSuccess = new(1030, nameof(LogoutSuccess));
-
-                public static readonly EventId ChangePasswordSuccess = new(1050, nameof(ChangePasswordSuccess));
                 public static readonly EventId ChangePasswordCurrentFailed = new(1051, nameof(ChangePasswordCurrentFailed));
                 public static readonly EventId ChangePasswordNewFailed = new(1052, nameof(ChangePasswordNewFailed));
             }

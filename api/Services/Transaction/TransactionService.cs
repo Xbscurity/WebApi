@@ -12,7 +12,6 @@ using api.Repositories.Interfaces;
 using api.Responses;
 using api.Services.Common;
 using Microsoft.EntityFrameworkCore;
-using Serilog;
 
 namespace api.Services.Transaction
 {
