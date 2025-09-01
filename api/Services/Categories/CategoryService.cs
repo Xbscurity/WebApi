@@ -1,4 +1,5 @@
-﻿using api.Dtos.Category;
+﻿using api.Constants;
+using api.Dtos.Category;
 using api.Extensions;
 using api.Models;
 using api.QueryObjects;
@@ -12,10 +13,12 @@ namespace api.Services.Categories
     public class CategoryService : ICategoryService
     {
         private readonly ICategoryRepository _categoryRepository;
+        private readonly ILogger<CategoryService> _logger;
 
-        public CategoryService(ICategoryRepository categoriesRepository)
+        public CategoryService(ICategoryRepository categoriesRepository, ILogger<CategoryService> logger)
         {
             _categoryRepository = categoriesRepository;
+            _logger = logger;
         }
 
         public async Task<PagedData<BaseCategoryOutputDto>> GetAllForUserAsync(
@@ -42,6 +45,7 @@ namespace api.Services.Categories
             var query = _categoryRepository.GetQueryable();
             if (userId != null)
             {
+
                 query = query.Where(c => c.AppUserId == userId);
             }
 
@@ -59,11 +63,13 @@ namespace api.Services.Categories
             var category = await _categoryRepository.GetByIdAsync(id);
             if (category == null)
             {
+                _logger.LogDebug("Category {CategoryId} not found", id);
                 return false;
             }
 
             if (!CanAccessCategory(user, category))
             {
+                _logger.LogWarning(LoggingEvents.Categories.Common.NoAccess, "Access denied to category {CategoryId}", id);
                 return false;
             }
 
@@ -78,11 +84,13 @@ namespace api.Services.Categories
             var existingCategory = await _categoryRepository.GetByIdAsync(id);
             if (existingCategory == null)
             {
+                _logger.LogDebug("Category {CategoryId} not found", id);
                 return null;
             }
 
             if (!CanAccessCategory(user, existingCategory, allowGlobal: true))
             {
+                _logger.LogWarning(LoggingEvents.Categories.Common.NoAccess, "Access denied to category {CategoryId}", id);
                 return null;
             }
 
@@ -117,11 +125,13 @@ namespace api.Services.Categories
             var existingCategory = await _categoryRepository.GetByIdAsync(id);
             if (existingCategory is null)
             {
+                _logger.LogDebug("Category {CategoryId} not found", id);
                 return null;
             }
 
             if (!CanAccessCategory(user, existingCategory))
             {
+                _logger.LogWarning(LoggingEvents.Categories.Common.NoAccess, "Access denied to category {CategoryId}", id);
                 return null;
             }
 
@@ -135,11 +145,13 @@ namespace api.Services.Categories
             var existingCategory = await _categoryRepository.GetByIdAsync(id);
             if (existingCategory is null)
             {
+                _logger.LogDebug("Category {CategoryId} not found", id);
                 return false;
             }
 
             if (!CanAccessCategory(user, existingCategory))
             {
+                _logger.LogWarning(LoggingEvents.Categories.Common.NoAccess, "Access denied to category {CategoryId}", id);
                 return false;
             }
 

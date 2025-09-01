@@ -13,7 +13,7 @@ namespace api.Filters
             {
                 context.HttpContext.Response.StatusCode = response.Error?.Code switch
                 {
-                    ErrorCodes.NotFound => StatusCodes.Status404NotFound, // (int)HttpStatusCode.NotFound,
+                    ErrorCodes.NotFound => StatusCodes.Status404NotFound, // (int)HttpStatusCode.NoAccess,
                     ErrorCodes.ValidationError => StatusCodes.Status422UnprocessableEntity,
                     ErrorCodes.BadRequest => StatusCodes.Status400BadRequest,
                     ErrorCodes.Unauthorized => StatusCodes.Status401Unauthorized,

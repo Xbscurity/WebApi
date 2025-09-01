@@ -1,4 +1,5 @@
-﻿using api.Dtos.FinancialTransaction;
+﻿using api.Constants;
+using api.Dtos.FinancialTransaction;
 using api.Dtos.FinancialTransactions;
 using api.Enums;
 using api.Extensions;
@@ -11,6 +12,7 @@ using api.Repositories.Interfaces;
 using api.Responses;
 using api.Services.Common;
 using Microsoft.EntityFrameworkCore;
+using Serilog;
 
 namespace api.Services.Transaction
 {
@@ -20,17 +22,20 @@ namespace api.Services.Transaction
         private readonly ICategoryRepository _categoryRepository;
         private readonly ITimeProvider _timeProvider;
         private readonly Dictionary<GroupingReportStrategyKey, IGroupingReportStrategy> _strategies;
+        private readonly ILogger<TransactionService> _logger;
 
         public TransactionService(
             ITransactionRepository transactionsRepository,
             ITimeProvider timeProvider,
             IEnumerable<IGroupingReportStrategy> strategies,
-            ICategoryRepository categoryRepository)
+            ICategoryRepository categoryRepository,
+            ILogger<TransactionService> logger)
         {
             _transactionRepository = transactionsRepository;
             _timeProvider = timeProvider;
             _strategies = strategies.ToDictionary(s => s.Key);
             _categoryRepository = categoryRepository;
+            _logger = logger;
         }
 
         public async Task<BaseFinancialTransactionOutputDto> CreateForAdminAsync(AdminFinancialTransactionCreateInputDto transactionDto, string userId)
@@ -45,11 +50,16 @@ namespace api.Services.Transaction
             var category = await _categoryRepository.GetByIdAsync(transactionDto.CategoryId);
             if (category == null || category.IsActive == false)
             {
+                _logger.LogDebug("Category {CategoryId} not found or inactive", transactionDto.CategoryId);
                 return null;
             }
 
             if (category.AppUserId != null && category.AppUserId != user.UserId)
             {
+                _logger.LogWarning(
+                    LoggingEvents.Categories.Common.NoAccess,
+                    "Access denied to category {CategoryId}",
+                    transactionDto.CategoryId);
                 return null;
             }
 
@@ -63,10 +73,16 @@ namespace api.Services.Transaction
             var existingTransaction = await _transactionRepository.GetByIdAsync(id);
             if (existingTransaction is null)
             {
+                _logger.LogDebug("Transaction {TransactionId} not found", id);
                 return false;
             }
+
             if (!CanAccessTransaction(user, existingTransaction))
             {
+                _logger.LogWarning(
+                   LoggingEvents.Transactions.Common.NoAccess,
+                   "Access denied to transaction {TransactionId}",
+                   id);
                 return false;
             }
 
@@ -111,8 +127,18 @@ namespace api.Services.Transaction
         public async Task<BaseFinancialTransactionOutputDto?> GetByIdAsync(CurrentUser user, int id)
         {
             var transaction = await _transactionRepository.GetByIdAsync(id);
+            if (transaction == null)
+            {
+                _logger.LogDebug("Transaction {TransactionId} not found", id);
+                return null;
+            }
+
             if (!CanAccessTransaction(user, transaction))
             {
+                _logger.LogWarning(
+                   LoggingEvents.Transactions.Common.NoAccess,
+                   "Access denied to transaction {TransactionId}",
+                   id);
                 return null;
             }
 
@@ -139,11 +165,16 @@ namespace api.Services.Transaction
             var existingTransaction = await _transactionRepository.GetByIdAsync(id);
             if (existingTransaction is null)
             {
+                _logger.LogDebug("Transaction {TransactionId} not found", id);
                 return null;
             }
 
             if (!CanAccessTransaction(user, existingTransaction))
             {
+                _logger.LogWarning(
+                   LoggingEvents.Transactions.Common.NoAccess,
+                   "Access denied to transaction {TransactionId}",
+                   id);
                 return null;
             }
 

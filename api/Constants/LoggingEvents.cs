@@ -45,7 +45,7 @@
             public static class Common
             {
                 public static readonly EventId SortInvalid = new(1500, nameof(SortInvalid));
-                public static readonly EventId NotFound = new(1501, nameof(NotFound));
+                public static readonly EventId NoAccess = new(1501, nameof(NoAccess));
                 public static readonly EventId GetById = new(1502, nameof(GetById));
                 public static readonly EventId Deleted = new(1503, nameof(Deleted));
                 public static readonly EventId Updated = new(1504, nameof(Updated));
@@ -75,7 +75,7 @@
             public static class Common
             {
                 public static readonly EventId SortInvalid = new(2000, nameof(SortInvalid));
-                public static readonly EventId NotFound = new(2001, nameof(NotFound));
+                public static readonly EventId NoAccess = new(2001, nameof(NoAccess));
                 public static readonly EventId GetById = new(2002, nameof(GetById));
                 public static readonly EventId Deleted = new(2003, nameof(Deleted));
                 public static readonly EventId Updated = new(2004, nameof(Updated));

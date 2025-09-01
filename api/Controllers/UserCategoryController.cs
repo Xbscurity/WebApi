@@ -66,7 +66,7 @@ namespace api.Controllers
         //{
         //    if (request.TimeZone is null)
         //    {
-        //        return ApiResponse.NotFound<TimeZoneRequest>("Invalid or missing timezone.");
+        //        return ApiResponse.NoAccess<TimeZoneRequest>("Invalid or missing timezone.");
         //    }
 
         //    return ApiResponse.Success(request);

@@ -139,7 +139,6 @@ namespace api.Controllers
 
             SetRefreshTokenCookie(result.NewRefreshToken, result.ExpiresAt!.Value);
 
-            _logger.LogInformation(LoggingEvents.Users.Common.RefreshTokenSuccess, "Refresh token successfully updated");
             return ApiResponse.Success(new RefreshResponseDto
             {
                 Token = result.NewAccessToken!,
@@ -156,7 +155,6 @@ namespace api.Controllers
                 Response.Cookies.Delete("refreshToken");
             }
 
-            _logger.LogInformation(LoggingEvents.Users.Common.LogoutSuccess, "Logout completed");
             return ApiResponse.Success("Logout completed");
         }
 
@@ -166,7 +164,6 @@ namespace api.Controllers
         {
             var user = await _userManager.GetUserAsync(User);
 
-
             var profileDto = new UserProfileDto
             {
                 UserName = user.UserName!,
@@ -174,7 +171,6 @@ namespace api.Controllers
                 CreatedAt = user.CreatedAt,
             };
 
-            _logger.LogInformation("Profile returned successfully");
             return ApiResponse.Success(profileDto);
         }
 
@@ -206,8 +202,6 @@ namespace api.Controllers
             var newRefreshToken = _tokenService.GenerateRefreshToken();
             var refreshTokenEntity = _tokenService.GenerateRefreshTokenEntity(newRefreshToken, user, GetClientIp());
             await _tokenService.SaveRefreshTokenAsync(refreshTokenEntity);
-
-            _logger.LogDebug("Refresh token saved for user");
 
             SetRefreshTokenCookie(newRefreshToken);
 

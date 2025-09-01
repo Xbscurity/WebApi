@@ -23,18 +23,6 @@ namespace api.Controllers
         {
         }
 
-        /// <summary>
-        /// Get a report by specified group
-        /// </summary>
-        /// <param name="dateRange">The date range for filtering the report.</param>
-        /// <param name="reportType">
-        /// The type of report to generate: 
-        /// 1 - "ByCategory" - Report grouped by category.
-        /// 2 - "ByDate" - Report grouped by date.  
-        /// 3 - "ByCategoryAndDate" - Report grouped by both category and date.
-        /// </param>
-        /// <returns>A list of grouped reports.</returns>
-        ///
         [HttpGet("report")]
         public async Task<ApiResponse<List<GroupedReportDto>>> GetReport(
     [FromQuery] ReportQueryObject? queryObject)

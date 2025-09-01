@@ -24,7 +24,6 @@ namespace api.Controllers
             var transaction = await _transactionService.GetByIdAsync(User.ToCurrentUser(), id);
             if (transaction == null)
             {
-                _logger.LogWarning(LoggingEvents.Transactions.Common.NotFound, "Transaction not found. TransactionId: {TransactionId}", id);
                 return ApiResponse.NotFound<BaseFinancialTransactionOutputDto>("Transaction not found");
             }
 
@@ -39,7 +38,6 @@ namespace api.Controllers
             var result = await _transactionService.UpdateAsync(User.ToCurrentUser(), id, transactionDto);
             if (result is null)
             {
-                _logger.LogWarning(LoggingEvents.Transactions.Common.NotFound, "Transaction not found. TransactionId: {TransactionId}", id);
                 return ApiResponse.NotFound<BaseFinancialTransactionOutputDto>("Transaction not found");
             }
 
@@ -56,7 +54,6 @@ namespace api.Controllers
             bool result = await _transactionService.DeleteAsync(User.ToCurrentUser(), id);
             if (result is false)
             {
-                _logger.LogWarning(LoggingEvents.Transactions.Common.NotFound, "Transaction not found. TransactionId: {TransactionId}", id);
                 return ApiResponse.NotFound<bool>("Transaction not found");
             }
 

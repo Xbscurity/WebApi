@@ -26,7 +26,6 @@ namespace api.Controllers
             var category = await _categoryService.GetByIdAsync(User.ToCurrentUser(), id);
             if (category is null)
             {
-                _logger.LogWarning(LoggingEvents.Categories.Common.NotFound, "Category not found. CategoryId: {CategoryId}", id);
                 return ApiResponse.NotFound<BaseCategoryOutputDto>("Category not found");
             }
 
@@ -40,7 +39,6 @@ namespace api.Controllers
             var result = await _categoryService.DeleteAsync(User.ToCurrentUser(), id);
             if (result is false)
             {
-                _logger.LogWarning(LoggingEvents.Categories.Common.NotFound, "Category not found. CategoryId: {CategoryId}", id);
                 return ApiResponse.NotFound<bool>("Category not found");
             }
 
@@ -54,9 +52,9 @@ namespace api.Controllers
             var result = await _categoryService.UpdateAsync(User.ToCurrentUser(), id, categoryDto);
             if (result is null)
             {
-                _logger.LogWarning(LoggingEvents.Categories.Common.NotFound, "Category not found. CategoryId: {CategoryId}", id);
                 return ApiResponse.NotFound<BaseCategoryOutputDto>("Category not found");
             }
+
             _logger.LogInformation(LoggingEvents.Categories.Common.Updated, "Category updated successfully. CategoryId: {CategoryId}", id);
             return ApiResponse.Success(result);
         }
@@ -67,9 +65,9 @@ namespace api.Controllers
             var success = await _categoryService.ToggleActiveAsync(User.ToCurrentUser(), id);
             if (!success)
             {
-                _logger.LogWarning(LoggingEvents.Categories.Common.NotFound, "Category not found. CategoryId: {CategoryId}", id);
                 return ApiResponse.NotFound<bool>("Category not found");
             }
+
             _logger.LogInformation(LoggingEvents.Categories.Common.Toggled, "Category toggled successfully. CategoryId: {CategoryId}", id);
             return ApiResponse.Success(success);
         }
