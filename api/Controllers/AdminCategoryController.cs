@@ -20,8 +20,9 @@ namespace api.Controllers
         public AdminCategoryController(
             ICategoryService categoriesService,
             ILogger<AdminCategoryController> logger,
-            CategorySortValidator sortValidator)
-            : base(categoriesService, logger)
+            CategorySortValidator sortValidator,
+            IAuthorizationService authorizationService)
+            : base(categoriesService, logger, authorizationService)
         {
             _sortValidator = sortValidator;
         }

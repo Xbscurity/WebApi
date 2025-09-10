@@ -3,14 +3,12 @@ using api.Dtos.FinancialTransaction;
 using api.Dtos.FinancialTransactions;
 using api.Enums;
 using api.Extensions;
-
 using api.Models;
 using api.Providers.Interfaces;
 using api.QueryObjects;
 using api.Repositories.Categories;
 using api.Repositories.Interfaces;
 using api.Responses;
-using api.Services.Common;
 using Microsoft.EntityFrameworkCore;
 
 namespace api.Services.Transaction
@@ -37,14 +35,16 @@ namespace api.Services.Transaction
             _logger = logger;
         }
 
-        public async Task<BaseFinancialTransactionOutputDto> CreateForAdminAsync(AdminFinancialTransactionCreateInputDto transactionDto, string userId)
+        public async Task<BaseFinancialTransactionOutputDto> CreateForAdminAsync(
+            string userId, AdminFinancialTransactionCreateInputDto transactionDto)
         {
             var transaction = transactionDto.ToModel(_timeProvider);
             await _transactionRepository.CreateAsync(transaction);
             return transaction.ToOutputDto();
         }
 
-        public async Task<BaseFinancialTransactionOutputDto?> CreateForUserAsync(CurrentUser user, BaseFinancialTransactionInputDto transactionDto)
+        public async Task<BaseFinancialTransactionOutputDto?> CreateForUserAsync(
+            string userId, BaseFinancialTransactionInputDto transactionDto)
         {
             var category = await _categoryRepository.GetByIdAsync(transactionDto.CategoryId);
             if (category == null || category.IsActive == false)
@@ -53,7 +53,7 @@ namespace api.Services.Transaction
                 return null;
             }
 
-            if (category.AppUserId != null && category.AppUserId != user.UserId)
+            if (category.AppUserId != null && category.AppUserId != userId)
             {
                 _logger.LogWarning(
                     LoggingEvents.Categories.Common.NoAccess,
@@ -62,12 +62,12 @@ namespace api.Services.Transaction
                 return null;
             }
 
-            var transaction = transactionDto.ToModel(user.UserId!, _timeProvider);
+            var transaction = transactionDto.ToModel(userId!, _timeProvider);
             await _transactionRepository.CreateAsync(transaction);
             return transaction.ToOutputDto();
         }
 
-        public async Task<bool> DeleteAsync(CurrentUser user, int id)
+        public async Task<bool> DeleteAsync(int id)
         {
             var existingTransaction = await _transactionRepository.GetByIdAsync(id);
             if (existingTransaction is null)
@@ -76,20 +76,12 @@ namespace api.Services.Transaction
                 return false;
             }
 
-            if (!CanAccessTransaction(user, existingTransaction))
-            {
-                _logger.LogWarning(
-                   LoggingEvents.Transactions.Common.NoAccess,
-                   "Access denied to transaction {TransactionId}",
-                   id);
-                return false;
-            }
-
             await _transactionRepository.DeleteAsync(existingTransaction);
             return true;
         }
 
-        public async Task<PagedData<BaseFinancialTransactionOutputDto>> GetAllForAdminAsync(PaginationQueryObject queryObject, string? appUserId)
+        public async Task<PagedData<BaseFinancialTransactionOutputDto>> GetAllForAdminAsync(
+            PaginationQueryObject queryObject, string? appUserId)
         {
             var query = _transactionRepository.GetQueryableWithCategory();
             var sortedTransactionDtos = query
@@ -108,12 +100,13 @@ namespace api.Services.Transaction
             };
         }
 
-        public async Task<PagedData<BaseFinancialTransactionOutputDto>> GetAllForUserAsync(CurrentUser user, PaginationQueryObject queryObject)
+        public async Task<PagedData<BaseFinancialTransactionOutputDto>> GetAllForUserAsync(
+            string userId, PaginationQueryObject queryObject)
         {
             var query = _transactionRepository.GetQueryableWithCategory();
             var result = await query
+                .Where(t => t.AppUserId == userId)
                 .ApplySorting(queryObject)
-                .Where(t => t.AppUserId == user.UserId)
                 .Select(t => t.ToOutputDto())
                 .ToPagedQueryAsync(queryObject);
             return new PagedData<BaseFinancialTransactionOutputDto>
@@ -123,7 +116,18 @@ namespace api.Services.Transaction
             };
         }
 
-        public async Task<BaseFinancialTransactionOutputDto?> GetByIdAsync(CurrentUser user, int id)
+        public async Task<BaseFinancialTransactionOutputDto?> GetByIdAsync(int id)
+        {
+            var transaction = await _transactionRepository.GetByIdAsync(id);
+            if (transaction == null)
+            {
+                _logger.LogDebug("Transaction {TransactionId} not found", id);
+                return null;
+            }
+            return transaction.ToOutputDto();
+        }
+
+        public async Task<FinancialTransaction?> GetByIdRawAsync(int id)
         {
             var transaction = await _transactionRepository.GetByIdAsync(id);
             if (transaction == null)
@@ -132,23 +136,15 @@ namespace api.Services.Transaction
                 return null;
             }
 
-            if (!CanAccessTransaction(user, transaction))
-            {
-                _logger.LogWarning(
-                   LoggingEvents.Transactions.Common.NoAccess,
-                   "Access denied to transaction {TransactionId}",
-                   id);
-                return null;
-            }
-
-            return transaction.ToOutputDto();
+            return transaction;
         }
 
-        public async Task<PagedData<GroupedReportDto>> GetReportAsync(CurrentUser user, ReportQueryObject queryObject)
+        public async Task<PagedData<GroupedReportDto>> GetReportAsync(string userId, ReportQueryObject queryObject)
         {
             var strategy = _strategies[queryObject.Key];
             var query = _transactionRepository.GetQueryableWithCategory();
             var transactions = await query
+                .Where(t => t.AppUserId == userId)
                 .ApplyFiltering(queryObject)
                 .ApplySorting(queryObject)
                 .ToPagedQueryAsync(queryObject);
@@ -159,7 +155,8 @@ namespace api.Services.Transaction
             };
         }
 
-        public async Task<BaseFinancialTransactionOutputDto?> UpdateAsync(CurrentUser user, int id, BaseFinancialTransactionInputDto transactionDto)
+        public async Task<BaseFinancialTransactionOutputDto?> UpdateAsync(
+            int id, BaseFinancialTransactionInputDto transactionDto)
         {
             var existingTransaction = await _transactionRepository.GetByIdAsync(id);
             if (existingTransaction is null)
@@ -168,27 +165,11 @@ namespace api.Services.Transaction
                 return null;
             }
 
-            if (!CanAccessTransaction(user, existingTransaction))
-            {
-                _logger.LogWarning(
-                   LoggingEvents.Transactions.Common.NoAccess,
-                   "Access denied to transaction {TransactionId}",
-                   id);
-                return null;
-            }
-
             existingTransaction.CategoryId = transactionDto.CategoryId;
             existingTransaction.Amount = transactionDto.Amount;
             existingTransaction.Comment = transactionDto.Comment.Trim();
             await _transactionRepository.UpdateAsync(existingTransaction);
             return existingTransaction.ToOutputDto();
-        }
-
-        private bool CanAccessTransaction(CurrentUser user, FinancialTransaction transaction)
-        {
-            bool isOwner = transaction.AppUserId == user.UserId;
-
-            return user.IsAdmin || isOwner;
         }
     }
 }

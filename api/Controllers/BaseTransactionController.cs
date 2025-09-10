@@ -1,8 +1,10 @@
 ﻿using api.Constants;
 using api.Dtos.FinancialTransactions;
 using api.Extensions;
+using api.Models;
 using api.Responses;
 using api.Services.Transaction;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace api.Controllers
@@ -11,57 +13,54 @@ namespace api.Controllers
     {
         protected readonly ITransactionService _transactionService;
         protected readonly ILogger _logger;
+        private readonly IAuthorizationService _authorizationService;
 
-        public BaseTransactionController(ITransactionService transactionService, ILogger logger)
+        public BaseTransactionController(
+            ITransactionService transactionService,
+            ILogger logger,
+            IAuthorizationService authorizationService)
         {
             _transactionService = transactionService;
             _logger = logger;
+            _authorizationService = authorizationService;
         }
 
         [HttpGet("{id:int}")]
-        public async Task<ApiResponse<BaseFinancialTransactionOutputDto>> GetById([FromRoute] int id)
-        {
-            var transaction = await _transactionService.GetByIdAsync(User.ToCurrentUser(), id);
-            if (transaction == null)
-            {
-                return ApiResponse.NotFound<BaseFinancialTransactionOutputDto>("Transaction not found");
-            }
-
-            _logger.LogInformation(LoggingEvents.Transactions.Common.GetById, "Returning transaction. TransactionId {TransactionId}", id);
-            return ApiResponse.Success(transaction);
-        }
+        public Task<ApiResponse<BaseFinancialTransactionOutputDto>> GetById([FromRoute] int id) =>
+    HandleTransactionAsync(id, t => Task.FromResult(t.ToOutputDto())!);
 
         [HttpPut("{id:int}")]
-        public async Task<ApiResponse<BaseFinancialTransactionOutputDto>> Update(
-            [FromRoute] int id, [FromBody] BaseFinancialTransactionInputDto transactionDto)
-        {
-            var result = await _transactionService.UpdateAsync(User.ToCurrentUser(), id, transactionDto);
-            if (result is null)
-            {
-                return ApiResponse.NotFound<BaseFinancialTransactionOutputDto>("Transaction not found");
-            }
-
-            _logger.LogInformation(
-                LoggingEvents.Transactions.Common.Updated,
-                "Transaction updated successfully. TransactionId: {TransactionId}",
-                id);
-            return ApiResponse.Success(result);
-        }
+        public Task<ApiResponse<BaseFinancialTransactionOutputDto>> Update(
+            [FromRoute] int id, [FromBody] BaseFinancialTransactionInputDto dto) =>
+            HandleTransactionAsync(id, t => _transactionService.UpdateAsync(id, dto));
 
         [HttpDelete("{id:int}")]
-        public async Task<ApiResponse<bool>> Delete([FromRoute] int id)
+        public Task<ApiResponse<bool>> Delete([FromRoute] int id) =>
+            HandleTransactionAsync(id, t => _transactionService.DeleteAsync(id));
+
+
+        private async Task<ApiResponse<T>> HandleTransactionAsync<T>(
+    int id, Func<FinancialTransaction, Task<T?>> action)
         {
-            bool result = await _transactionService.DeleteAsync(User.ToCurrentUser(), id);
-            if (result is false)
+            var transaction = await _transactionService.GetByIdRawAsync(id);
+            if (transaction == null)
             {
-                return ApiResponse.NotFound<bool>("Transaction not found");
+                return ApiResponse.NotFound<T>("Transaction not found");
             }
 
-            _logger.LogInformation(
-                LoggingEvents.Transactions.Common.Deleted,
-                "Transaction deleted successfully. TransactionId: {TransactionId}",
-                id);
-            return ApiResponse.Success(result);
+            var authResult = await _authorizationService.AuthorizeAsync(User, transaction, Policies.TransactionAccess);
+            if (!authResult.Succeeded)
+            {
+                _logger.LogWarning(
+                    LoggingEvents.Transactions.Common.NoAccess,
+                    "Access denied to transaction {TransactionId}",
+                    id);
+
+                return ApiResponse.NotFound<T>("Transaction not found");
+            }
+
+            var result = await action(transaction);
+            return ApiResponse.Success(result!);
         }
     }
 }

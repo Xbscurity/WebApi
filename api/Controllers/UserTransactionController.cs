@@ -18,9 +18,14 @@ namespace api.Controllers
     {
         private readonly TransactionSortValidator _sortValidator;
 
-        public UserTransactionController(ITransactionService transactionService, ILogger<UserTransactionController> logger)
-            : base(transactionService, logger)
+        public UserTransactionController(
+            ITransactionService transactionService,
+            TransactionSortValidator sortValidator,
+            ILogger<UserTransactionController> logger,
+            IAuthorizationService authorizationService)
+            : base(transactionService, logger, authorizationService)
         {
+            _sortValidator = sortValidator;
         }
 
         [HttpGet("report")]
@@ -32,8 +37,8 @@ namespace api.Controllers
                 _logger.LogWarning(LoggingEvents.Transactions.Common.SortInvalid, _sortValidator.GetErrorMessage(queryObject.SortBy!));
                 return ApiResponse.BadRequest<List<GroupedReportDto>>(_sortValidator.GetErrorMessage(queryObject.SortBy!));
             }
-
-            var report = await _transactionService.GetReportAsync(User.ToCurrentUser(), queryObject);
+            var userId = User.GetUserId();
+            var report = await _transactionService.GetReportAsync(userId!, queryObject);
             _logger.LogInformation(
                 LoggingEvents.Transactions.User.Report,
                 "Returning {Count} transactions. Strategy Key = {StrategyKey}, Page={PageNumber}, Size={PageSize}, SortBy={SortBy}",
@@ -53,8 +58,8 @@ namespace api.Controllers
                 _logger.LogWarning(LoggingEvents.Transactions.Common.SortInvalid, _sortValidator.GetErrorMessage(queryObject.SortBy!));
                 return ApiResponse.BadRequest<List<BaseFinancialTransactionOutputDto>>(_sortValidator.GetErrorMessage(queryObject.SortBy!));
             }
-
-            var transactions = await _transactionService.GetAllForUserAsync(User.ToCurrentUser(), queryObject);
+            var userId = User.GetUserId();
+            var transactions = await _transactionService.GetAllForUserAsync(userId!, queryObject);
             _logger.LogInformation(
                 LoggingEvents.Transactions.User.GetAll,
                 "Returning {Count} transactions. Page={PageNumber}, Size={PageSize}, SortBy={SortBy}",
@@ -68,7 +73,8 @@ namespace api.Controllers
         [HttpPost]
         public async Task<ApiResponse<BaseFinancialTransactionOutputDto>> Create([FromBody] BaseFinancialTransactionInputDto transactionDto)
         {
-            var result = await _transactionService.CreateForUserAsync(User.ToCurrentUser(), transactionDto);
+            var userId = User.GetUserId();
+            var result = await _transactionService.CreateForUserAsync(userId!, transactionDto);
             _logger.LogInformation(LoggingEvents.Transactions.User.Created, "Created new transaction {transactionId}", result.Id);
             return ApiResponse.Success(result);
         }

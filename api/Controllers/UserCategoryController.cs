@@ -21,8 +21,9 @@ namespace api.Controllers
         public UserCategoryController(
             ICategoryService categoryService,
             ILogger<UserCategoryController> logger,
-            CategorySortValidator sortValidator)
-            : base(categoryService, logger)
+            CategorySortValidator sortValidator,
+            IAuthorizationService authorizationService)
+            : base(categoryService, logger, authorizationService)
         {
             _logger = logger;
             _sortValidator = sortValidator;
@@ -38,7 +39,8 @@ namespace api.Controllers
                 return ApiResponse.BadRequest<List<BaseCategoryOutputDto>>(_sortValidator.GetErrorMessage(queryObject.SortBy!));
             }
 
-            var categories = await _categoryService.GetAllForUserAsync(User.ToCurrentUser(), queryObject, includeInactive);
+            var userId = User.GetUserId();
+            var categories = await _categoryService.GetAllForUserAsync(userId!, queryObject, includeInactive);
 
             _logger.LogInformation(
                 LoggingEvents.Categories.User.GetAll,
@@ -54,12 +56,10 @@ namespace api.Controllers
         public async Task<ApiResponse<BaseCategoryOutputDto>> Create([FromBody] BaseCategoryInputDto categoryDto)
         {
             var userId = User.GetUserId();
-            var result = await _categoryService.CreateForUserAsync(User.ToCurrentUser(), categoryDto);
+            var result = await _categoryService.CreateForUserAsync(userId!, categoryDto);
             _logger.LogInformation(LoggingEvents.Categories.User.Created, "Created new transaction {categoryId}", result.Id);
             return ApiResponse.Success(result);
         }
-
-
 
         //[HttpGet("convert")]
         //public ApiResponse<TimeZoneRequest> GetTimeZoneInfo([FromQuery] TimeZoneRequest request)

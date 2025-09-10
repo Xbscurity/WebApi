@@ -17,15 +17,16 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Serilog;
 using Serilog.Events;
 using System.IdentityModel.Tokens.Jwt;
 using System.Text;
+using System.Threading.RateLimiting;
 try
 {
-
     Log.Logger = new LoggerConfiguration()
     .MinimumLevel.Debug()
     .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
@@ -101,6 +102,7 @@ try
             Array.Empty<string>()
         },
         });
+
         // options.OperationFilter<CustomTimeZoneParameterFilter>();
     });
     builder.Services.AddDbContext<ApplicationDbContext>(options =>
@@ -147,11 +149,49 @@ try
         {
             policy.RequireRole(Roles.User);
             policy.Requirements.Add(new NotBannedRequirement());
-        });
+        })
+        .AddPolicy(Policies.CategoryAccessGlobal, policy =>
+        policy.Requirements.Add(new CategoryAccessRequirement(allowGlobal: true)))
+
+        .AddPolicy(Policies.CategoryAccessNoGlobal, policy =>
+    policy.Requirements.Add(new CategoryAccessRequirement(allowGlobal: false)))
+
+        .AddPolicy(Policies.TransactionAccess, policy =>
+    policy.Requirements.Add(new TransactionAccessRequirement()));
 
     builder.Services.AddScoped<IAuthorizationHandler, NotBannedHandler>();
+    builder.Services.AddScoped<IAuthorizationHandler, CategoryAccessHandler>();
+    builder.Services.AddScoped<IAuthorizationHandler, TransactionAccessHandler>();
 
     builder.Services.AddHealthChecks();
+
+    builder.Services.AddRateLimiter(options =>
+    {
+        options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(httpContext =>
+            RateLimitPartition.GetFixedWindowLimiter(
+                partitionKey: httpContext.User.Identity?.Name
+              ?? httpContext.Connection.RemoteIpAddress?.ToString()
+              ?? "unknown",
+                factory: partition => new FixedWindowRateLimiterOptions
+                {
+                    PermitLimit = 100,
+                    Window = TimeSpan.FromSeconds(10),
+                    QueueLimit = 0,
+                    AutoReplenishment = true,
+                }));
+    });
+
+    builder.WebHost.ConfigureKestrel(options =>
+    {
+        options.Limits.MaxRequestBodySize = 1 * 1024 * 1024; // 1 MB
+        options.Limits.RequestHeadersTimeout = TimeSpan.FromSeconds(10);
+        options.Limits.KeepAliveTimeout = TimeSpan.FromSeconds(30);
+
+        options.Limits.MinRequestBodyDataRate =
+    new MinDataRate(bytesPerSecond: 100, gracePeriod: TimeSpan.FromSeconds(5));
+        options.Limits.MinResponseDataRate =
+            new MinDataRate(bytesPerSecond: 100, gracePeriod: TimeSpan.FromSeconds(5));
+    });
 
     // TypeDescriptor.AddAttributes(typeof(TimeZoneInfo), new TypeConverterAttribute(typeof(TimeZoneInfoConverter)));
     var app = builder.Build();
@@ -176,6 +216,8 @@ try
         await DataSeeder.SeedRolesAndAdminAsync(roleManager, userManager);
         await DataSeeder.SeedAppDataAsync(context);
     }
+
+    app.UseRateLimiter();
 
     app.UseAuthentication();
     app.UseAuthorization();

@@ -79,7 +79,6 @@ namespace api.Controllers
         [HttpPost("login")]
         public async Task<ApiResponse<NewUserDto>> Login([FromBody] LoginDto loginDto)
         {
-
             var user = await _userManager.FindByNameAsync(loginDto.UserName);
             if (user == null)
             {
@@ -201,7 +200,6 @@ namespace api.Controllers
 
             SetRefreshTokenCookie(newRefreshToken);
 
-            _logger.LogInformation(LoggingEvents.Users.Common.ChangePasswordSuccess, "Password changed successfully");
             return ApiResponse.Success("Password changed successfully");
         }
 

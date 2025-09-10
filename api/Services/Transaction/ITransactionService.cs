@@ -1,27 +1,34 @@
 ﻿using api.Dtos.FinancialTransaction;
 using api.Dtos.FinancialTransactions;
+using api.Models;
 using api.QueryObjects;
 using api.Responses;
-using api.Services.Common;
 
 namespace api.Services.Transaction
 {
     public interface ITransactionService
     {
-        Task<PagedData<BaseFinancialTransactionOutputDto>> GetAllForUserAsync(CurrentUser user, PaginationQueryObject queryObject);
+        Task<PagedData<BaseFinancialTransactionOutputDto>> GetAllForUserAsync(
+            string userId, PaginationQueryObject queryObject);
 
-        Task<PagedData<BaseFinancialTransactionOutputDto>> GetAllForAdminAsync(PaginationQueryObject queryObject, string? appUserId);
+        Task<PagedData<BaseFinancialTransactionOutputDto>> GetAllForAdminAsync(
+            PaginationQueryObject queryObject, string? appUserId);
 
-        Task<BaseFinancialTransactionOutputDto?> GetByIdAsync(CurrentUser user, int id);
+        Task<BaseFinancialTransactionOutputDto?> GetByIdAsync(int id);
 
-        Task<BaseFinancialTransactionOutputDto> CreateForAdminAsync(AdminFinancialTransactionCreateInputDto transaction, string appUserId);
+        Task<FinancialTransaction?> GetByIdRawAsync(int id);
 
-        Task<BaseFinancialTransactionOutputDto> CreateForUserAsync(CurrentUser user, BaseFinancialTransactionInputDto transaction);
+        Task<BaseFinancialTransactionOutputDto> CreateForAdminAsync(
+            string appUserId, AdminFinancialTransactionCreateInputDto transaction);
 
-        Task<BaseFinancialTransactionOutputDto?> UpdateAsync(CurrentUser user, int id, BaseFinancialTransactionInputDto transaction);
+        Task<BaseFinancialTransactionOutputDto> CreateForUserAsync(
+            string userId, BaseFinancialTransactionInputDto transaction);
 
-        Task<bool> DeleteAsync(CurrentUser user, int id);
+        Task<BaseFinancialTransactionOutputDto?> UpdateAsync(
+            int id, BaseFinancialTransactionInputDto transaction);
 
-        Task<PagedData<GroupedReportDto>> GetReportAsync(CurrentUser user, ReportQueryObject? queryObject);
+        Task<bool> DeleteAsync(int id);
+
+        Task<PagedData<GroupedReportDto>> GetReportAsync(string userId, ReportQueryObject? queryObject);
     }
 }

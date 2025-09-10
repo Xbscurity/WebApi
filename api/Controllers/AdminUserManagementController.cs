@@ -4,6 +4,7 @@ using api.Extensions;
 using api.Models;
 using api.QueryObjects;
 using api.Responses;
+using api.Validation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -18,11 +19,16 @@ namespace api.Controllers
     {
         private readonly UserManager<AppUser> _userManager;
         private readonly ILogger<AdminUserManagementController> _logger;
+        private readonly UserSortValidator _sortValidator;
 
-        public AdminUserManagementController(UserManager<AppUser> userManager, ILogger<AdminUserManagementController> logger)
+        public AdminUserManagementController(
+            UserManager<AppUser> userManager,
+            ILogger<AdminUserManagementController> logger,
+            UserSortValidator sortValidator)
         {
             _userManager = userManager;
             _logger = logger;
+            _sortValidator = sortValidator;
         }
 
         [HttpPost("ban-status/{userId}")]
@@ -63,8 +69,14 @@ namespace api.Controllers
         }
 
         [HttpGet("users")]
-        public async Task<ApiResponse<PagedData<UserDto>>> GetAllUsers([FromQuery] PaginationQueryObject queryObject)
+        public async Task<ApiResponse<List<UserDto>>> GetAllUsers([FromQuery] PaginationQueryObject queryObject)
         {
+            if (!_sortValidator.IsValid(queryObject.SortBy))
+            {
+                _logger.LogWarning(LoggingEvents.Categories.Common.SortInvalid, _sortValidator.GetErrorMessage(queryObject.SortBy!));
+                return ApiResponse.BadRequest<List<UserDto>>(_sortValidator.GetErrorMessage(queryObject.SortBy!));
+            }
+
             var query = await _userManager.Users
                 .Select(u => new UserDto
                 {
@@ -81,7 +93,7 @@ namespace api.Controllers
                 Pagination = query.Pagination,
             };
             _logger.LogInformation(LoggingEvents.Users.Admin.GetAll, "Returning {Count} users", result.Data.Count);
-            return ApiResponse.Success(result);
+            return ApiResponse.Success(result.Data, result.Pagination);
         }
     }
 }

@@ -1,4 +1,5 @@
-﻿using api.Responses;
+﻿using api.Extensions;
+using api.Responses;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authorization.Policy;
 
@@ -23,7 +24,8 @@ namespace api.Middlewares
             if (authorizeResult.Forbidden)
             {
                 context.Response.StatusCode = StatusCodes.Status403Forbidden;
-                _logger.LogWarning("Access forbidden");
+                var requirements = string.Join(", ", policy.Requirements.Select(r => r.GetType().Name));
+                _logger.LogWarning("Access forbidden for user {UserId}. Requirements not met: {@Requirements}.", context.User.GetUserId(), requirements);
                 await context.Response.WriteAsJsonAsync(ApiResponse.Forbidden<object>());
                 return;
             }
@@ -31,7 +33,7 @@ namespace api.Middlewares
             if (authorizeResult.Challenged)
             {
                 context.Response.StatusCode = StatusCodes.Status401Unauthorized;
-                _logger.LogWarning("Unauthorized access attempt");
+                _logger.LogDebug("Unauthorized access attempt");
                 await context.Response.WriteAsJsonAsync(ApiResponse.Unauthorized<object>());
                 return;
             }

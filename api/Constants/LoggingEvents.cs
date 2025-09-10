@@ -2,10 +2,14 @@
 {
     public static class LoggingEvents
     {
-        // Users (1000–1499)
+        /// <summary>
+        /// EventIds related to user operations (1000–1499).
+        /// </summary>
         public static class Users
         {
-            // Common (1000-1099)
+            /// <summary>
+            /// AccountController (1000–1099).
+            /// </summary>
             public static class Common
             {
                 public static readonly EventId RegisterFailed = new(1001, nameof(RegisterFailed));
@@ -21,7 +25,9 @@
                 public static readonly EventId ChangePasswordNewFailed = new(1052, nameof(ChangePasswordNewFailed));
             }
 
-            // AdminUserManagementController(1100-1199)
+            /// <summary>
+            /// AdminUserManagementController (1100-1199).
+            /// </summary>
             public static class Admin
             {
                 public static readonly EventId NotFound = new(1100, nameof(NotFound));
@@ -32,10 +38,14 @@
             }
         }
 
-        // Categories(1500-1999)
+        /// <summary>
+        /// EventIds related to category operations (1500–1999).
+        /// </summary>
         public static class Categories
         {
-            // BaseCategoryController (1500–1599)
+            /// <summary>
+            /// BaseCategoryController (1500–1599).
+            /// </summary>
             public static class Common
             {
                 public static readonly EventId SortInvalid = new(1500, nameof(SortInvalid));
@@ -46,14 +56,18 @@
                 public static readonly EventId Toggled = new(1505, nameof(Toggled));
             }
 
-            // AdminCategoryController (1600–1699)
+            /// <summary>
+            /// AdminCategoryController (1600–1699).
+            /// </summary>
             public static class Admin
             {
                 public static readonly EventId GetAll = new(1600, nameof(GetAll));
                 public static readonly EventId Created = new(1601, nameof(Created));
             }
 
-            // UserCategoryController (1700–1799)
+            /// <summary>
+            /// UserCategoryController (1700–1799).
+            /// </summary>
             public static class User
             {
                 public static readonly EventId GetAll = new(1700, nameof(GetAll));
@@ -61,11 +75,14 @@
             }
         }
 
-        // Transactions(2000-2499)
+        /// <summary>
+        ///  EventIds related to finanсical transactions operations (2000-2499).
+        /// </summary>
         public static class Transactions
         {
-
-            // BaseTransactionController (2001–2099)
+            /// <summary>
+            /// BaseTransactionController (2001–2099).
+            /// </summary>
             public static class Common
             {
                 public static readonly EventId SortInvalid = new(2000, nameof(SortInvalid));
@@ -76,14 +93,18 @@
                 public static readonly EventId Toggled = new(2005, nameof(Toggled));
             }
 
-            // AdminTransactionController (2100–2199)
+            /// <summary>
+            /// AdminTransactionController (2100–2199).
+            /// </summary>
             public static class Admin
             {
                 public static readonly EventId GetAll = new(2100, nameof(GetAll));
                 public static readonly EventId Created = new(2101, nameof(Created));
             }
 
-            // UserTransactionController (2200–2299)
+            /// <summary>
+            /// UserTransactionController (2200–2299).
+            /// </summary>
             public static class User
             {
                 public static readonly EventId GetAll = new(2200, nameof(GetAll));

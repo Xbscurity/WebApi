@@ -20,8 +20,9 @@ namespace api.Controllers
         public AdminTransactionController(
             ITransactionService transactionService,
             TransactionSortValidator sortValidator,
-            ILogger<AdminTransactionController> logger)
-            : base(transactionService, logger)
+            ILogger<AdminTransactionController> logger,
+            IAuthorizationService authorizationService)
+            : base(transactionService, logger, authorizationService)
         {
             _sortValidator = sortValidator;
         }
@@ -54,11 +55,12 @@ namespace api.Controllers
         public async Task<ApiResponse<BaseFinancialTransactionOutputDto>> Create(
             [FromBody] AdminFinancialTransactionCreateInputDto transactionDto)
         {
-            var result = await _transactionService.CreateForAdminAsync(transactionDto, transactionDto.AppUserId!);
+            var result = await _transactionService.CreateForAdminAsync(transactionDto.AppUserId!, transactionDto);
             _logger.LogInformation(
                 LoggingEvents.Categories.Admin.Created,
                 "Created new transaction {transactionId} for user {UserId}",
-                result.Id, result.AppUserId);
+                result.Id,
+                result.AppUserId);
             return ApiResponse.Success(result);
         }
     }

@@ -1,8 +1,10 @@
 ﻿using api.Constants;
 using api.Dtos.Category;
 using api.Extensions;
+using api.Models;
 using api.Responses;
 using api.Services.Categories;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace api.Controllers
@@ -13,63 +15,72 @@ namespace api.Controllers
 
         protected readonly ICategoryService _categoryService;
 
+        private readonly IAuthorizationService _authorizationService;
 
-        public BaseCategoryController(ICategoryService categoriesService, ILogger logger)
+        public BaseCategoryController(
+            ICategoryService categoriesService,
+            ILogger logger,
+            IAuthorizationService authorizationService)
         {
             _categoryService = categoriesService;
             _logger = logger;
+            _authorizationService = authorizationService;
         }
 
         [HttpGet("{id:int}")]
-        public virtual async Task<ApiResponse<BaseCategoryOutputDto>> GetById([FromRoute] int id)
-        {
-            var category = await _categoryService.GetByIdAsync(User.ToCurrentUser(), id);
-            if (category is null)
-            {
-                return ApiResponse.NotFound<BaseCategoryOutputDto>("Category not found");
-            }
-
-            _logger.LogInformation(LoggingEvents.Categories.Common.GetById, "Returning category. CategoryId: {CategoryId}", category.Id);
-            return ApiResponse.Success(category);
-        }
+        public virtual Task<ApiResponse<BaseCategoryOutputDto>> GetById([FromRoute] int id) =>
+    HandleCategoryAsync(id, Policies.CategoryAccessGlobal,
+        c => Task.FromResult<BaseCategoryOutputDto?>(c.ToOutputDto()));
 
         [HttpDelete("{id:int}")]
-        public virtual async Task<ApiResponse<bool>> Delete([FromRoute] int id)
-        {
-            var result = await _categoryService.DeleteAsync(User.ToCurrentUser(), id);
-            if (result is false)
-            {
-                return ApiResponse.NotFound<bool>("Category not found");
-            }
-
-            _logger.LogInformation(LoggingEvents.Categories.Common.Deleted, "Category deleted. CategoryId: {CategoryId}", id);
-            return ApiResponse.Success(true);
-        }
+        public virtual Task<ApiResponse<bool>> Delete([FromRoute] int id) =>
+            HandleCategoryAsync(id, Policies.CategoryAccessNoGlobal,
+                async c => await _categoryService.DeleteAsync(id),
+                forbidCommon: true);
 
         [HttpPut("{id:int}")]
-        public virtual async Task<ApiResponse<BaseCategoryOutputDto>> Update([FromRoute] int id, [FromBody] BaseCategoryInputDto categoryDto)
-        {
-            var result = await _categoryService.UpdateAsync(User.ToCurrentUser(), id, categoryDto);
-            if (result is null)
-            {
-                return ApiResponse.NotFound<BaseCategoryOutputDto>("Category not found");
-            }
-
-            _logger.LogInformation(LoggingEvents.Categories.Common.Updated, "Category updated successfully. CategoryId: {CategoryId}", id);
-            return ApiResponse.Success(result);
-        }
+        public virtual Task<ApiResponse<BaseCategoryOutputDto>> Update(
+            [FromRoute] int id, [FromBody] BaseCategoryInputDto categoryDto) =>
+            HandleCategoryAsync(id, Policies.CategoryAccessNoGlobal,
+                async c => await _categoryService.UpdateAsync(id, categoryDto),
+                forbidCommon: true);
 
         [HttpPatch("{id:int}/toggle-active")]
-        public async Task<ApiResponse<bool>> ToggleActive([FromRoute] int id)
+        public Task<ApiResponse<bool>> ToggleActive([FromRoute] int id) =>
+            HandleCategoryAsync(id, Policies.CategoryAccessGlobal,
+                async c => await _categoryService.ToggleActiveAsync(id),
+                forbidCommon: true);
+
+        private async Task<ApiResponse<T>> HandleCategoryAsync<T>(
+    int id,
+    string policy,
+    Func<Category, Task<T?>> action,
+    bool forbidCommon = false)
         {
-            var success = await _categoryService.ToggleActiveAsync(User.ToCurrentUser(), id);
-            if (!success)
+            var category = await _categoryService.GetByIdRawAsync(id);
+            if (category is null)
             {
-                return ApiResponse.NotFound<bool>("Category not found");
+                _logger.LogDebug("Category {CategoryId} not found", id);
+                return ApiResponse.NotFound<T>("Category not found");
             }
 
-            _logger.LogInformation(LoggingEvents.Categories.Common.Toggled, "Category toggled successfully. CategoryId: {CategoryId}", id);
-            return ApiResponse.Success(success);
+            var authResult = await _authorizationService.AuthorizeAsync(User, category, policy);
+            if (!authResult.Succeeded)
+            {
+                _logger.LogWarning(
+                    LoggingEvents.Categories.Common.NoAccess,
+                    "Access denied to category {CategoryId}", id);
+
+                if (forbidCommon && category.AppUserId == null)
+                {
+                    return ApiResponse.NotFound<T>("Cannot modify common categories");
+                }
+
+                return ApiResponse.NotFound<T>("Category not found");
+            }
+
+            var result = await action(category);
+            return ApiResponse.Success(result!);
         }
     }
 }
