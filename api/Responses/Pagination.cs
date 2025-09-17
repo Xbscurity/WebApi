@@ -1,7 +1,7 @@
 ﻿namespace api.Responses
 {
     /// <summary>
-    /// Represents pagination details for a paged collection of items.
+    /// Defines pagination details for a paged collection of items.
     /// </summary>
     public class Pagination
     {

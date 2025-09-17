@@ -8,15 +8,25 @@ using Microsoft.EntityFrameworkCore;
 
 namespace api.Services.Categories
 {
+
+    /// <summary>
+    /// Implements category-related business logic, including user-specific
+    /// and admin-level category management operations.
+    /// </summary>
     public class CategoryService : ICategoryService
     {
         private readonly ICategoryRepository _categoryRepository;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="CategoryService"/> class.
+        /// </summary>
+        /// <param name="categoriesRepository">The repository for category persistence and retrieval.</param>
         public CategoryService(ICategoryRepository categoriesRepository)
         {
             _categoryRepository = categoriesRepository;
         }
 
+        /// <inheritdoc />
         public async Task<PagedData<BaseCategoryOutputDto>> GetAllForUserAsync(
             string userId, PaginationQueryObject queryObject, bool includeInactive)
         {
@@ -36,6 +46,7 @@ namespace api.Services.Categories
             };
         }
 
+        /// <inheritdoc />
         public async Task<PagedData<BaseCategoryOutputDto>> GetAllForAdminAsync(PaginationQueryObject queryObject, string? userId)
         {
             var query = _categoryRepository.GetQueryable();
@@ -54,6 +65,7 @@ namespace api.Services.Categories
             };
         }
 
+        /// <inheritdoc />
         public async Task<bool> ToggleActiveAsync(int id)
         {
             var category = await _categoryRepository.GetByIdAsync(id);
@@ -68,6 +80,7 @@ namespace api.Services.Categories
             return true;
         }
 
+        /// <inheritdoc />
         public async Task<BaseCategoryOutputDto?> GetByIdAsync(int id)
         {
             var existingCategory = await _categoryRepository.GetByIdAsync(id);
@@ -79,6 +92,7 @@ namespace api.Services.Categories
             return existingCategory.ToOutputDto();
         }
 
+        /// <inheritdoc />
         public async Task<Category?> GetByIdRawAsync(int id)
         {
             var existingCategory = await _categoryRepository.GetByIdAsync(id);
@@ -90,7 +104,8 @@ namespace api.Services.Categories
             return existingCategory;
         }
 
-        public async Task<BaseCategoryOutputDto> CreateForUserAsync(string userId, BaseCategoryInputDto categoryDto)
+        /// <inheritdoc />
+        public async Task<BaseCategoryOutputDto> CreateForUserAsync(string userId, BaseCategoryUpdateInputDto categoryDto)
         {
             Category category = new Category
             {
@@ -101,7 +116,8 @@ namespace api.Services.Categories
             return category.ToOutputDto();
         }
 
-        public async Task<BaseCategoryOutputDto> CreateForAdminAsync(AdminCategoryInputDto categoryDto)
+        /// <inheritdoc />
+        public async Task<BaseCategoryOutputDto> CreateForAdminAsync(AdminCategoryCreateInputDto categoryDto)
         {
             Category category = new Category
             {
@@ -112,7 +128,8 @@ namespace api.Services.Categories
             return category.ToOutputDto();
         }
 
-        public async Task<BaseCategoryOutputDto?> UpdateAsync(int id, BaseCategoryInputDto categoryDto)
+        /// <inheritdoc />
+        public async Task<BaseCategoryOutputDto?> UpdateAsync(int id, BaseCategoryUpdateInputDto categoryDto)
         {
 
             var existingCategory = await _categoryRepository.GetByIdAsync(id);
@@ -126,6 +143,7 @@ namespace api.Services.Categories
             return existingCategory.ToOutputDto();
         }
 
+        /// <inheritdoc />
         public async Task<bool> DeleteAsync(int id)
         {
             var existingCategory = await _categoryRepository.GetByIdAsync(id);

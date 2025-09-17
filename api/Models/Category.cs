@@ -1,7 +1,7 @@
 namespace api.Models
 {
     /// <summary>
-    /// Represents a category used to classify <see cref="FinancialTransaction"/> in the application.
+    /// Defines a category used to classify <see cref="FinancialTransaction"/> in the application.
     /// </summary>
     public class Category
     {

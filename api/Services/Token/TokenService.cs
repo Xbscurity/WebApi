@@ -10,6 +10,9 @@ using System.Text;
 
 namespace api.Services.Token
 {
+    /// <summary>
+    /// Provides functionality for generating, refreshing, and revoking JWT access and refresh tokens.
+    /// </summary>
     public class TokenService : ITokenService
     {
         private readonly IConfiguration _config;
@@ -17,6 +20,12 @@ namespace api.Services.Token
         private readonly UserManager<AppUser> _userManager;
         private readonly ApplicationDbContext _context;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="TokenService"/> class.
+        /// </summary>
+        /// <param name="config">The application configuration containing JWT settings.</param>
+        /// <param name="userManager">The user manager for retrieving user roles.</param>
+        /// <param name="context">The database context used for managing refresh tokens.</param>
         public TokenService(IConfiguration config, UserManager<AppUser> userManager, ApplicationDbContext context)
         {
             _config = config;
@@ -25,6 +34,7 @@ namespace api.Services.Token
             _context = context;
         }
 
+        /// <inheritdoc/>
         public async Task<string> GenerateAccessTokenAsync(AppUser appUser)
         {
             var claims = new List<Claim>
@@ -51,12 +61,13 @@ namespace api.Services.Token
             return tokenHandler.WriteToken(token);
         }
 
+        /// <inheritdoc/>
         public string GenerateRefreshToken()
         {
             return Convert.ToHexString(RandomNumberGenerator.GetBytes(64)).ToLowerInvariant();
         }
 
-
+        /// <inheritdoc/>
         public RefreshToken GenerateRefreshTokenEntity(string plainToken, AppUser user, string? ipAddress)
         {
             var tokenHash = HashToken(plainToken);
@@ -70,12 +81,14 @@ namespace api.Services.Token
             return newToken;
         }
 
+        /// <inheritdoc/>
         public async Task SaveRefreshTokenAsync(RefreshToken token)
         {
             _context.RefreshTokens.Add(token);
             await _context.SaveChangesAsync();
         }
 
+        /// <inheritdoc/>
         public async Task<RefreshTokenResult> TryRefreshTokensAsync(string? refreshTokenPlain, string? ipAddress)
         {
             if (string.IsNullOrWhiteSpace(refreshTokenPlain))
@@ -135,6 +148,7 @@ namespace api.Services.Token
             };
         }
 
+        /// <inheritdoc/>
         public async Task RevokeRefreshTokenAsync(string token, string? ipAddress, string reason)
         {
             var tokenHash = HashToken(token);
@@ -154,6 +168,7 @@ namespace api.Services.Token
             await _context.SaveChangesAsync();
         }
 
+        /// <inheritdoc/>
         public async Task RevokeAllRefreshTokensAsync(string userId, string? ipAddress, string reason)
         {
 
@@ -165,7 +180,11 @@ namespace api.Services.Token
                     .SetProperty(rt => rt.Reason, reason));
         }
 
-
+        /// <summary>
+        /// Computes a SHA-256 hash for a given token string.
+        /// </summary>
+        /// <param name="token">The plain token string.</param>
+        /// <returns>The lowercase hexadecimal hash string.</returns>
         private string HashToken(string token)
         {
             using var sha = SHA256.Create();
@@ -173,6 +192,12 @@ namespace api.Services.Token
             return Convert.ToHexString(hashBytes).ToLowerInvariant();
         }
 
+        /// <summary>
+        /// Recursively revokes all descendant refresh tokens that were issued as replacements for the specified token.
+        /// </summary>
+        /// <param name="token">The refresh token whose descendants should be revoked.</param>
+        /// <param name="ipAddress">The IP address of the request, or <see langword="null"/>.</param>
+        /// <param name="reason">The reason for revocation.</param>
         private async Task RevokeDescendantTokensAsync(RefreshToken token, string? ipAddress, string reason)
         {
             var current = token;

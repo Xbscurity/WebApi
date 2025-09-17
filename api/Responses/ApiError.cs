@@ -1,7 +1,7 @@
 namespace api.Responses
 {
     /// <summary>
-    /// Represents a standardized error response returned by the API.
+    /// Defines a standardized error response returned by the API.
     /// </summary>
     public class ApiError
     {

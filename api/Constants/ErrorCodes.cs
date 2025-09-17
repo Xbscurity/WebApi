@@ -29,7 +29,5 @@
         /// Error code indicating that one or more validation errors occurred.
         /// </summary>
         public const string ValidationError = "VALIDATION_ERROR";
-
-        public const string PayloadTooLarge = "PAYLOAD_TOO_LARGE";
     }
 }

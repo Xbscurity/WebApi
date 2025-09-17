@@ -1,5 +1,4 @@
 ﻿using api.Dtos.FinancialTransaction;
-using api.Dtos.FinancialTransactions;
 using api.Responses;
 using api.Tests.Integration.Collections.Fixtures;
 using System.Net;
@@ -108,7 +107,7 @@ namespace api.Tests.Integration.Controllers
             response.EnsureSuccessStatusCode();
 
             // Assert
-            var result = await response.Content.ReadFromJsonAsync<ApiResponse<List<GroupedReportDto>>>();
+            var result = await response.Content.ReadFromJsonAsync<ApiResponse<List<GroupedReportOutputDto>>>();
             Assert.NotNull(result);
             Assert.Equal(2, result.Data.Count);
             Assert.Equal("abc", result.Data[0].Key.Category);

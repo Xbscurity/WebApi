@@ -1,4 +1,4 @@
-﻿using api.Dtos.FinancialTransactions;
+﻿using api.Dtos.FinancialTransaction;
 using api.Enums;
 using api.Models;
 using api.Providers.Interfaces;

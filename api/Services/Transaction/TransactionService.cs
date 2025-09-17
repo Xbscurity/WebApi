@@ -1,6 +1,5 @@
 ﻿using api.Constants;
 using api.Dtos.FinancialTransaction;
-using api.Dtos.FinancialTransactions;
 using api.Enums;
 using api.Extensions;
 using api.Models;
@@ -13,6 +12,10 @@ using Microsoft.EntityFrameworkCore;
 
 namespace api.Services.Transaction
 {
+    /// <summary>
+    /// Provides an implementation of <see cref="ITransactionService"/> that uses repositories
+    /// and grouping strategies to manage financial transactions and reports.
+    /// </summary>
     public class TransactionService : ITransactionService
     {
         private readonly ITransactionRepository _transactionRepository;
@@ -21,6 +24,14 @@ namespace api.Services.Transaction
         private readonly Dictionary<GroupingReportStrategyKey, IGroupingReportStrategy> _strategies;
         private readonly ILogger<TransactionService> _logger;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="TransactionService"/> class.
+        /// </summary>
+        /// <param name="transactionsRepository">The repository for transactions.</param>
+        /// <param name="timeProvider">The time provider for generating timestamps.</param>
+        /// <param name="strategies">The available grouping strategies for reports.</param>
+        /// <param name="categoryRepository">The repository for categories.</param>
+        /// <param name="logger">The logger for audit and debugging information.</param>
         public TransactionService(
             ITransactionRepository transactionsRepository,
             ITimeProvider timeProvider,
@@ -35,14 +46,16 @@ namespace api.Services.Transaction
             _logger = logger;
         }
 
+        /// <inheritdoc/>
         public async Task<BaseFinancialTransactionOutputDto> CreateForAdminAsync(
-            string userId, AdminFinancialTransactionCreateInputDto transactionDto)
+            string userId, AdminFinancialTransactionInputDto transactionDto)
         {
             var transaction = transactionDto.ToModel(_timeProvider);
             await _transactionRepository.CreateAsync(transaction);
             return transaction.ToOutputDto();
         }
 
+        /// <inheritdoc/>
         public async Task<BaseFinancialTransactionOutputDto?> CreateForUserAsync(
             string userId, BaseFinancialTransactionInputDto transactionDto)
         {
@@ -67,6 +80,7 @@ namespace api.Services.Transaction
             return transaction.ToOutputDto();
         }
 
+        /// <inheritdoc/>
         public async Task<bool> DeleteAsync(int id)
         {
             var existingTransaction = await _transactionRepository.GetByIdAsync(id);
@@ -80,6 +94,7 @@ namespace api.Services.Transaction
             return true;
         }
 
+        /// <inheritdoc/>
         public async Task<PagedData<BaseFinancialTransactionOutputDto>> GetAllForAdminAsync(
             PaginationQueryObject queryObject, string? appUserId)
         {
@@ -100,6 +115,7 @@ namespace api.Services.Transaction
             };
         }
 
+        /// <inheritdoc/>
         public async Task<PagedData<BaseFinancialTransactionOutputDto>> GetAllForUserAsync(
             string userId, PaginationQueryObject queryObject)
         {
@@ -116,6 +132,7 @@ namespace api.Services.Transaction
             };
         }
 
+        /// <inheritdoc/>
         public async Task<BaseFinancialTransactionOutputDto?> GetByIdAsync(int id)
         {
             var transaction = await _transactionRepository.GetByIdAsync(id);
@@ -124,9 +141,11 @@ namespace api.Services.Transaction
                 _logger.LogDebug("Transaction {TransactionId} not found", id);
                 return null;
             }
+
             return transaction.ToOutputDto();
         }
 
+        /// <inheritdoc/>
         public async Task<FinancialTransaction?> GetByIdRawAsync(int id)
         {
             var transaction = await _transactionRepository.GetByIdAsync(id);
@@ -139,7 +158,8 @@ namespace api.Services.Transaction
             return transaction;
         }
 
-        public async Task<PagedData<GroupedReportDto>> GetReportAsync(string userId, ReportQueryObject queryObject)
+        /// <inheritdoc/>
+        public async Task<PagedData<GroupedReportOutputDto>> GetReportAsync(string userId, ReportQueryObject queryObject)
         {
             var strategy = _strategies[queryObject.Key];
             var query = _transactionRepository.GetQueryableWithCategory();
@@ -148,13 +168,14 @@ namespace api.Services.Transaction
                 .ApplyFiltering(queryObject)
                 .ApplySorting(queryObject)
                 .ToPagedQueryAsync(queryObject);
-            return new PagedData<GroupedReportDto>
+            return new PagedData<GroupedReportOutputDto>
             {
                 Data = await strategy.GroupAsync(transactions.Query),
                 Pagination = transactions.Pagination,
             };
         }
 
+        /// <inheritdoc/>
         public async Task<BaseFinancialTransactionOutputDto?> UpdateAsync(
             int id, BaseFinancialTransactionInputDto transactionDto)
         {

@@ -1,5 +1,5 @@
-﻿using api.Controllers;
-using api.Dtos.FinancialTransactions;
+﻿using api.Controllers.FinancialTransaction;
+using api.Dtos.FinancialTransaction;
 using api.QueryObjects;
 using api.Services.Transaction;
 using Moq;

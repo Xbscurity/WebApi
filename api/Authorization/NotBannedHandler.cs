@@ -12,14 +12,16 @@ namespace api.Authorization
     public class NotBannedHandler : AuthorizationHandler<NotBannedRequirement>
     {
         private readonly UserManager<AppUser> _userManager;
+        private readonly ILogger<NotBannedHandler> _logger;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="NotBannedHandler"/> class.
         /// </summary>
         /// <param name="userManager">The <see cref="UserManager{TUser}"/> instance for managing application users.</param>
-        public NotBannedHandler(UserManager<AppUser> userManager)
+        public NotBannedHandler(UserManager<AppUser> userManager, ILogger<NotBannedHandler> logger)
         {
             _userManager = userManager;
+            _logger = logger;
         }
 
         /// <summary>
@@ -39,12 +41,15 @@ namespace api.Authorization
             NotBannedRequirement requirement)
         {
             var userId = context.User.GetUserId();
+
+            var user = await _userManager.FindByIdAsync(userId!);
+
             if (string.IsNullOrEmpty(userId))
             {
                 return;
             }
 
-            var user = await _userManager.FindByIdAsync(userId);
+            _logger.LogDebug("Checking if user is banned: {UserId} is {BanStatus}", userId, user!.IsBanned);
 
             if (user is not null && !user.IsBanned)
             {

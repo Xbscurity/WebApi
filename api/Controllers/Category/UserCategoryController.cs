@@ -8,8 +8,11 @@ using api.Validation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace api.Controllers
+namespace api.Controllers.Category
 {
+    /// <summary>
+    /// Provides API endpoints for users to manage their own categories.
+    /// </summary>
     [Authorize(Policy = Policies.UserNotBanned)]
     [ApiController]
     [Route("api/user/categories")]
@@ -18,6 +21,13 @@ namespace api.Controllers
         private readonly ILogger<UserCategoryController> _logger;
         private readonly CategorySortValidator _sortValidator;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="UserCategoryController"/> class.
+        /// </summary>
+        /// <param name="categoryService">The service for managing categories.</param>
+        /// <param name="logger">The logger for user-specific category operations.</param>
+        /// <param name="sortValidator">Validates sorting fields for category queries.</param>
+        /// <param name="authorizationService">The service used to authorize category access.</param>
         public UserCategoryController(
             ICategoryService categoryService,
             ILogger<UserCategoryController> logger,
@@ -29,6 +39,16 @@ namespace api.Controllers
             _sortValidator = sortValidator;
         }
 
+        /// <summary>
+        /// Retrieves all categories for the currently authenticated user.
+        /// </summary>
+        /// <param name="queryObject">The pagination and sorting query parameters.</param>
+        /// <param name="includeInactive">
+        /// If <see langword="true"/>, includes inactive categories in the result.
+        /// </param>
+        /// <returns>
+        /// An <see cref="ApiResponse{T}"/> containing a paginated list of the user's categories.
+        /// </returns>
         [HttpGet]
         public virtual async Task<ApiResponse<List<BaseCategoryOutputDto>>> GetAll(
             [FromQuery] PaginationQueryObject queryObject, [FromQuery] bool includeInactive = false)
@@ -52,24 +72,20 @@ namespace api.Controllers
             return ApiResponse.Success(categories.Data, categories.Pagination);
         }
 
+        /// <summary>
+        /// Creates a new category for the currently authenticated user.
+        /// </summary>
+        /// <param name="categoryDto">The category creation data.</param>
+        /// <returns>
+        /// An <see cref="ApiResponse{T}"/> containing the newly created category.
+        /// </returns>
         [HttpPost]
-        public async Task<ApiResponse<BaseCategoryOutputDto>> Create([FromBody] BaseCategoryInputDto categoryDto)
+        public async Task<ApiResponse<BaseCategoryOutputDto>> Create([FromBody] BaseCategoryUpdateInputDto categoryDto)
         {
             var userId = User.GetUserId();
             var result = await _categoryService.CreateForUserAsync(userId!, categoryDto);
             _logger.LogInformation(LoggingEvents.Categories.User.Created, "Created new transaction {categoryId}", result.Id);
             return ApiResponse.Success(result);
         }
-
-        //[HttpGet("convert")]
-        //public ApiResponse<TimeZoneRequest> GetTimeZoneInfo([FromQuery] TimeZoneRequest request)
-        //{
-        //    if (request.TimeZone is null)
-        //    {
-        //        return ApiResponse.NoAccess<TimeZoneRequest>("Invalid or missing timezone.");
-        //    }
-
-        //    return ApiResponse.Success(request);
-        //}
     }
 }

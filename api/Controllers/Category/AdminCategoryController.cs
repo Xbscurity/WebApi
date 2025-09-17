@@ -7,8 +7,11 @@ using api.Validation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace api.Controllers
+namespace api.Controllers.Category
 {
+    /// <summary>
+    /// Provides API endpoints for administrators to manage categories across all users.
+    /// </summary>
     [Authorize(Policy = Policies.Admin)]
     [ApiController]
     [Route("api/admin/categories")]
@@ -17,6 +20,13 @@ namespace api.Controllers
 
         private readonly CategorySortValidator _sortValidator;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AdminCategoryController"/> class.
+        /// </summary>
+        /// <param name="categoriesService">The service for managing categories.</param>
+        /// <param name="logger">The logger for admin-specific category operations.</param>
+        /// <param name="sortValidator">Validates sorting fields for category queries.</param>
+        /// <param name="authorizationService">The service used to authorize category access.</param>
         public AdminCategoryController(
             ICategoryService categoriesService,
             ILogger<AdminCategoryController> logger,
@@ -27,6 +37,14 @@ namespace api.Controllers
             _sortValidator = sortValidator;
         }
 
+        /// <summary>
+        /// Retrieves all categories with optional filtering by user.
+        /// </summary>
+        /// <param name="queryObject">The pagination and sorting query parameters.</param>
+        /// <param name="userId">Optional user ID to filter categories by owner.</param>
+        /// <returns>
+        /// An <see cref="ApiResponse{T}"/> containing a paginated list of categories.
+        /// </returns>
         [HttpGet]
         public async Task<ApiResponse<List<BaseCategoryOutputDto>>> GetAll(
             [FromQuery] PaginationQueryObject queryObject,
@@ -51,14 +69,22 @@ namespace api.Controllers
             return ApiResponse.Success(categories.Data, categories.Pagination);
         }
 
+        /// <summary>
+        /// Creates a new category on behalf of a user.
+        /// </summary>
+        /// <param name="categoryDto">The category creation data.</param>
+        /// <returns>
+        /// An <see cref="ApiResponse{T}"/> containing the newly created category.
+        /// </returns>
         [HttpPost]
-        public async Task<ApiResponse<BaseCategoryOutputDto>> Create([FromBody] AdminCategoryInputDto categoryDto)
+        public async Task<ApiResponse<BaseCategoryOutputDto>> Create([FromBody] AdminCategoryCreateInputDto categoryDto)
         {
             var result = await _categoryService.CreateForAdminAsync(categoryDto);
             _logger.LogInformation(
                 LoggingEvents.Categories.Admin.Created,
                 "Created new category {categoryId} for user {UserId}",
-                result.Id, result.AppUserId);
+                result.Id,
+                result.AppUserId);
             return ApiResponse.Success(result);
         }
     }

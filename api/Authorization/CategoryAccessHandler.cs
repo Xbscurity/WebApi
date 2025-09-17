@@ -3,15 +3,34 @@ using api.Models;
 using Microsoft.AspNetCore.Authorization;
 using System.Security.Claims;
 
+/// <summary>
+/// Authorization handler that determines whether a user has access to a given <see cref="Category"/>.
+/// </summary>
 public class CategoryAccessHandler : AuthorizationHandler<CategoryAccessRequirement, Category>
 {
     private readonly ILogger<CategoryAccessHandler> _logger;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="CategoryAccessHandler"/> class.
+    /// </summary>
+    /// <param name="logger">The logger used to write access check details.</param>
     public CategoryAccessHandler(ILogger<CategoryAccessHandler> logger)
     {
         _logger = logger;
     }
 
+    /// <summary>
+    /// Makes an authorization decision for the specified <paramref name="category"/> based on the user
+    /// and the provided <paramref name="requirement"/>.
+    /// </summary>
+    /// <param name="context">The authorization context, including the current user principal.</param>
+    /// <param name="requirement">The category access requirement being evaluated.</param>
+    /// <param name="category">The category resource to which access is being checked.</param>
+    /// <returns>A completed <see cref="Task"/> representing the asynchronous operation.</returns>
+    /// <remarks>
+    /// Grants access if the user is an administrator, is the owner of the category,
+    /// or if global categories are allowed by the requirement and the category has no owner.
+    /// </remarks>
     protected override Task HandleRequirementAsync(
         AuthorizationHandlerContext context,
         CategoryAccessRequirement requirement,
@@ -24,7 +43,7 @@ public class CategoryAccessHandler : AuthorizationHandler<CategoryAccessRequirem
         bool includeGlobal = requirement.AllowGlobal && category.AppUserId == null;
 
         _logger.LogDebug(
-            "Authorization check: UserId={UserId}, CategoryId={CategoryId}," +
+            "Category access check: UserId={UserId}, CategoryId={CategoryId}," +
             " IsAdmin={IsAdmin}, IsOwner={IsOwner}, AllowGlobal={AllowGlobal}, IncludeGlobal={IncludeGlobal}",
             userId,
             category.Id,

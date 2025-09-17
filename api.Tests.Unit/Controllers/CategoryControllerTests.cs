@@ -1,4 +1,4 @@
-﻿using api.Controllers;
+﻿using api.Controllers.Category;
 using api.Models;
 using api.QueryObjects;
 using api.Services.Categories;

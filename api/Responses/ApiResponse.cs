@@ -3,7 +3,7 @@ using api.Constants;
 namespace api.Responses
 {
     /// <summary>
-    /// Represents a standardized API response.
+    /// Defines a standardized API response.
     /// </summary>
     public class ApiResponse
     {

@@ -1,7 +1,7 @@
 ﻿namespace api.Responses
 {
     /// <summary>
-    /// Represents a paged collection of items returned by the API services.
+    /// Defines a paged collection of items returned by the API services.
     /// Used by controllers to construct <see cref="ApiResponse{T}"/> objects.
     /// </summary>
     /// <typeparam name="T">The type of the items contained in the collection.</typeparam>

@@ -8,8 +8,12 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
-namespace api.Controllers
+namespace api.Controllers.User
 {
+    /// <summary>
+    /// Provides endpoints for account management such as registration, login,
+    /// token refresh, logout, profile retrieval, and password changes.
+    /// </summary>
     [Route("api/account")]
     [ApiController]
     public class AccountController : ControllerBase
@@ -20,8 +24,19 @@ namespace api.Controllers
         private readonly IWebHostEnvironment _env;
         private readonly ILogger<AccountController> _logger;
 
-        public AccountController(UserManager<AppUser> userManager, ITokenService tokenService,
-            SignInManager<AppUser> signInManager, IWebHostEnvironment env,
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AccountController"/> class.
+        /// </summary>
+        /// <param name="userManager">Provides APIs for managing users in the identity system.</param>
+        /// <param name="tokenService">Service responsible for generating and validating access/refresh tokens.</param>
+        /// <param name="signInManager">Provides sign-in operations for users.</param>
+        /// <param name="env">Provides information about the web hosting environment (e.g., Development, Production).</param>
+        /// <param name="logger">Logger instance for recording diagnostic and error information.</param>
+        public AccountController(
+            UserManager<AppUser> userManager,
+            ITokenService tokenService,
+            SignInManager<AppUser> signInManager,
+            IWebHostEnvironment env,
             ILogger<AccountController> logger)
         {
             _userManager = userManager;
@@ -31,8 +46,16 @@ namespace api.Controllers
             _logger = logger;
         }
 
+        /// <summary>
+        /// Registers a new user and issues authentication tokens.
+        /// </summary>
+        /// <param name="registerDto">The registration data (username, email, password).</param>
+        /// <returns>
+        /// An <see cref="ApiResponse{T}"/> containing the newly created user information and tokens,
+        /// or an error response if registration fails.
+        /// </returns>
         [HttpPost("register")]
-        public async Task<ApiResponse<NewUserDto>> Register([FromBody] RegisterDto registerDto)
+        public async Task<ApiResponse<AccountUserOutputDto>> Register([FromBody] RegisterInputDto registerDto)
         {
             var user = new AppUser
             {
@@ -47,7 +70,7 @@ namespace api.Controllers
                 var errors = createdUser.Errors.Select(e => new { e.Code, e.Description });
 
                 _logger.LogWarning(LoggingEvents.Users.Common.RegisterFailed, "Failed to create user: {@Errors}", errors);
-                return ApiResponse.BadRequest<NewUserDto>("Registration failed", errors);
+                return ApiResponse.BadRequest<AccountUserOutputDto>("Registration failed", errors);
             }
 
             var roleResult = await _userManager.AddToRoleAsync(user, Roles.User);
@@ -56,7 +79,7 @@ namespace api.Controllers
                 var errors = roleResult.Errors.Select(e => new { e.Code, e.Description });
 
                 _logger.LogError(LoggingEvents.Users.Common.RoleAssignFailed, "Failed to assign role to user: {@Errors}", errors);
-                return ApiResponse.BadRequest<NewUserDto>("Failed to assign role", errors);
+                return ApiResponse.BadRequest<AccountUserOutputDto>("Failed to assign role", errors);
             }
 
             var accessToken = await _tokenService.GenerateAccessTokenAsync(user);
@@ -64,7 +87,7 @@ namespace api.Controllers
             var refreshTokenEntity = _tokenService.GenerateRefreshTokenEntity(plainRefreshToken, user, GetClientIp());
             await _tokenService.SaveRefreshTokenAsync(refreshTokenEntity);
 
-            var userDto = new NewUserDto
+            var userDto = new AccountUserOutputDto
             {
                 UserName = user.UserName,
                 Email = user.Email,
@@ -76,15 +99,23 @@ namespace api.Controllers
             return ApiResponse.Success(userDto);
         }
 
+        /// <summary>
+        /// Authenticates an existing user and issues new tokens.
+        /// </summary>
+        /// <param name="loginDto">The login data (username, password).</param>
+        /// <returns>
+        /// An <see cref="ApiResponse{T}"/> containing user information and tokens if authentication succeeds,
+        /// or an unauthorized response if credentials are invalid.
+        /// </returns>
         [HttpPost("login")]
-        public async Task<ApiResponse<NewUserDto>> Login([FromBody] LoginDto loginDto)
+        public async Task<ApiResponse<AccountUserOutputDto>> Login([FromBody] LoginInputDto loginDto)
         {
             var user = await _userManager.FindByNameAsync(loginDto.UserName);
             if (user == null)
             {
                 _logger.LogWarning(LoggingEvents.Users.Common.LoginUserNotFound, "User not found");
 
-                return ApiResponse.Unauthorized<NewUserDto>("Invalid username or password");
+                return ApiResponse.Unauthorized<AccountUserOutputDto>("Invalid username or password");
             }
 
             var result = await _signInManager.CheckPasswordSignInAsync(user, loginDto.Password, false);
@@ -92,14 +123,14 @@ namespace api.Controllers
             {
                 _logger.LogWarning(LoggingEvents.Users.Common.LoginInvalidPassword, "Invalid password");
 
-                return ApiResponse.Unauthorized<NewUserDto>("Invalid username or password");
+                return ApiResponse.Unauthorized<AccountUserOutputDto>("Invalid username or password");
             }
 
             var accessToken = await _tokenService.GenerateAccessTokenAsync(user);
             var plainRefreshToken = _tokenService.GenerateRefreshToken();
             var refreshTokenEntity = _tokenService.GenerateRefreshTokenEntity(plainRefreshToken, user, GetClientIp());
             await _tokenService.SaveRefreshTokenAsync(refreshTokenEntity);
-            var newUserDto = new NewUserDto
+            var newUserDto = new AccountUserOutputDto
             {
                 UserName = user.UserName,
                 Email = user.Email,
@@ -111,14 +142,21 @@ namespace api.Controllers
             return ApiResponse.Success(newUserDto);
         }
 
+        /// <summary>
+        /// Refreshes the authentication tokens using a valid refresh token cookie.
+        /// </summary>
+        /// <returns>
+        /// An <see cref="ApiResponse{T}"/> containing a new access token (and updated refresh token in cookies),
+        /// or an unauthorized response if the refresh token is missing or invalid.
+        /// </returns>
         [HttpPost("refresh")]
-        public async Task<ApiResponse<RefreshResponseDto>> Refresh()
+        public async Task<ApiResponse<RefreshOutputDto>> Refresh()
         {
             var refreshToken = Request.Cookies["refreshToken"];
             if (string.IsNullOrEmpty(refreshToken))
             {
                 _logger.LogWarning(LoggingEvents.Users.Common.RefreshTokenMissing, "No refresh token found in cookies");
-                return ApiResponse.Unauthorized<RefreshResponseDto>("No refresh token found");
+                return ApiResponse.Unauthorized<RefreshOutputDto>("No refresh token found");
             }
 
             var result = await _tokenService.TryRefreshTokensAsync(refreshToken, GetClientIp());
@@ -129,17 +167,23 @@ namespace api.Controllers
                     LoggingEvents.Users.Common.RefreshTokenInvalid,
                     "Refresh token validation failed. Reason = {Error}",
                     result.Error);
-                return ApiResponse.Unauthorized<RefreshResponseDto>(result.Error!);
+                return ApiResponse.Unauthorized<RefreshOutputDto>(result.Error!);
             }
 
             SetRefreshTokenCookie(result.NewRefreshToken, result.ExpiresAt!.Value);
 
-            return ApiResponse.Success(new RefreshResponseDto
+            return ApiResponse.Success(new RefreshOutputDto
             {
                 Token = result.NewAccessToken!,
             });
         }
 
+        /// <summary>
+        /// Logs out the user by revoking the current refresh token and clearing the cookie.
+        /// </summary>
+        /// <returns>
+        /// An <see cref="ApiResponse{T}"/> with a confirmation message when logout is completed.
+        /// </returns>
         [HttpPost("logout")]
         public async Task<ApiResponse<string>> Logout()
         {
@@ -153,13 +197,19 @@ namespace api.Controllers
             return ApiResponse.Success("Logout completed");
         }
 
+        /// <summary>
+        /// Retrieves the profile information of the currently authenticated user.
+        /// </summary>
+        /// <returns>
+        /// An <see cref="ApiResponse{T}"/> containing the user's profile details.
+        /// </returns>
         [Authorize]
         [HttpGet("me")]
-        public async Task<ApiResponse<UserProfileDto>> GetProfile()
+        public async Task<ApiResponse<UserProfileOutputDto>> GetProfile()
         {
             var user = await _userManager.GetUserAsync(User);
 
-            var profileDto = new UserProfileDto
+            var profileDto = new UserProfileOutputDto
             {
                 UserName = user.UserName!,
                 Email = user.Email!,
@@ -169,9 +219,17 @@ namespace api.Controllers
             return ApiResponse.Success(profileDto);
         }
 
+        /// <summary>
+        /// Changes the password of the currently authenticated user.
+        /// </summary>
+        /// <param name="dto">The password change request containing the current and new passwords.</param>
+        /// <returns>
+        /// An <see cref="ApiResponse{T}"/> with a success message if the password was changed,
+        /// or an error response if validation fails.
+        /// </returns>
         [Authorize]
         [HttpPost("change-password")]
-        public async Task<ApiResponse<string>> ChangePassword([FromBody] ChangePasswordDto dto)
+        public async Task<ApiResponse<string>> ChangePassword([FromBody] ChangePasswordInputDto dto)
         {
             var user = await _userManager.GetUserAsync(User);
 
@@ -203,9 +261,12 @@ namespace api.Controllers
             return ApiResponse.Success("Password changed successfully");
         }
 
+        /// <summary>
+        /// Sets the refresh token cookie with proper security options.
+        /// </summary>
         private void SetRefreshTokenCookie(string token, DateTimeOffset expires = default)
         {
-            var expiry = (expires == default) ? DateTimeOffset.UtcNow.AddDays(7) : expires;
+            var expiry = expires == default ? DateTimeOffset.UtcNow.AddDays(7) : expires;
 
             Response.Cookies.Append("refreshToken", token, new CookieOptions
             {
@@ -216,6 +277,9 @@ namespace api.Controllers
             });
         }
 
+        /// <summary>
+        /// Gets the client's IP address, mapped to IPv4 if necessary.
+        /// </summary>
         private string? GetClientIp()
         {
             var ip = HttpContext.Connection.RemoteIpAddress;

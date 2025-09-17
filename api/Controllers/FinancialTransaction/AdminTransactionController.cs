@@ -1,6 +1,5 @@
 ﻿using api.Constants;
 using api.Dtos.FinancialTransaction;
-using api.Dtos.FinancialTransactions;
 using api.QueryObjects;
 using api.Responses;
 using api.Services.Transaction;
@@ -8,8 +7,11 @@ using api.Validation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace api.Controllers
+namespace api.Controllers.FinancialTransaction
 {
+    /// <summary>
+    /// Provides API endpoints for administrators to manage transactions across all users.
+    /// </summary>
     [Authorize(Policy = Policies.Admin)]
     [ApiController]
     [Route("api/admin/transactions")]
@@ -17,6 +19,13 @@ namespace api.Controllers
     {
         private readonly TransactionSortValidator _sortValidator;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AdminTransactionController"/> class.
+        /// </summary>
+        /// <param name="transactionService">The service used to manage transactions.</param>
+        /// <param name="sortValidator">Validates sorting fields for transaction queries.</param>
+        /// <param name="logger">The logger for admin-specific transaction operations.</param>
+        /// <param name="authorizationService">The service used to authorize transaction access.</param>
         public AdminTransactionController(
             ITransactionService transactionService,
             TransactionSortValidator sortValidator,
@@ -27,6 +36,14 @@ namespace api.Controllers
             _sortValidator = sortValidator;
         }
 
+        /// <summary>
+        /// Retrieves all transactions with optional filtering by user.
+        /// </summary>
+        /// <param name="queryObject">The pagination and sorting query parameters.</param>
+        /// <param name="userId">Optional user ID to filter transactions by owner.</param>
+        /// <returns>
+        /// An <see cref="ApiResponse{T}"/> containing a paginated list of transactions.
+        /// </returns>
         [HttpGet]
         public async Task<ApiResponse<List<BaseFinancialTransactionOutputDto>>> GetAll(
             [FromQuery] PaginationQueryObject queryObject,
@@ -51,9 +68,16 @@ namespace api.Controllers
             return ApiResponse.Success(transactions.Data, transactions.Pagination);
         }
 
+        /// <summary>
+        /// Creates a new transaction on behalf of a user.
+        /// </summary>
+        /// <param name="transactionDto">The transaction creation data.</param>
+        /// <returns>
+        /// An <see cref="ApiResponse{T}"/> containing the newly created transaction.
+        /// </returns>
         [HttpPost]
         public async Task<ApiResponse<BaseFinancialTransactionOutputDto>> Create(
-            [FromBody] AdminFinancialTransactionCreateInputDto transactionDto)
+            [FromBody] AdminFinancialTransactionInputDto transactionDto)
         {
             var result = await _transactionService.CreateForAdminAsync(transactionDto.AppUserId!, transactionDto);
             _logger.LogInformation(

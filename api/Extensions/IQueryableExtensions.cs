@@ -3,8 +3,20 @@ using api.QueryObjects;
 
 namespace api.Extensions
 {
-    public static class IQueryableExtenstions
+    /// <summary>
+    /// Provides extension methods for applying sorting and filtering to <see cref="IQueryable{T}"/> sequences.
+    /// </summary>
+    public static class IQueryableExtensions
     {
+        /// <summary>
+        /// Applies sorting to a query of <see cref="Category"/> entities based on the provided <see cref="PaginationQueryObject"/>.
+        /// </summary>
+        /// <param name="query">The queryable collection of <see cref="Category"/> entities.</param>
+        /// <param name="queryObject">The pagination and sorting options.</param>
+        /// <returns>
+        /// An <see cref="IQueryable{T}"/> of <see cref="Category"/> entities ordered according to the specified criteria.
+        /// Defaults to ordering by <c>Id</c> if no valid sort field is provided.
+        /// </returns>
         public static IQueryable<Category> ApplySorting(this IQueryable<Category> query, PaginationQueryObject queryObject)
         {
             if (string.IsNullOrWhiteSpace(queryObject.SortBy))
@@ -22,6 +34,15 @@ namespace api.Extensions
             };
         }
 
+        /// <summary>
+        /// Applies sorting to a query of <see cref="FinancialTransaction"/> entities based on the provided <see cref="PaginationQueryObject"/>.
+        /// </summary>
+        /// <param name="query">The queryable collection of <see cref="FinancialTransaction"/> entities.</param>
+        /// <param name="queryObject">The pagination and sorting options.</param>
+        /// <returns>
+        /// An <see cref="IQueryable{T}"/> of <see cref="FinancialTransaction"/> entities ordered according to the specified criteria.
+        /// Defaults to ordering by <c>Id</c> if no valid sort field is provided.
+        /// </returns>
         public static IQueryable<FinancialTransaction> ApplySorting(this IQueryable<FinancialTransaction> query, PaginationQueryObject queryObject)
         {
             if (string.IsNullOrWhiteSpace(queryObject.SortBy))
@@ -43,6 +64,15 @@ namespace api.Extensions
             };
         }
 
+        /// <summary>
+        /// Applies filtering by date range to a query of <see cref="FinancialTransaction"/> entities.
+        /// </summary>
+        /// <param name="query">The queryable collection of <see cref="FinancialTransaction"/> entities.</param>
+        /// <param name="dataRange">The report query object containing optional <c>StartDate</c> and <c>EndDate</c> filters.</param>
+        /// <returns>
+        /// An <see cref="IQueryable{T}"/> of <see cref="FinancialTransaction"/> entities
+        /// filtered according to the provided date range.
+        /// </returns>
         public static IQueryable<FinancialTransaction> ApplyFiltering(this IQueryable<FinancialTransaction> query, ReportQueryObject? dataRange)
         {
             if (dataRange?.StartDate != null)

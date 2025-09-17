@@ -3,7 +3,7 @@
 namespace api.Models
 {
     /// <summary>
-    /// Represents an application user in the system, extending <see cref="IdentityUser"/>.
+    /// Defines an application user in the system, extending <see cref="IdentityUser"/>.
     /// </summary>
     public class AppUser : IdentityUser
     {

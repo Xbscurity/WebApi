@@ -1,22 +1,26 @@
 ﻿using api.Dtos.FinancialTransaction;
-using api.Dtos.FinancialTransactions;
 using api.Enums;
 using api.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace api.Services.Transaction
 {
+    /// <summary>
+    /// Groups transactions by their associated category.
+    /// </summary>
     public class GroupByCategoryStrategy : IGroupingReportStrategy
     {
+        /// <inheritdoc/>
         public GroupingReportStrategyKey Key => GroupingReportStrategyKey.ByCategory;
 
-        public async Task<List<GroupedReportDto>> GroupAsync(
+        /// <inheritdoc/>
+        public async Task<List<GroupedReportOutputDto>> GroupAsync(
             IQueryable<FinancialTransaction> transactions)
         {
             return await transactions
                 .GroupBy(t =>
                     t.Category == null ? "No category" : t.Category.Name.Trim())
-                .Select(group => new GroupedReportDto
+                .Select(group => new GroupedReportOutputDto
                 {
                     Key = new ReportKey
                     {

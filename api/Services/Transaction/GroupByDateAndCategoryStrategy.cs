@@ -1,15 +1,19 @@
 ﻿using api.Dtos.FinancialTransaction;
-using api.Dtos.FinancialTransactions;
 using api.Enums;
 using Microsoft.EntityFrameworkCore;
 
 namespace api.Services.Transaction
 {
+    /// <summary>
+    /// Groups transactions by both creation date (year, month) and category.
+    /// </summary>
     public class GroupByDateAndCategoryStrategy : IGroupingReportStrategy
     {
+        /// <inheritdoc/>
         public GroupingReportStrategyKey Key => GroupingReportStrategyKey.ByCategoryAndDate;
 
-        public async Task<List<GroupedReportDto>> GroupAsync(
+        /// <inheritdoc/>
+        public async Task<List<GroupedReportOutputDto>> GroupAsync(
            IQueryable<Models.FinancialTransaction> transactions)
         {
             return await transactions
@@ -19,7 +23,7 @@ namespace api.Services.Transaction
                     transactions.CreatedAt.Month,
                     Category = transactions.Category == null ? "No category" : transactions.Category.Name.Trim(),
                 })
-                .Select(group => new GroupedReportDto
+                .Select(group => new GroupedReportOutputDto
                 {
                     Key = new ReportKey
                     {

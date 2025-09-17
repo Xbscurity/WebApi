@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace api.Models
 {
     /// <summary>
-    /// Represents a financial transaction made by a user in the application.
+    /// Defines a financial transaction made by a user in the application.
     /// </summary>
     public class FinancialTransaction
     {
