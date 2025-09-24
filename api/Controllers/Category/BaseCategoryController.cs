@@ -1,6 +1,6 @@
 ﻿using api.Constants;
 using api.Dtos.Category;
-using api.Extensions;
+using api.Filters;
 using api.Responses;
 using api.Services.Categories;
 using Microsoft.AspNetCore.Authorization;
@@ -18,8 +18,6 @@ namespace api.Controllers.Category
 
         protected readonly ICategoryService _categoryService;
 
-        private readonly IAuthorizationService _authorizationService;
-
         /// <summary>
         /// Initializes a new instance of the <see cref="BaseCategoryController"/> class.
         /// </summary>
@@ -33,7 +31,6 @@ namespace api.Controllers.Category
         {
             _categoryService = categoriesService;
             _logger = logger;
-            _authorizationService = authorizationService;
         }
 
         /// <summary>
@@ -42,11 +39,12 @@ namespace api.Controllers.Category
         /// <param name="id">The category identifier.</param>
         /// <returns>An <see cref="ApiResponse{T}"/> containing the category if found.</returns>
         [HttpGet("{id:int}")]
-        public virtual Task<ApiResponse<BaseCategoryOutputDto>> GetById([FromRoute] int id) =>
-    HandleCategoryAsync(
-        id,
-        Policies.CategoryAccessGlobal,
-        c => Task.FromResult<BaseCategoryOutputDto?>(c.ToOutputDto()));
+        [CategoryAuthorization(Policies.CategoryAccessGlobal)]
+        public async virtual Task<ApiResponse<BaseCategoryOutputDto>> GetById([FromRoute] int id)
+        {
+            var result = await _categoryService.GetByIdAsync(id);
+            return ApiResponse.Success(result!);
+        }
 
         /// <summary>
         /// Deletes a category by its identifier.
@@ -56,11 +54,12 @@ namespace api.Controllers.Category
         /// An <see cref="ApiResponse{T}"/> indicating whether the deletion was successful.
         /// </returns>
         [HttpDelete("{id:int}")]
-        public virtual Task<ApiResponse<bool>> Delete([FromRoute] int id) =>
-            HandleCategoryAsync(id,
-                Policies.CategoryAccessNoGlobal,
-                async c => await _categoryService.DeleteAsync(id),
-                forbidCommon: true);
+        [CategoryAuthorization(Policies.CategoryAccessNoGlobal)]
+        public async virtual Task<ApiResponse<bool>> Delete([FromRoute] int id)
+        {
+            var result = await _categoryService.DeleteAsync(id);
+            return ApiResponse.Success(result!);
+        }
 
         /// <summary>
         /// Updates the specified category.
@@ -71,12 +70,13 @@ namespace api.Controllers.Category
         /// An <see cref="ApiResponse{T}"/> containing the updated category.
         /// </returns>
         [HttpPut("{id:int}")]
-        public virtual Task<ApiResponse<BaseCategoryOutputDto>> Update(
-            [FromRoute] int id, [FromBody] BaseCategoryUpdateInputDto categoryDto) =>
-            HandleCategoryAsync(id,
-                Policies.CategoryAccessNoGlobal,
-                async c => await _categoryService.UpdateAsync(id, categoryDto),
-                forbidCommon: true);
+        [CategoryAuthorization(Policies.CategoryAccessNoGlobal)]
+        public async virtual Task<ApiResponse<BaseCategoryOutputDto>> Update(
+            [FromRoute] int id, [FromBody] BaseCategoryUpdateInputDto categoryDto)
+        {
+            var result = await _categoryService.UpdateAsync(id, categoryDto);
+            return ApiResponse.Success(result!);
+        }
 
         /// <summary>
         /// Toggles the active state of a category.
@@ -86,42 +86,13 @@ namespace api.Controllers.Category
         /// An <see cref="ApiResponse{T}"/> indicating whether the toggle was successful.
         /// </returns>
         [HttpPatch("{id:int}/toggle-active")]
-        public Task<ApiResponse<bool>> ToggleActive([FromRoute] int id) =>
-            HandleCategoryAsync(id,
-                Policies.CategoryAccessGlobal,
-                async c => await _categoryService.ToggleActiveAsync(id),
-                forbidCommon: true);
-
-        private async Task<ApiResponse<T>> HandleCategoryAsync<T>(
-    int id,
-    string policy,
-    Func<Models.Category, Task<T?>> action,
-    bool forbidCommon = false)
+        [CategoryAuthorization(Policies.CategoryAccessGlobal)]
+        public async Task<ApiResponse<bool>> ToggleActive([FromRoute] int id)
         {
-            var category = await _categoryService.GetByIdRawAsync(id);
-            if (category is null)
-            {
-                _logger.LogDebug("Category {CategoryId} not found", id);
-                return ApiResponse.NotFound<T>("Category not found");
-            }
-
-            var authResult = await _authorizationService.AuthorizeAsync(User, category, policy);
-            if (!authResult.Succeeded)
-            {
-                _logger.LogWarning(
-                    LoggingEvents.Categories.Common.NoAccess,
-                    "Access denied to category {CategoryId}", id);
-
-                if (forbidCommon && category.AppUserId == null)
-                {
-                    return ApiResponse.NotFound<T>("Cannot modify common categories");
-                }
-
-                return ApiResponse.NotFound<T>("Category not found");
-            }
-
-            var result = await action(category);
+            var result = await _categoryService.ToggleActiveAsync(id);
             return ApiResponse.Success(result!);
         }
+
+
     }
 }

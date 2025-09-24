@@ -15,21 +15,21 @@ namespace api.Controllers.FinancialTransaction
     [Authorize(Policy = Policies.Admin)]
     [ApiController]
     [Route("api/admin/transactions")]
-    public class AdminTransactionController : BaseTransactionController
+    public class AdminFinancialTransactionController : BaseFinancialTransactionController
     {
-        private readonly TransactionSortValidator _sortValidator;
+        private readonly FinancialTransactionSortValidator _sortValidator;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="AdminTransactionController"/> class.
+        /// Initializes a new instance of the <see cref="AdminFinancialTransactionController"/> class.
         /// </summary>
         /// <param name="transactionService">The service used to manage transactions.</param>
         /// <param name="sortValidator">Validates sorting fields for transaction queries.</param>
         /// <param name="logger">The logger for admin-specific transaction operations.</param>
         /// <param name="authorizationService">The service used to authorize transaction access.</param>
-        public AdminTransactionController(
-            ITransactionService transactionService,
-            TransactionSortValidator sortValidator,
-            ILogger<AdminTransactionController> logger,
+        public AdminFinancialTransactionController(
+            IFinancialTransactionService transactionService,
+            FinancialTransactionSortValidator sortValidator,
+            ILogger<AdminFinancialTransactionController> logger,
             IAuthorizationService authorizationService)
             : base(transactionService, logger, authorizationService)
         {
@@ -51,14 +51,14 @@ namespace api.Controllers.FinancialTransaction
         {
             if (!_sortValidator.IsValid(queryObject.SortBy))
             {
-                _logger.LogWarning(LoggingEvents.Transactions.Common.SortInvalid, _sortValidator.GetErrorMessage(queryObject.SortBy!));
+                _logger.LogWarning(LoggingEvents.FinancialTransactions.Common.SortInvalid, _sortValidator.GetErrorMessage(queryObject.SortBy!));
                 return ApiResponse.BadRequest<List<BaseFinancialTransactionOutputDto>>(
                     _sortValidator.GetErrorMessage(queryObject.SortBy!));
             }
 
-            var transactions = await _transactionService.GetAllForAdminAsync(queryObject, userId);
+            var transactions = await _financialTransactionService.GetAllForAdminAsync(queryObject, userId);
             _logger.LogInformation(
-                LoggingEvents.Transactions.Admin.GetAll,
+                LoggingEvents.FinancialTransactions.Admin.GetAll,
                 "Returning {Count} transactions. Page={PageNumber}, Size={PageSize}, SortBy={SortBy}, userId = {userId}",
                 transactions.Data.Count,
                 transactions.Pagination.PageNumber,
@@ -79,7 +79,7 @@ namespace api.Controllers.FinancialTransaction
         public async Task<ApiResponse<BaseFinancialTransactionOutputDto>> Create(
             [FromBody] AdminFinancialTransactionInputDto transactionDto)
         {
-            var result = await _transactionService.CreateForAdminAsync(transactionDto.AppUserId!, transactionDto);
+            var result = await _financialTransactionService.CreateForAdminAsync(transactionDto.AppUserId!, transactionDto);
             _logger.LogInformation(
                 LoggingEvents.Categories.Admin.Created,
                 "Created new transaction {transactionId} for user {UserId}",

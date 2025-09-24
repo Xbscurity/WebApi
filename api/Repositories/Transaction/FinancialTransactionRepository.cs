@@ -5,18 +5,18 @@ using Microsoft.EntityFrameworkCore;
 namespace api.Repositories.Interfaces
 {
     /// <summary>
-    /// Provides an implementation of <see cref="ITransactionRepository"/>
+    /// Provides an implementation of <see cref="IFinancialTransactionRepository"/>
     /// for managing financial transactions in the database.
     /// </summary>
-    public class TransactionRepository : ITransactionRepository
+    public class FinancialTransactionRepository : IFinancialTransactionRepository
     {
         private readonly ApplicationDbContext _context;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="TransactionRepository"/> class.
+        /// Initializes a new instance of the <see cref="FinancialTransactionRepository"/> class.
         /// </summary>
         /// <param name="context">The database context used for data access.</param>
-        public TransactionRepository(ApplicationDbContext context)
+        public FinancialTransactionRepository(ApplicationDbContext context)
         {
             _context = context;
         }
@@ -33,7 +33,7 @@ namespace api.Repositories.Interfaces
         /// <inheritdoc />
         public async Task<FinancialTransaction?> GetByIdAsync(int id)
         {
-            return await _context.Transactions.Include(t => t.Category).FirstOrDefaultAsync();
+            return await _context.Transactions.Include(t => t.Category).FirstOrDefaultAsync(t => t.Id == id);
         }
 
         /// <inheritdoc />

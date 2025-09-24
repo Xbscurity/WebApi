@@ -78,7 +78,7 @@
         /// <summary>
         ///  EventIds related to finanсical transactions operations (2000-2499).
         /// </summary>
-        public static class Transactions
+        public static class FinancialTransactions
         {
             /// <summary>
             /// BaseTransactionController (2001–2099).

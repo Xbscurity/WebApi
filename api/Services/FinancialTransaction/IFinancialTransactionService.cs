@@ -9,7 +9,7 @@ namespace api.Services.Transaction
     /// Defines operations for managing financial transactions, including
     /// creation, retrieval, update, deletion, and generating grouped reports.
     /// </summary>
-    public interface ITransactionService
+    public interface IFinancialTransactionService
     {
         /// <summary>
         /// Retrieves a paginated list of transactions for a specific user.

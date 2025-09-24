@@ -3,7 +3,7 @@
     /// <summary>
     /// Validates sort fields for <see cref="api.Models.FinancialTransaction"/> queries.
     /// </summary>
-    public class TransactionSortValidator : SortValidatorBase
+    public class FinancialTransactionSortValidator : SortValidatorBase
     {
         /// <inheritdoc/>
         protected override HashSet<string> ValidFields { get; } = new(StringComparer.OrdinalIgnoreCase)

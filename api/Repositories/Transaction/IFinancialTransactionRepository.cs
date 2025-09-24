@@ -5,7 +5,7 @@ namespace api.Repositories.Interfaces
     /// <summary>
     /// Defines data access operations for <see cref="FinancialTransaction"/> entities.
     /// </summary>
-    public interface ITransactionRepository
+    public interface IFinancialTransactionRepository
     {
         /// <summary>
         /// Retrieves all financial transactions asynchronously.

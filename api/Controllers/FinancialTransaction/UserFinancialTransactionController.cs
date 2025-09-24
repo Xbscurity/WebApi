@@ -16,21 +16,21 @@ namespace api.Controllers.FinancialTransaction
     [Authorize(Policy = Policies.UserNotBanned)]
     [ApiController]
     [Route("api/user/transactions")]
-    public class UserTransactionController : BaseTransactionController
+    public class UserFinancialTransactionController : BaseFinancialTransactionController
     {
-        private readonly TransactionSortValidator _sortValidator;
+        private readonly FinancialTransactionSortValidator _sortValidator;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="UserTransactionController"/> class.
+        /// Initializes a new instance of the <see cref="UserFinancialTransactionController"/> class.
         /// </summary>
         /// <param name="transactionService">The service used to manage transactions.</param>
         /// <param name="sortValidator">Validates sorting fields for transaction queries.</param>
         /// <param name="logger">The logger for user-specific transaction operations.</param>
         /// <param name="authorizationService">The service used to authorize transaction access.</param>
-        public UserTransactionController(
-            ITransactionService transactionService,
-            TransactionSortValidator sortValidator,
-            ILogger<UserTransactionController> logger,
+        public UserFinancialTransactionController(
+            IFinancialTransactionService transactionService,
+            FinancialTransactionSortValidator sortValidator,
+            ILogger<UserFinancialTransactionController> logger,
             IAuthorizationService authorizationService)
             : base(transactionService, logger, authorizationService)
         {
@@ -50,13 +50,13 @@ namespace api.Controllers.FinancialTransaction
         {
             if (!_sortValidator.IsValid(queryObject!.SortBy))
             {
-                _logger.LogWarning(LoggingEvents.Transactions.Common.SortInvalid, _sortValidator.GetErrorMessage(queryObject.SortBy!));
+                _logger.LogWarning(LoggingEvents.FinancialTransactions.Common.SortInvalid, _sortValidator.GetErrorMessage(queryObject.SortBy!));
                 return ApiResponse.BadRequest<List<GroupedReportOutputDto>>(_sortValidator.GetErrorMessage(queryObject.SortBy!));
             }
             var userId = User.GetUserId();
-            var report = await _transactionService.GetReportAsync(userId!, queryObject);
+            var report = await _financialTransactionService.GetReportAsync(userId!, queryObject);
             _logger.LogInformation(
-                LoggingEvents.Transactions.User.Report,
+                LoggingEvents.FinancialTransactions.User.Report,
                 "Returning {Count} transactions. Strategy Key = {StrategyKey}, Page={PageNumber}, Size={PageSize}, SortBy={SortBy}",
                 report.Data.Count,
                 queryObject.Key,
@@ -78,13 +78,14 @@ namespace api.Controllers.FinancialTransaction
         {
             if (!_sortValidator.IsValid(queryObject.SortBy))
             {
-                _logger.LogWarning(LoggingEvents.Transactions.Common.SortInvalid, _sortValidator.GetErrorMessage(queryObject.SortBy!));
+                _logger.LogWarning(LoggingEvents.FinancialTransactions.Common.SortInvalid, _sortValidator.GetErrorMessage(queryObject.SortBy!));
                 return ApiResponse.BadRequest<List<BaseFinancialTransactionOutputDto>>(_sortValidator.GetErrorMessage(queryObject.SortBy!));
             }
+
             var userId = User.GetUserId();
-            var transactions = await _transactionService.GetAllForUserAsync(userId!, queryObject);
+            var transactions = await _financialTransactionService.GetAllForUserAsync(userId!, queryObject);
             _logger.LogInformation(
-                LoggingEvents.Transactions.User.GetAll,
+                LoggingEvents.FinancialTransactions.User.GetAll,
                 "Returning {Count} transactions. Page={PageNumber}, Size={PageSize}, SortBy={SortBy}",
                 transactions.Data.Count,
                 transactions.Pagination.PageNumber,
@@ -104,8 +105,8 @@ namespace api.Controllers.FinancialTransaction
         public async Task<ApiResponse<BaseFinancialTransactionOutputDto>> Create([FromBody] BaseFinancialTransactionInputDto transactionDto)
         {
             var userId = User.GetUserId();
-            var result = await _transactionService.CreateForUserAsync(userId!, transactionDto);
-            _logger.LogInformation(LoggingEvents.Transactions.User.Created, "Created new transaction {transactionId}", result.Id);
+            var result = await _financialTransactionService.CreateForUserAsync(userId!, transactionDto);
+            _logger.LogInformation(LoggingEvents.FinancialTransactions.User.Created, "Created new transaction {transactionId}", result.Id);
             return ApiResponse.Success(result);
         }
     }

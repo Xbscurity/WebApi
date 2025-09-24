@@ -13,31 +13,31 @@ using Microsoft.EntityFrameworkCore;
 namespace api.Services.Transaction
 {
     /// <summary>
-    /// Provides an implementation of <see cref="ITransactionService"/> that uses repositories
+    /// Provides an implementation of <see cref="IFinancialTransactionService"/> that uses repositories
     /// and grouping strategies to manage financial transactions and reports.
     /// </summary>
-    public class TransactionService : ITransactionService
+    public class FinancialTransactionService : IFinancialTransactionService
     {
-        private readonly ITransactionRepository _transactionRepository;
+        private readonly IFinancialTransactionRepository _transactionRepository;
         private readonly ICategoryRepository _categoryRepository;
         private readonly ITimeProvider _timeProvider;
         private readonly Dictionary<GroupingReportStrategyKey, IGroupingReportStrategy> _strategies;
-        private readonly ILogger<TransactionService> _logger;
+        private readonly ILogger<FinancialTransactionService> _logger;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="TransactionService"/> class.
+        /// Initializes a new instance of the <see cref="FinancialTransactionService"/> class.
         /// </summary>
         /// <param name="transactionsRepository">The repository for transactions.</param>
         /// <param name="timeProvider">The time provider for generating timestamps.</param>
         /// <param name="strategies">The available grouping strategies for reports.</param>
         /// <param name="categoryRepository">The repository for categories.</param>
         /// <param name="logger">The logger for audit and debugging information.</param>
-        public TransactionService(
-            ITransactionRepository transactionsRepository,
+        public FinancialTransactionService(
+            IFinancialTransactionRepository transactionsRepository,
             ITimeProvider timeProvider,
             IEnumerable<IGroupingReportStrategy> strategies,
             ICategoryRepository categoryRepository,
-            ILogger<TransactionService> logger)
+            ILogger<FinancialTransactionService> logger)
         {
             _transactionRepository = transactionsRepository;
             _timeProvider = timeProvider;

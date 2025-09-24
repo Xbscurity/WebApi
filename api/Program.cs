@@ -60,14 +60,14 @@ try
 
     builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
     builder.Services.AddScoped<ICategoryService, CategoryService>();
-    builder.Services.AddScoped<ITransactionRepository, TransactionRepository>();
-    builder.Services.AddScoped<ITransactionService, TransactionService>();
+    builder.Services.AddScoped<IFinancialTransactionRepository, FinancialTransactionRepository>();
+    builder.Services.AddScoped<IFinancialTransactionService, FinancialTransactionService>();
     builder.Services.AddScoped<IGroupingReportStrategy, GroupByCategoryStrategy>();
     builder.Services.AddScoped<IGroupingReportStrategy, GroupByDateStrategy>();
     builder.Services.AddScoped<IGroupingReportStrategy, GroupByDateAndCategoryStrategy>();
     builder.Services.AddScoped<ITokenService, TokenService>();
     builder.Services.AddHttpContextAccessor();
-    builder.Services.AddSingleton<TransactionSortValidator>();
+    builder.Services.AddSingleton<FinancialTransactionSortValidator>();
     builder.Services.AddSingleton<CategorySortValidator>();
     builder.Services.AddSingleton<IAuthorizationMiddlewareResultHandler, CustomAuthorizationMiddlewareResultHandler>();
     builder.Services.AddSingleton<ITimeProvider, UtcTimeProvider>();
