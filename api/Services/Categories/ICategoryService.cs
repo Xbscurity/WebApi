@@ -81,6 +81,5 @@ namespace api.Services.Categories
         /// <param name="id">The unique identifier of the category.</param>
         /// <returns>A task containing <see langword="true"/> if the deletion succeeded; otherwise, <see langword="false"/>.</returns>
         Task<bool> DeleteAsync(int id);
-
     }
 }

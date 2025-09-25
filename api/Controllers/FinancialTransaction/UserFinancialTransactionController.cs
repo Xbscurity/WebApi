@@ -50,12 +50,13 @@ namespace api.Controllers.FinancialTransaction
         {
             if (!_sortValidator.IsValid(queryObject!.SortBy))
             {
-                _logger.LogWarning(LoggingEvents.FinancialTransactions.Common.SortInvalid, _sortValidator.GetErrorMessage(queryObject.SortBy!));
+                Logger.LogWarning(LoggingEvents.FinancialTransactions.Common.SortInvalid, _sortValidator.GetErrorMessage(queryObject.SortBy!));
                 return ApiResponse.BadRequest<List<GroupedReportOutputDto>>(_sortValidator.GetErrorMessage(queryObject.SortBy!));
             }
+
             var userId = User.GetUserId();
-            var report = await _financialTransactionService.GetReportAsync(userId!, queryObject);
-            _logger.LogInformation(
+            var report = await FinancialTransactionService.GetReportAsync(userId!, queryObject);
+            Logger.LogInformation(
                 LoggingEvents.FinancialTransactions.User.Report,
                 "Returning {Count} transactions. Strategy Key = {StrategyKey}, Page={PageNumber}, Size={PageSize}, SortBy={SortBy}",
                 report.Data.Count,
@@ -78,13 +79,13 @@ namespace api.Controllers.FinancialTransaction
         {
             if (!_sortValidator.IsValid(queryObject.SortBy))
             {
-                _logger.LogWarning(LoggingEvents.FinancialTransactions.Common.SortInvalid, _sortValidator.GetErrorMessage(queryObject.SortBy!));
+                Logger.LogWarning(LoggingEvents.FinancialTransactions.Common.SortInvalid, _sortValidator.GetErrorMessage(queryObject.SortBy!));
                 return ApiResponse.BadRequest<List<BaseFinancialTransactionOutputDto>>(_sortValidator.GetErrorMessage(queryObject.SortBy!));
             }
 
             var userId = User.GetUserId();
-            var transactions = await _financialTransactionService.GetAllForUserAsync(userId!, queryObject);
-            _logger.LogInformation(
+            var transactions = await FinancialTransactionService.GetAllForUserAsync(userId!, queryObject);
+            Logger.LogInformation(
                 LoggingEvents.FinancialTransactions.User.GetAll,
                 "Returning {Count} transactions. Page={PageNumber}, Size={PageSize}, SortBy={SortBy}",
                 transactions.Data.Count,
@@ -102,11 +103,24 @@ namespace api.Controllers.FinancialTransaction
         /// An <see cref="ApiResponse{T}"/> containing the newly created transaction.
         /// </returns>
         [HttpPost]
-        public async Task<ApiResponse<BaseFinancialTransactionOutputDto>> Create([FromBody] BaseFinancialTransactionInputDto transactionDto)
+        public async Task<ApiResponse<BaseFinancialTransactionOutputDto>> Create(
+            [FromBody] BaseFinancialTransactionInputDto transactionDto)
         {
             var userId = User.GetUserId();
-            var result = await _financialTransactionService.CreateForUserAsync(userId!, transactionDto);
-            _logger.LogInformation(LoggingEvents.FinancialTransactions.User.Created, "Created new transaction {transactionId}", result.Id);
+            var result = await FinancialTransactionService.CreateForUserAsync(userId!, transactionDto);
+            if (result == null)
+            {
+                Logger.LogInformation(
+                                LoggingEvents.Categories.Common.GetById,
+                                "Category {CategoryId} not found",
+                                transactionDto.CategoryId);
+                return ApiResponse.NotFound<BaseFinancialTransactionOutputDto>($"Category {transactionDto.CategoryId} not found");
+            }
+
+            Logger.LogInformation(
+                LoggingEvents.FinancialTransactions.User.Created,
+                "Created new transaction {transactionId}",
+                result.Id);
             return ApiResponse.Success(result);
         }
     }

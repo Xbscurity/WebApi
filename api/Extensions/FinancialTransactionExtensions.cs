@@ -22,7 +22,7 @@ namespace api.Extensions
         {
             if (financialTransaction is null)
             {
-                return null;
+                return null!;
             }
 
             return new BaseFinancialTransactionOutputDto()
@@ -50,7 +50,7 @@ namespace api.Extensions
         {
             if (transactionInputDto is null)
             {
-                return null;
+                return null!;
             }
 
             return new FinancialTransaction(timeProvider)
@@ -75,7 +75,7 @@ namespace api.Extensions
         {
             if (transactionInputDto is null)
             {
-                return null;
+                return null!;
             }
 
             return new FinancialTransaction(timeProvider)

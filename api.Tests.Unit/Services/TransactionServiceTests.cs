@@ -12,13 +12,13 @@ namespace api.Tests.Unit.Services
 {
     public class TransactionServiceTests
     {
-        private readonly Mock<ITransactionRepository> _transactionRepositoryMock;
+        private readonly Mock<IFinancialTransactionRepository> _transactionRepositoryMock;
         private readonly Mock<ITimeProvider> _timeStub;
-        private readonly TransactionService _transactionService;
+        private readonly FinancialTransactionService _transactionService;
 
         public TransactionServiceTests()
         {
-            _transactionRepositoryMock = new Mock<ITransactionRepository>();
+            _transactionRepositoryMock = new Mock<IFinancialTransactionRepository>();
 
             _timeStub = new Mock<ITimeProvider>();
             var fixedTime = new DateTimeOffset(2025, 1, 1, 12, 0, 0, TimeSpan.Zero);
@@ -144,7 +144,7 @@ namespace api.Tests.Unit.Services
 
 };
             var mockDbSet = testData.AsQueryable().BuildMockDbSet();
-            var mockRepo = new Mock<ITransactionRepository>();
+            var mockRepo = new Mock<IFinancialTransactionRepository>();
             mockRepo.Setup(r => r.GetQueryableWithCategory()).Returns(mockDbSet.Object);
             var strategy = new GroupByCategoryStrategy();
 
@@ -201,7 +201,7 @@ namespace api.Tests.Unit.Services
 
 };
             var mockDbSet = testData.AsQueryable().BuildMockDbSet();
-            var mockRepo = new Mock<ITransactionRepository>();
+            var mockRepo = new Mock<IFinancialTransactionRepository>();
             mockRepo.Setup(r => r.GetQueryableWithCategory()).Returns(mockDbSet.Object);
             var strategy = new GroupByDateStrategy();
 
@@ -267,7 +267,7 @@ namespace api.Tests.Unit.Services
     }
 };
             var mockDbSet = testData.AsQueryable().BuildMockDbSet();
-            var mockRepo = new Mock<ITransactionRepository>();
+            var mockRepo = new Mock<IFinancialTransactionRepository>();
             mockRepo.Setup(r => r.GetQueryableWithCategory()).Returns(mockDbSet.Object);
             var strategy = new GroupByDateAndCategoryStrategy();
             var strategies = new List<IGroupingReportStrategy> { strategy };

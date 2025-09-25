@@ -77,7 +77,7 @@ namespace api.Controllers.User
             if (user.IsBanned == request.IsBanned)
             {
                 _logger.LogWarning(
-                    LoggingEvents.Users.Admin.UserAlreadyBanned,
+                    LoggingEvents.Users.Admin.BanUser,
                     "User is already {BanStatus}",
                     request.IsBanned ? "banned" : "unbanned");
                 return ApiResponse.BadRequest<string>($"User is already {(request.IsBanned ? "banned" : "unbanned")}");
@@ -88,7 +88,7 @@ namespace api.Controllers.User
             await _userManager.UpdateAsync(user);
 
             _logger.LogInformation(
-                LoggingEvents.Users.Admin.UserBanned,
+                LoggingEvents.Users.Admin.BanUser,
                 "User has been {BanStatus}",
                 request.IsBanned ? "banned" : "unbanned");
             return ApiResponse.Success($"User has been {(request.IsBanned ? "banned" : "unbanned")}");
@@ -102,7 +102,7 @@ namespace api.Controllers.User
         /// Sorting is validated using <see cref="UserSortValidator"/>.
         /// </param>
         /// <returns>
-        /// An <see cref="ApiResponse{T}"/> containing a paginated list of <see cref="AdminUserManagementUserOutputDto"/> objects.  
+        /// An <see cref="ApiResponse{T}"/> containing a paginated list of <see cref="AdminUserManagementUserOutputDto"/> objects.
         /// Returns <see cref="ApiResponse.BadRequest"/> if the provided <c>SortBy</c> parameter is invalid.
         /// </returns>
         [HttpGet("users")]
@@ -118,8 +118,8 @@ namespace api.Controllers.User
                 .Select(u => new AdminUserManagementUserOutputDto
                 {
                     Id = u.Id,
-                    Email = u.Email,
-                    UserName = u.UserName,
+                    Email = u.Email!,
+                    UserName = u.UserName!,
                     IsBanned = u.IsBanned,
                 })
                 .ToPagedQueryAsync(queryObject);

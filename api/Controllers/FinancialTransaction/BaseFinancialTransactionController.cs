@@ -1,4 +1,5 @@
-﻿using api.Dtos.FinancialTransaction;
+﻿using api.Constants;
+using api.Dtos.FinancialTransaction;
 using api.Filters;
 using api.Responses;
 using api.Services.Transaction;
@@ -13,8 +14,15 @@ namespace api.Controllers.FinancialTransaction
     /// </summary>
     public abstract class BaseFinancialTransactionController : ControllerBase
     {
-        protected readonly IFinancialTransactionService _financialTransactionService;
-        protected readonly ILogger _logger;
+        /// <summary>
+        /// The service used to manage transactions.
+        /// </summary>
+        private readonly IFinancialTransactionService _financialTransactionService;
+
+        /// <summary>
+        /// The logger for recording transaction events.
+        /// </summary>
+        private readonly ILogger _logger;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="BaseFinancialTransactionController"/> class.
@@ -32,6 +40,16 @@ namespace api.Controllers.FinancialTransaction
         }
 
         /// <summary>
+        /// Gets the service for managing financial transactions.
+        /// </summary>
+        protected IFinancialTransactionService FinancialTransactionService => _financialTransactionService;
+
+        /// <summary>
+        /// Gets the logger for recording category-related events.
+        /// </summary>
+        protected ILogger Logger => _logger;
+
+        /// <summary>
         /// Retrieves a transaction by its identifier.
         /// </summary>
         /// <param name="id">The transaction identifier.</param>
@@ -42,9 +60,11 @@ namespace api.Controllers.FinancialTransaction
         [FinancialTransactionAuthorization]
         public async Task<ApiResponse<BaseFinancialTransactionOutputDto>> GetById([FromRoute] int id)
         {
-            _logger.LogDebug("id is {Id}", id);
-            var result = await _financialTransactionService.GetByIdAsync(id);
-
+            var result = await FinancialTransactionService.GetByIdAsync(id);
+            Logger.LogInformation(
+                LoggingEvents.FinancialTransactions.Common.GetById,
+                "Financial transaction with ID {FinancialTransactionId} retrieved.",
+                id);
             return ApiResponse.Success(result!);
         }
 
@@ -61,8 +81,12 @@ namespace api.Controllers.FinancialTransaction
         public async Task<ApiResponse<BaseFinancialTransactionOutputDto>> Update(
             [FromRoute] int id, [FromBody] BaseFinancialTransactionInputDto dto)
         {
-            var result = await _financialTransactionService.UpdateAsync(id, dto);
+            var result = await FinancialTransactionService.UpdateAsync(id, dto);
 
+            Logger.LogInformation(
+                LoggingEvents.FinancialTransactions.Common.Updated,
+                "Financial transaction with ID {FinancialTransactionId} updated.",
+                id);
             return ApiResponse.Success(result!);
         }
 
@@ -77,7 +101,12 @@ namespace api.Controllers.FinancialTransaction
         [FinancialTransactionAuthorization]
         public async Task<ApiResponse<bool>> Delete([FromRoute] int id)
         {
-            var result = await _financialTransactionService.DeleteAsync(id);
+            var result = await FinancialTransactionService.DeleteAsync(id);
+
+            Logger.LogInformation(
+                LoggingEvents.FinancialTransactions.Common.Deleted,
+                "Financial transaction with ID {FinancialTransactionId} deleted.",
+                id);
             return ApiResponse.Success(result!);
         }
     }

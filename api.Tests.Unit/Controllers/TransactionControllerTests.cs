@@ -8,12 +8,12 @@ namespace api.Tests.Unit.Controllers
 {
     public class TransactionControllerTests
     {
-        private readonly Mock<ITransactionService> _serviceMock;
-        private readonly UserTransactionController _controller;
+        private readonly Mock<IFinancialTransactionService> _serviceMock;
+        private readonly UserFinancialTransactionController _controller;
 
         public TransactionControllerTests()
         {
-            _serviceMock = new Mock<ITransactionService>();
+            _serviceMock = new Mock<IFinancialTransactionService>();
             _controller = new UserTransactionController(_serviceMock.Object);
         }
 

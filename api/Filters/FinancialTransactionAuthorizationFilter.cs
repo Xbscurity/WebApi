@@ -8,11 +8,20 @@ using Microsoft.AspNetCore.Mvc.Filters;
 
 namespace api.Filters
 {
+    /// <summary>
+    /// An asynchronous action filter that performs authorization for financial transaction-related actions.
+    /// It checks if the authenticated user has the necessary permissions to access a specific financial transaction.
+    /// </summary>
     public class FinancialTransactionAuthorizationFilter : IAsyncActionFilter
     {
         private readonly IAuthorizationService _authorizationService;
         private readonly ILogger<FinancialTransactionAuthorizationFilter> _logger;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="FinancialTransactionAuthorizationFilter"/> class.
+        /// </summary>
+        /// <param name="authorizationService">The service for performing authorization checks.</param>
+        /// <param name="logger">The logger for this filter.</param>
         public FinancialTransactionAuthorizationFilter(
            IAuthorizationService authorizationService,
            ILogger<FinancialTransactionAuthorizationFilter> logger)
@@ -21,6 +30,13 @@ namespace api.Filters
             _logger = logger;
         }
 
+        /// <summary>
+        /// Called before and after the action is executed. It validates the financial transaction ID, retrieves the transaction,
+        /// and authorizes the user against the specified policy.
+        /// </summary>
+        /// <param name="context">The context for action execution.</param>
+        /// <param name="next">The delegate to call to proceed to the next action filter or the action itself.</param>
+        /// <returns>A <see cref="Task"/> that represents the asynchronous execution.</returns>
         public async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
         {
             if (!context.ActionArguments.TryGetValue("id", out var idValue) || !(idValue is int financialTransactionId))
@@ -65,8 +81,15 @@ namespace api.Filters
         }
     }
 
+    /// <summary>
+    /// An attribute to apply the <see cref="FinancialTransactionAuthorizationFilter"/> to an action method.
+    /// This provides a declarative way to require authorization for financial transaction-related actions.
+    /// </summary>
     public class FinancialTransactionAuthorizationAttribute : TypeFilterAttribute
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="FinancialTransactionAuthorizationAttribute"/> class.
+        /// </summary>
         public FinancialTransactionAuthorizationAttribute()
             : base(typeof(FinancialTransactionAuthorizationFilter))
         {

@@ -1,4 +1,5 @@
-﻿using api.Dtos.Category;
+﻿using api.Constants;
+using api.Dtos.Category;
 using api.Extensions;
 using api.Models;
 using api.QueryObjects;
@@ -8,7 +9,6 @@ using Microsoft.EntityFrameworkCore;
 
 namespace api.Services.Categories
 {
-
     /// <summary>
     /// Implements category-related business logic, including user-specific
     /// and admin-level category management operations.
@@ -16,14 +16,17 @@ namespace api.Services.Categories
     public class CategoryService : ICategoryService
     {
         private readonly ICategoryRepository _categoryRepository;
+        private readonly ILogger<CategoryService> _logger;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="CategoryService"/> class.
         /// </summary>
         /// <param name="categoriesRepository">The repository for category persistence and retrieval.</param>
-        public CategoryService(ICategoryRepository categoriesRepository)
+        /// /// <param name="logger">The logger for recording category events.</param>
+        public CategoryService(ICategoryRepository categoriesRepository, ILogger<CategoryService> logger)
         {
             _categoryRepository = categoriesRepository;
+            _logger = logger;
         }
 
         /// <inheritdoc />
@@ -32,9 +35,11 @@ namespace api.Services.Categories
         {
             var query = _categoryRepository.GetQueryable()
         .Where(c =>
+
             // User's own categories (include inactive if requested)
             (c.AppUserId == userId && (includeInactive || c.IsActive))
             ||
+
             // All active global categories
             (c.AppUserId == null && c.IsActive));
 
@@ -52,7 +57,6 @@ namespace api.Services.Categories
             var query = _categoryRepository.GetQueryable();
             if (userId != null)
             {
-
                 query = query.Where(c => c.AppUserId == userId);
             }
 
@@ -71,12 +75,20 @@ namespace api.Services.Categories
             var category = await _categoryRepository.GetByIdAsync(id);
             if (category == null)
             {
+                _logger.LogDebug(
+                    LoggingEvents.Categories.Common.Toggled,
+                    "Category with ID {CategoryId} was not found, cannot toggle.",
+                    id);
                 return false;
             }
 
             category.IsActive = !category.IsActive;
             await _categoryRepository.UpdateAsync(category);
 
+            _logger.LogDebug(
+                LoggingEvents.Categories.Common.Toggled,
+                "Category with ID {CategoryId} active status successfully toggled.",
+                id);
             return true;
         }
 
@@ -131,7 +143,6 @@ namespace api.Services.Categories
         /// <inheritdoc />
         public async Task<BaseCategoryOutputDto?> UpdateAsync(int id, BaseCategoryUpdateInputDto categoryDto)
         {
-
             var existingCategory = await _categoryRepository.GetByIdAsync(id);
             if (existingCategory is null)
             {

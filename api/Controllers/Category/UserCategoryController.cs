@@ -18,7 +18,6 @@ namespace api.Controllers.Category
     [Route("api/user/categories")]
     public class UserCategoryController : BaseCategoryController
     {
-        private readonly ILogger<UserCategoryController> _logger;
         private readonly CategorySortValidator _sortValidator;
 
         /// <summary>
@@ -35,7 +34,6 @@ namespace api.Controllers.Category
             IAuthorizationService authorizationService)
             : base(categoryService, logger, authorizationService)
         {
-            _logger = logger;
             _sortValidator = sortValidator;
         }
 
@@ -55,14 +53,14 @@ namespace api.Controllers.Category
         {
             if (!_sortValidator.IsValid(queryObject.SortBy))
             {
-                _logger.LogWarning(LoggingEvents.Categories.Common.SortInvalid, _sortValidator.GetErrorMessage(queryObject.SortBy!));
+                Logger.LogWarning(LoggingEvents.Categories.Common.SortInvalid, _sortValidator.GetErrorMessage(queryObject.SortBy!));
                 return ApiResponse.BadRequest<List<BaseCategoryOutputDto>>(_sortValidator.GetErrorMessage(queryObject.SortBy!));
             }
 
             var userId = User.GetUserId();
-            var categories = await _categoryService.GetAllForUserAsync(userId!, queryObject, includeInactive);
+            var categories = await CategoryService.GetAllForUserAsync(userId!, queryObject, includeInactive);
 
-            _logger.LogInformation(
+            Logger.LogInformation(
                 LoggingEvents.Categories.User.GetAll,
                 "Returning {Count} categories. Page={PageNumber}, Size={PageSize}, SortBy={SortBy}",
                 categories.Data.Count,
@@ -83,8 +81,8 @@ namespace api.Controllers.Category
         public async Task<ApiResponse<BaseCategoryOutputDto>> Create([FromBody] BaseCategoryUpdateInputDto categoryDto)
         {
             var userId = User.GetUserId();
-            var result = await _categoryService.CreateForUserAsync(userId!, categoryDto);
-            _logger.LogInformation(LoggingEvents.Categories.User.Created, "Created new transaction {categoryId}", result.Id);
+            var result = await CategoryService.CreateForUserAsync(userId!, categoryDto);
+            Logger.LogInformation(LoggingEvents.Categories.User.Created, "Created new transaction {categoryId}", result.Id);
             return ApiResponse.Success(result);
         }
     }

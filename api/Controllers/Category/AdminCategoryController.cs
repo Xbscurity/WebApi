@@ -17,7 +17,6 @@ namespace api.Controllers.Category
     [Route("api/admin/categories")]
     public class AdminCategoryController : BaseCategoryController
     {
-
         private readonly CategorySortValidator _sortValidator;
 
         /// <summary>
@@ -50,15 +49,14 @@ namespace api.Controllers.Category
             [FromQuery] PaginationQueryObject queryObject,
             [FromQuery] string? userId = null)
         {
-
             if (!_sortValidator.IsValid(queryObject.SortBy))
             {
-                _logger.LogWarning(LoggingEvents.Categories.Common.SortInvalid, _sortValidator.GetErrorMessage(queryObject.SortBy));
+                Logger.LogWarning(LoggingEvents.Categories.Common.SortInvalid, _sortValidator.GetErrorMessage(queryObject.SortBy));
                 return ApiResponse.BadRequest<List<BaseCategoryOutputDto>>(_sortValidator.GetErrorMessage(queryObject.SortBy));
             }
 
-            var categories = await _categoryService.GetAllForAdminAsync(queryObject, userId);
-            _logger.LogInformation(
+            var categories = await CategoryService.GetAllForAdminAsync(queryObject, userId);
+            Logger.LogInformation(
                 LoggingEvents.Categories.Admin.GetAll,
                 "Returning {Count} categories. , Page={PageNumber}, Size={PageSize}, SortBy={SortBy}, userId = {userId}",
                 categories.Data.Count,
@@ -79,8 +77,8 @@ namespace api.Controllers.Category
         [HttpPost]
         public async Task<ApiResponse<BaseCategoryOutputDto>> Create([FromBody] AdminCategoryCreateInputDto categoryDto)
         {
-            var result = await _categoryService.CreateForAdminAsync(categoryDto);
-            _logger.LogInformation(
+            var result = await CategoryService.CreateForAdminAsync(categoryDto);
+            Logger.LogInformation(
                 LoggingEvents.Categories.Admin.Created,
                 "Created new category {categoryId} for user {UserId}",
                 result.Id,

@@ -18,6 +18,7 @@ namespace api.Authorization
         /// Initializes a new instance of the <see cref="NotBannedHandler"/> class.
         /// </summary>
         /// <param name="userManager">The <see cref="UserManager{TUser}"/> instance for managing application users.</param>
+        /// <param name="logger">The logger used to write access check details.</param>
         public NotBannedHandler(UserManager<AppUser> userManager, ILogger<NotBannedHandler> logger)
         {
             _userManager = userManager;

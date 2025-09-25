@@ -1,7 +1,7 @@
 namespace api.Dtos.FinancialTransaction
 {
     /// <summary>
-    /// Represents a grouped report result containing a set of financial transactions.
+    /// Represents a grouped report output DTO containing a set of financial transactions.
     /// </summary>
     /// <remarks>
     /// Each group is identified by a <see cref="ReportKey"/> according to the selected strategy.

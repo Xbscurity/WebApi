@@ -21,7 +21,7 @@ namespace api.Extensions
         {
             if (category is null)
             {
-                return null;
+                return null!;
             }
 
             return new BaseCategoryOutputDto

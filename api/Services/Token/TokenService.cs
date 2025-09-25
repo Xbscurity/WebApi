@@ -128,7 +128,6 @@ namespace api.Services.Token
                 return new RefreshTokenResult { Error = "User not found" };
             }
 
-
             var newAccessToken = await GenerateAccessTokenAsync(user);
             var newPlainRefresh = GenerateRefreshToken();
             var newRefreshEntity = GenerateRefreshTokenEntity(newPlainRefresh, user, ipAddress);
@@ -171,7 +170,6 @@ namespace api.Services.Token
         /// <inheritdoc/>
         public async Task RevokeAllRefreshTokensAsync(string userId, string? ipAddress, string reason)
         {
-
             await _context.RefreshTokens
                 .Where(rt => rt.UserId == userId && rt.RevokedAt == null)
                 .ExecuteUpdateAsync(setters => setters

@@ -51,13 +51,13 @@ namespace api.Controllers.FinancialTransaction
         {
             if (!_sortValidator.IsValid(queryObject.SortBy))
             {
-                _logger.LogWarning(LoggingEvents.FinancialTransactions.Common.SortInvalid, _sortValidator.GetErrorMessage(queryObject.SortBy!));
+                Logger.LogWarning(LoggingEvents.FinancialTransactions.Common.SortInvalid, _sortValidator.GetErrorMessage(queryObject.SortBy!));
                 return ApiResponse.BadRequest<List<BaseFinancialTransactionOutputDto>>(
                     _sortValidator.GetErrorMessage(queryObject.SortBy!));
             }
 
-            var transactions = await _financialTransactionService.GetAllForAdminAsync(queryObject, userId);
-            _logger.LogInformation(
+            var transactions = await FinancialTransactionService.GetAllForAdminAsync(queryObject, userId);
+            Logger.LogInformation(
                 LoggingEvents.FinancialTransactions.Admin.GetAll,
                 "Returning {Count} transactions. Page={PageNumber}, Size={PageSize}, SortBy={SortBy}, userId = {userId}",
                 transactions.Data.Count,
@@ -79,8 +79,8 @@ namespace api.Controllers.FinancialTransaction
         public async Task<ApiResponse<BaseFinancialTransactionOutputDto>> Create(
             [FromBody] AdminFinancialTransactionInputDto transactionDto)
         {
-            var result = await _financialTransactionService.CreateForAdminAsync(transactionDto.AppUserId!, transactionDto);
-            _logger.LogInformation(
+            var result = await FinancialTransactionService.CreateForAdminAsync(transactionDto.AppUserId!, transactionDto);
+            Logger.LogInformation(
                 LoggingEvents.Categories.Admin.Created,
                 "Created new transaction {transactionId} for user {UserId}",
                 result.Id,

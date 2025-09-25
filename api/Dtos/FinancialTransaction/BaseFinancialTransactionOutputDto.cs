@@ -1,5 +1,8 @@
 ﻿namespace api.Dtos.FinancialTransaction
 {
+    /// <summary>
+    /// Represents the output DTO for retrieving a financial transaction.
+    /// </summary>
     public record BaseFinancialTransactionOutputDto
     {
         /// <summary>

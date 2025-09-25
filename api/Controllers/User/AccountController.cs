@@ -69,7 +69,7 @@ namespace api.Controllers.User
             {
                 var errors = createdUser.Errors.Select(e => new { e.Code, e.Description });
 
-                _logger.LogWarning(LoggingEvents.Users.Common.RegisterFailed, "Failed to create user: {@Errors}", errors);
+                _logger.LogWarning(LoggingEvents.Users.Common.Register, "Failed to create user: {@Errors}", errors);
                 return ApiResponse.BadRequest<AccountUserOutputDto>("Registration failed", errors);
             }
 
@@ -78,7 +78,7 @@ namespace api.Controllers.User
             {
                 var errors = roleResult.Errors.Select(e => new { e.Code, e.Description });
 
-                _logger.LogError(LoggingEvents.Users.Common.RoleAssignFailed, "Failed to assign role to user: {@Errors}", errors);
+                _logger.LogError(LoggingEvents.Users.Common.Register, "Failed to assign role to user: {@Errors}", errors);
                 return ApiResponse.BadRequest<AccountUserOutputDto>("Failed to assign role", errors);
             }
 
@@ -113,7 +113,7 @@ namespace api.Controllers.User
             var user = await _userManager.FindByNameAsync(loginDto.UserName);
             if (user == null)
             {
-                _logger.LogWarning(LoggingEvents.Users.Common.LoginUserNotFound, "User not found");
+                _logger.LogWarning(LoggingEvents.Users.Common.Login, "User not found");
 
                 return ApiResponse.Unauthorized<AccountUserOutputDto>("Invalid username or password");
             }
@@ -121,7 +121,7 @@ namespace api.Controllers.User
             var result = await _signInManager.CheckPasswordSignInAsync(user, loginDto.Password, false);
             if (!result.Succeeded)
             {
-                _logger.LogWarning(LoggingEvents.Users.Common.LoginInvalidPassword, "Invalid password");
+                _logger.LogWarning(LoggingEvents.Users.Common.Login, "Invalid password");
 
                 return ApiResponse.Unauthorized<AccountUserOutputDto>("Invalid username or password");
             }
@@ -132,8 +132,8 @@ namespace api.Controllers.User
             await _tokenService.SaveRefreshTokenAsync(refreshTokenEntity);
             var newUserDto = new AccountUserOutputDto
             {
-                UserName = user.UserName,
-                Email = user.Email,
+                UserName = user.UserName!,
+                Email = user.Email!,
                 Token = accessToken,
             };
 
@@ -155,7 +155,7 @@ namespace api.Controllers.User
             var refreshToken = Request.Cookies["refreshToken"];
             if (string.IsNullOrEmpty(refreshToken))
             {
-                _logger.LogWarning(LoggingEvents.Users.Common.RefreshTokenMissing, "No refresh token found in cookies");
+                _logger.LogWarning(LoggingEvents.Users.Common.RefreshToken, "No refresh token found in cookies");
                 return ApiResponse.Unauthorized<RefreshOutputDto>("No refresh token found");
             }
 
@@ -164,13 +164,13 @@ namespace api.Controllers.User
             if (!result.IsSuccess)
             {
                 _logger.LogWarning(
-                    LoggingEvents.Users.Common.RefreshTokenInvalid,
+                    LoggingEvents.Users.Common.RefreshToken,
                     "Refresh token validation failed. Reason = {Error}",
                     result.Error);
                 return ApiResponse.Unauthorized<RefreshOutputDto>(result.Error!);
             }
 
-            SetRefreshTokenCookie(result.NewRefreshToken, result.ExpiresAt!.Value);
+            SetRefreshTokenCookie(result.NewRefreshToken!, result.ExpiresAt!.Value);
 
             return ApiResponse.Success(new RefreshOutputDto
             {
@@ -209,6 +209,12 @@ namespace api.Controllers.User
         {
             var user = await _userManager.GetUserAsync(User);
 
+            if (user == null)
+            {
+                _logger.LogWarning(LoggingEvents.Users.Common.ChangePassword, "User not found");
+                return ApiResponse.Unauthorized<UserProfileOutputDto>();
+            }
+
             var profileDto = new UserProfileOutputDto
             {
                 UserName = user.UserName!,
@@ -233,10 +239,16 @@ namespace api.Controllers.User
         {
             var user = await _userManager.GetUserAsync(User);
 
+            if (user == null)
+            {
+                _logger.LogWarning(LoggingEvents.Users.Common.ChangePassword, "User not found");
+                return ApiResponse.Unauthorized<string>();
+            }
+
             var passwordCheck = await _userManager.CheckPasswordAsync(user, dto.CurrentPassword);
             if (!passwordCheck)
             {
-                _logger.LogWarning(LoggingEvents.Users.Common.ChangePasswordCurrentFailed, "Invalid current password");
+                _logger.LogWarning(LoggingEvents.Users.Common.ChangePassword, "Invalid current password");
                 return ApiResponse.BadRequest<string>("Unable to change password");
             }
 
@@ -245,12 +257,12 @@ namespace api.Controllers.User
             {
                 var errors = result.Errors.Select(e => new { e.Code, e.Description }).ToList();
 
-                _logger.LogWarning(LoggingEvents.Users.Common.ChangePasswordNewFailed, "Change password failed: {@Errors}", errors);
+                _logger.LogWarning(LoggingEvents.Users.Common.ChangePassword, "Change password failed: {@Errors}", errors);
                 return ApiResponse.BadRequest<string>("Failed to change password", errors);
             }
 
             var userId = User.GetUserId();
-            await _tokenService.RevokeAllRefreshTokensAsync(userId, GetClientIp(), "Password changed");
+            await _tokenService.RevokeAllRefreshTokensAsync(userId!, GetClientIp(), "Password changed");
 
             var newRefreshToken = _tokenService.GenerateRefreshToken();
             var refreshTokenEntity = _tokenService.GenerateRefreshTokenEntity(newRefreshToken, user, GetClientIp());
@@ -290,6 +302,5 @@ namespace api.Controllers.User
 
             return ip.IsIPv4MappedToIPv6 ? ip.MapToIPv4().ToString() : ip.ToString();
         }
-
     }
 }
