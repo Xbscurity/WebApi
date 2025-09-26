@@ -3,7 +3,6 @@ using api.Dtos.FinancialTransaction;
 using api.Filters;
 using api.Responses;
 using api.Services.Transaction;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace api.Controllers.FinancialTransaction
@@ -29,11 +28,9 @@ namespace api.Controllers.FinancialTransaction
         /// </summary>
         /// <param name="transactionService">The service used to manage transactions.</param>
         /// <param name="logger">The logger for recording transaction events.</param>
-        /// <param name="authorizationService">The service used to authorize transaction access.</param>
         public BaseFinancialTransactionController(
             IFinancialTransactionService transactionService,
-            ILogger logger,
-            IAuthorizationService authorizationService)
+            ILogger logger)
         {
             _financialTransactionService = transactionService;
             _logger = logger;

@@ -26,13 +26,11 @@ namespace api.Controllers.FinancialTransaction
         /// <param name="transactionService">The service used to manage transactions.</param>
         /// <param name="sortValidator">Validates sorting fields for transaction queries.</param>
         /// <param name="logger">The logger for user-specific transaction operations.</param>
-        /// <param name="authorizationService">The service used to authorize transaction access.</param>
         public UserFinancialTransactionController(
             IFinancialTransactionService transactionService,
             FinancialTransactionSortValidator sortValidator,
-            ILogger<UserFinancialTransactionController> logger,
-            IAuthorizationService authorizationService)
-            : base(transactionService, logger, authorizationService)
+            ILogger<UserFinancialTransactionController> logger)
+            : base(transactionService, logger)
         {
             _sortValidator = sortValidator;
         }

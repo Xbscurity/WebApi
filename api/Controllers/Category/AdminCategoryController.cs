@@ -25,13 +25,11 @@ namespace api.Controllers.Category
         /// <param name="categoriesService">The service for managing categories.</param>
         /// <param name="logger">The logger for admin-specific category operations.</param>
         /// <param name="sortValidator">Validates sorting fields for category queries.</param>
-        /// <param name="authorizationService">The service used to authorize category access.</param>
         public AdminCategoryController(
             ICategoryService categoriesService,
             ILogger<AdminCategoryController> logger,
-            CategorySortValidator sortValidator,
-            IAuthorizationService authorizationService)
-            : base(categoriesService, logger, authorizationService)
+            CategorySortValidator sortValidator)
+            : base(categoriesService, logger)
         {
             _sortValidator = sortValidator;
         }

@@ -3,7 +3,6 @@ using api.Dtos.Category;
 using api.Filters;
 using api.Responses;
 using api.Services.Categories;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace api.Controllers.Category
@@ -29,11 +28,9 @@ namespace api.Controllers.Category
         /// </summary>
         /// <param name="categoriesService">The service for managing categories.</param>
         /// <param name="logger">The logger for recording category-related events.</param>
-        /// <param name="authorizationService">The service used to authorize category access.</param>.
         public BaseCategoryController(
             ICategoryService categoriesService,
-            ILogger logger,
-            IAuthorizationService authorizationService)
+            ILogger logger)
         {
             _categoryService = categoriesService;
             _logger = logger;
