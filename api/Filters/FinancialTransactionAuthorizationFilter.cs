@@ -16,18 +16,22 @@ namespace api.Filters
     {
         private readonly IAuthorizationService _authorizationService;
         private readonly ILogger<FinancialTransactionAuthorizationFilter> _logger;
+        private readonly IFinancialTransactionService _financialTransactionService;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="FinancialTransactionAuthorizationFilter"/> class.
         /// </summary>
         /// <param name="authorizationService">The service for performing authorization checks.</param>
         /// <param name="logger">The logger for this filter.</param>
+        /// <param name="financialTransactionService">The service used to manage transactions.</param>
         public FinancialTransactionAuthorizationFilter(
            IAuthorizationService authorizationService,
-           ILogger<FinancialTransactionAuthorizationFilter> logger)
+           ILogger<FinancialTransactionAuthorizationFilter> logger,
+           IFinancialTransactionService financialTransactionService)
         {
             _authorizationService = authorizationService;
             _logger = logger;
+            _financialTransactionService = financialTransactionService;
         }
 
         /// <summary>
@@ -39,14 +43,13 @@ namespace api.Filters
         /// <returns>A <see cref="Task"/> that represents the asynchronous execution.</returns>
         public async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
         {
-            if (!context.ActionArguments.TryGetValue("id", out var idValue) || !(idValue is int financialTransactionId))
+            if (!context.ActionArguments.TryGetValue("id", out var idObj) || idObj is not int financialTransactionId)
             {
                 context.Result = new BadRequestObjectResult(ApiResponse.BadRequest<object>());
                 return;
             }
 
-            var financialTransactionService = context.HttpContext.RequestServices.GetRequiredService<IFinancialTransactionService>();
-            var financialTransaction = await financialTransactionService.GetByIdRawAsync(financialTransactionId);
+            var financialTransaction = await _financialTransactionService.GetByIdRawAsync(financialTransactionId);
 
             if (financialTransaction == null)
             {

@@ -284,7 +284,7 @@ namespace api.Controllers.User
             {
                 HttpOnly = true,
                 Secure = !_env.IsDevelopment(),
-                SameSite = SameSiteMode.Strict,
+                SameSite = SameSiteMode.Lax,
                 Expires = expiry,
             });
         }

@@ -1,4 +1,6 @@
-﻿using api.Filters;
+﻿using api.Constants;
+using api.Filters;
+using api.Responses;
 using api.Tests.Unit.Helpers;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -12,7 +14,7 @@ namespace api.Tests.Unit.Filters
         {
             var response = new ApiResponse
             {
-                Error = new Error { Code = errorCode }
+                Error = new ApiError { Code = errorCode }
             };
 
             var result = new ObjectResult(response);
@@ -24,10 +26,9 @@ namespace api.Tests.Unit.Filters
                 controller: null);
         }
         [Theory]
-        [InlineData("NOT_FOUND", StatusCodes.Status404NotFound)]
-        [InlineData("VALIDATION_ERROR", StatusCodes.Status422UnprocessableEntity)]
-        [InlineData("BAD_REQUEST", StatusCodes.Status400BadRequest)]
-        [InlineData("UNKNOWN_CODE", StatusCodes.Status200OK)]
+        [InlineData(ErrorCodes.NotFound, StatusCodes.Status404NotFound)]
+        [InlineData(ErrorCodes.ValidationError, StatusCodes.Status422UnprocessableEntity)]
+        [InlineData(ErrorCodes.BadRequest, StatusCodes.Status400BadRequest)]
         [InlineData(null, StatusCodes.Status200OK)]
         public void OnResultExecuting_ErrorCode_SetsExpectedStatusCode(string errorCode, int expectedStatusCode)
         {

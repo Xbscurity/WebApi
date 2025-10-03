@@ -17,7 +17,7 @@ namespace api.Controllers.User
     /// including banning/unbanning users and retrieving the list of users.
     /// </summary>
     [Authorize(Policy = Policies.Admin)]
-    [Route("api/account")]
+    [Route("api/admin/users")]
     [ApiController]
     public class AdminUserManagementController
     {
