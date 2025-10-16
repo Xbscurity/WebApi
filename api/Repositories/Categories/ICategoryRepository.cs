@@ -54,5 +54,12 @@ namespace api.Repositories.Categories
         /// <param name="category">The category entity to delete.</param>
         /// <returns>A task representing the asynchronous operation.</returns>
         Task DeleteAsync(Category category);
+
+        /// <summary>
+        /// Creates a collection of categories in the database.
+        /// </summary>
+        /// <param name="categories">The collection of <see cref="Category"/> categories.</param>
+        /// <returns>A <see cref="Task"/> represents the asynchronous operation.</returns>
+        Task CreateRangeAsync(IEnumerable<Category> categories);
     }
 }

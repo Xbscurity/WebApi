@@ -1,4 +1,5 @@
-﻿using api.Dtos.Category;
+﻿using api.Data;
+using api.Dtos.Category;
 using api.Models;
 using api.QueryObjects;
 using api.Responses;
@@ -81,5 +82,16 @@ namespace api.Services.Categories
         /// <param name="id">The unique identifier of the category.</param>
         /// <returns>A task containing <see langword="true"/> if the deletion succeeded; otherwise, <see langword="false"/>.</returns>
         Task<bool> DeleteAsync(int id);
+
+        /// <summary>
+        /// Creates a personalized set of default categories for a newly registered user.
+        /// </summary>
+        /// <remarks>
+        /// This method retrieves the static templates from <see cref="DataSeeder.DefaultCategoryTemplates"/>,
+        /// assigns the provided user ID to each category, and saves the new records to the database.
+        /// </remarks>
+        /// <param name="userId">The unique identifier (GUID or string) of the user for whom the categories are being created.</param>
+        /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
+        Task CreateInitialCategoriesForUserAsync(string userId);
     }
 }

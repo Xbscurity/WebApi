@@ -44,8 +44,6 @@ try
 
     // Add services to the container.
     // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-
-
     builder.Host.UseSerilog();
     builder.Services.AddControllers(options =>
     {
@@ -150,11 +148,8 @@ try
             policy.RequireRole(Roles.User);
             policy.Requirements.Add(new NotBannedRequirement());
         })
-        .AddPolicy(Policies.CategoryAccessGlobal, policy =>
-        policy.Requirements.Add(new CategoryAccessRequirement(allowGlobal: true)))
-
-        .AddPolicy(Policies.CategoryAccessNoGlobal, policy =>
-    policy.Requirements.Add(new CategoryAccessRequirement(allowGlobal: false)))
+        .AddPolicy(Policies.CategoryAccess, policy =>
+        policy.Requirements.Add(new CategoryAccessRequirement()))
 
         .AddPolicy(Policies.TransactionAccess, policy =>
     policy.Requirements.Add(new TransactionAccessRequirement()));
@@ -214,7 +209,6 @@ try
         var userManager = services.GetRequiredService<UserManager<AppUser>>();
         var context = services.GetRequiredService<ApplicationDbContext>();
         await DataSeeder.SeedRolesAndAdminAsync(roleManager, userManager);
-        await DataSeeder.SeedAppDataAsync(context);
     }
 
     app.UseRateLimiter();

@@ -61,5 +61,12 @@ namespace api.Repositories.Categories
             _context.Categories.Remove(category);
             await _context.SaveChangesAsync();
         }
+
+        /// <inheritdoc />
+        public async Task CreateRangeAsync(IEnumerable<Category> categories)
+        {
+            await _context.AddRangeAsync(categories);
+            await _context.SaveChangesAsync();
+        }
     }
 }

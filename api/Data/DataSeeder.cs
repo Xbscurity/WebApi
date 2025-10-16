@@ -9,6 +9,31 @@ namespace api.Data
     public static class DataSeeder
     {
         /// <summary>
+        /// Defines the structure for a category template used during user creation.
+        /// This record holds the base properties to be copied to a new user's category entity.
+        /// </summary>
+        public record SeedCategoryTemplate
+        {
+            /// <summary>
+            /// Gets the default name for the category.
+            /// </summary>
+            public string Name { get; init; }
+        }
+
+        /// <summary>
+        /// A static, read-only list of predefined categories that will be created
+        /// for every new user upon registration.
+        /// </summary>
+        public static readonly List<SeedCategoryTemplate> DefaultCategoryTemplates = new()
+    {
+        new() { Name = "Food" },
+        new() { Name = "Transport" },
+        new() { Name = "Entertainment" },
+        new() { Name = "Bills" },
+        new() { Name = "Health" },
+    };
+
+        /// <summary>
         /// Seeds default roles ("Admin" and "User") and an admin user if they do not exist.
         /// </summary>
         /// <param name="roleManager">The <see cref="RoleManager{IdentityRole}"/> used to manage roles.</param>
@@ -25,7 +50,7 @@ namespace api.Data
                 {
                     var identityRole = new IdentityRole(role)
                     {
-                        ConcurrencyStamp = Guid.NewGuid().ToString()
+                        ConcurrencyStamp = Guid.NewGuid().ToString(),
                     };
 
                     var roleResult = await roleManager.CreateAsync(identityRole);
@@ -63,26 +88,6 @@ namespace api.Data
                 {
                     throw new Exception($"Failed to add admin role to user: {string.Join(", ", addRoleResult.Errors.Select(e => e.Description))}");
                 }
-            }
-        }
-
-        /// <summary>
-        /// Seeds initial application data, such as default categories, if they do not exist.
-        /// </summary>
-        /// <param name="context">The <see cref="ApplicationDbContext"/> used to access the database.</param>
-        /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
-        public static async Task SeedAppDataAsync(ApplicationDbContext context)
-        {
-            if (!context.Categories.Any())
-            {
-                context.Categories.AddRange(
-                    new Category { Name = "Food" },
-                    new Category { Name = "Transport" },
-                    new Category { Name = "Entertainment" },
-                    new Category { Name = "Bills" },
-                    new Category { Name = "Health" }
-                );
-                await context.SaveChangesAsync();
             }
         }
     }

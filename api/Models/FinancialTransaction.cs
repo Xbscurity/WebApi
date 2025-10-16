@@ -68,6 +68,5 @@ namespace api.Models
         /// Gets or sets the user who made the transaction.
         /// </summary>
         public AppUser AppUser { get; set; } = default!;
-
     }
 }

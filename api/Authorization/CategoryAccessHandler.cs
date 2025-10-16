@@ -28,8 +28,7 @@ public class CategoryAccessHandler : AuthorizationHandler<CategoryAccessRequirem
     /// <param name="category">The category resource to which access is being checked.</param>
     /// <returns>A completed <see cref="Task"/> representing the asynchronous operation.</returns>
     /// <remarks>
-    /// Grants access if the user is an administrator, is the owner of the category,
-    /// or if global categories are allowed by the requirement and the category has no owner.
+    /// Grants access if the user is an administrator, is the owner of the category.
     /// </remarks>
     protected override Task HandleRequirementAsync(
         AuthorizationHandlerContext context,
@@ -40,18 +39,15 @@ public class CategoryAccessHandler : AuthorizationHandler<CategoryAccessRequirem
         var isAdmin = context.User.IsInRole(Roles.Admin);
 
         bool isOwner = category.AppUserId == userId;
-        bool includeGlobal = requirement.AllowGlobal && category.AppUserId == null;
 
         _logger.LogDebug(
             "Category access check: UserId={UserId}, CategoryId={CategoryId}," +
-            " IsAdmin={IsAdmin}, IsOwner={IsOwner}, AllowGlobal={AllowGlobal}, IncludeGlobal={IncludeGlobal}",
+            " IsAdmin={IsAdmin}, IsOwner={IsOwner}",
             userId,
             category.Id,
             isAdmin,
-            isOwner,
-            requirement.AllowGlobal,
-            includeGlobal);
-        if (isAdmin || isOwner || includeGlobal)
+            isOwner);
+        if (isAdmin || isOwner)
         {
             context.Succeed(requirement);
         }

@@ -42,7 +42,7 @@ namespace api.Services.Token
         /// <param name="refreshTokenPlain">The plain refresh token string provided by the client.</param>
         /// <param name="ipAddress">The IP address of the request, or <see langword="null"/> if unavailable.</param>
         /// <returns>
-        /// A task that represents the asynchronous operation. 
+        /// A task that represents the asynchronous operation.
         /// The task result contains a <see cref="RefreshTokenResult"/> with the outcome of the operation.
         /// </returns>
         Task<RefreshTokenResult> TryRefreshTokensAsync(string? refreshTokenPlain, string? ipAddress);

@@ -16,14 +16,9 @@
         public const string Admin = nameof(Admin);
 
         /// <summary>
-        /// Policy that allows access to categories, including global (common) categories.
+        /// Policy that allows access to categories.
         /// </summary>
-        public const string CategoryAccessGlobal = nameof(CategoryAccessGlobal);
-
-        /// <summary>
-        /// Policy that allows access only to user-owned categories, excluding global categories.
-        /// </summary>
-        public const string CategoryAccessNoGlobal = nameof(CategoryAccessNoGlobal);
+        public const string CategoryAccess = nameof(CategoryAccess);
 
         /// <summary>
         /// Policy that ensures users can only access their own financial transactions,

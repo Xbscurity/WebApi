@@ -26,13 +26,13 @@ namespace api.Controllers.Category
         /// <summary>
         /// Initializes a new instance of the <see cref="BaseCategoryController"/> class.
         /// </summary>
-        /// <param name="categoriesService">The service for managing categories.</param>
+        /// <param name="categoryService">The service for managing categories.</param>
         /// <param name="logger">The logger for recording category-related events.</param>
         public BaseCategoryController(
-            ICategoryService categoriesService,
+            ICategoryService categoryService,
             ILogger logger)
         {
-            _categoryService = categoriesService;
+            _categoryService = categoryService;
             _logger = logger;
         }
 
@@ -52,7 +52,7 @@ namespace api.Controllers.Category
         /// <param name="id">The category identifier.</param>
         /// <returns>An <see cref="ApiResponse{T}"/> containing the category if found.</returns>
         [HttpGet("{id:int}")]
-        [CategoryAuthorization(Policies.CategoryAccessGlobal)]
+        [CategoryAuthorization]
         public async virtual Task<ApiResponse<BaseCategoryOutputDto>> GetById([FromRoute] int id)
         {
             var result = await CategoryService.GetByIdAsync(id);
@@ -71,7 +71,7 @@ namespace api.Controllers.Category
         /// An <see cref="ApiResponse{T}"/> indicating whether the deletion was successful.
         /// </returns>
         [HttpDelete("{id:int}")]
-        [CategoryAuthorization(Policies.CategoryAccessNoGlobal)]
+        [CategoryAuthorization]
         public async virtual Task<ApiResponse<bool>> Delete([FromRoute] int id)
         {
             var result = await CategoryService.DeleteAsync(id);
@@ -92,7 +92,7 @@ namespace api.Controllers.Category
         /// An <see cref="ApiResponse{T}"/> containing the updated category.
         /// </returns>
         [HttpPut("{id:int}")]
-        [CategoryAuthorization(Policies.CategoryAccessNoGlobal)]
+        [CategoryAuthorization]
         public async virtual Task<ApiResponse<BaseCategoryOutputDto>> Update(
             [FromRoute] int id, [FromBody] BaseCategoryUpdateInputDto categoryDto)
         {
@@ -113,7 +113,7 @@ namespace api.Controllers.Category
         /// An <see cref="ApiResponse{T}"/> indicating whether the toggle was successful.
         /// </returns>
         [HttpPatch("{id:int}/toggle-active")]
-        [CategoryAuthorization(Policies.CategoryAccessGlobal)]
+        [CategoryAuthorization]
         public async Task<ApiResponse<bool>> ToggleActive([FromRoute] int id)
         {
             var result = await CategoryService.ToggleActiveAsync(id);

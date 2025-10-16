@@ -71,18 +71,6 @@ namespace api.Filters
                     LoggingEvents.Categories.Common.NoAccess,
                     "Access denied to category {CategoryId}",
                     categoryId);
-
-                var forbidCommon = _policy == Policies.CategoryAccessNoGlobal;
-
-                if (forbidCommon && category.AppUserId == null)
-                {
-                    context.Result = new ObjectResult(ApiResponse.Forbidden<object>("Cannot modify common categories."))
-                    {
-                        StatusCode = 403,
-                    };
-                    return;
-                }
-
                 context.Result = new ObjectResult(ApiResponse.Forbidden<object>("Forbidden access to category."))
                 {
                     StatusCode = 403,
@@ -103,11 +91,9 @@ namespace api.Filters
         /// <summary>
         /// Initializes a new instance of the <see cref="CategoryAuthorizationAttribute"/> class.
         /// </summary>
-        /// <param name="policy">The authorization policy to be used by the filter.</param>
-        public CategoryAuthorizationAttribute(string policy)
+        public CategoryAuthorizationAttribute()
             : base(typeof(CategoryAuthorizationFilter))
         {
-            Arguments = new object[] { policy };
         }
     }
 }

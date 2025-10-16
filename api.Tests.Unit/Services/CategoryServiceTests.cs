@@ -1,6 +1,8 @@
 ﻿using api.Models;
+using api.QueryObjects;
 using api.Repositories.Categories;
 using api.Services.Categories;
+using Microsoft.Extensions.Logging;
 using Moq;
 
 namespace api.Tests.Unit.Services
@@ -12,7 +14,63 @@ namespace api.Tests.Unit.Services
         public CategoryServiceTests()
         {
             _categoryRepositoryMock = new Mock<ICategoryRepository>();
-            _categoryService = new CategoryService(_categoryRepositoryMock.Object);
+            var loggerStub = Mock.Of<ILogger<CategoryService>>();
+            _categoryService = new CategoryService(_categoryRepositoryMock.Object, loggerStub);
+        }
+        [Fact]
+        public async Task GetAllForUserAsync_ExcludeInactiveCategories_ReturnsOnlyActiveUserAndGlobalCategories()
+        {
+            // Arrange
+            var userId = "user1";
+            var categories = new List<Category>
+        {
+            new() { Id = 1, Name = "User Active", AppUserId = userId, IsActive = true },
+            new() { Id = 2, Name = "User Inactive", AppUserId = userId, IsActive = false },
+            new() { Id = 3, Name = "Global Active", AppUserId = null, IsActive = true },
+            new() { Id = 4, Name = "Global Inactive", AppUserId = null, IsActive = false },
+        }.AsQueryable();
+
+            _categoryRepositoryMock.Setup(r => r.GetQueryable()).Returns(categories);
+
+            var queryObject = new PaginationQueryObject { Page = 1, Size = 10 };
+
+            // Act
+            var result = await _categoryService.GetAllForUserAsync(userId, queryObject, includeInactive: false);
+
+            // Assert
+            var names = result.Data.Select(d => d.Name).ToList();
+
+            Assert.Equal(2, names.Count);
+            Assert.Contains("User Active", names);
+            Assert.Contains("Global Active", names);
+        }
+
+        [Fact]
+        public async Task GetAllForUserAsync_IncludeInactiveCategories_ReturnsAllUserAndGlobalActiveCategories()
+        {
+            // Arrange
+            var userId = "user1";
+            var categories = new List<Category>
+        {
+            new() { Id = 1, Name = "User Active", AppUserId = userId, IsActive = true },
+            new() { Id = 2, Name = "User Inactive", AppUserId = userId, IsActive = false },
+            new() { Id = 3, Name = "Global Active", AppUserId = null, IsActive = true },
+        }.AsQueryable();
+
+            _categoryRepositoryMock.Setup(r => r.GetQueryable()).Returns(categories);
+
+            var queryObject = new PaginationQueryObject { Page = 1, Size = 10 };
+
+            // Act
+            var result = await _categoryService.GetAllForUserAsync(userId, queryObject, includeInactive: true);
+
+            // Assert
+            var names = result.Data.Select(d => d.Name).ToList();
+
+            Assert.Equal(3, names.Count);
+            Assert.Contains("User Active", names);
+            Assert.Contains("User Inactive", names);
+            Assert.Contains("Global Active", names);
         }
 
         [Fact]

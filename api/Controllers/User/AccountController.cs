@@ -3,6 +3,7 @@ using api.Dtos.Account;
 using api.Extensions;
 using api.Models;
 using api.Responses;
+using api.Services.Categories;
 using api.Services.Token;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -23,6 +24,7 @@ namespace api.Controllers.User
         private readonly SignInManager<AppUser> _signInManager;
         private readonly IWebHostEnvironment _env;
         private readonly ILogger<AccountController> _logger;
+        private readonly ICategoryService _categoryService;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AccountController"/> class.
@@ -30,18 +32,21 @@ namespace api.Controllers.User
         /// <param name="userManager">Provides APIs for managing users in the identity system.</param>
         /// <param name="tokenService">Service responsible for generating and validating access/refresh tokens.</param>
         /// <param name="signInManager">Provides sign-in operations for users.</param>
+        /// <param name="categoryService">The service for managing categories.</param>
         /// <param name="env">Provides information about the web hosting environment (e.g., Development, Production).</param>
         /// <param name="logger">Logger instance for recording diagnostic and error information.</param>
         public AccountController(
             UserManager<AppUser> userManager,
             ITokenService tokenService,
             SignInManager<AppUser> signInManager,
+            ICategoryService categoryService,
             IWebHostEnvironment env,
             ILogger<AccountController> logger)
         {
             _userManager = userManager;
             _tokenService = tokenService;
             _signInManager = signInManager;
+            _categoryService = categoryService;
             _env = env;
             _logger = logger;
         }
@@ -86,6 +91,8 @@ namespace api.Controllers.User
             var plainRefreshToken = _tokenService.GenerateRefreshToken();
             var refreshTokenEntity = _tokenService.GenerateRefreshTokenEntity(plainRefreshToken, user, GetClientIp());
             await _tokenService.SaveRefreshTokenAsync(refreshTokenEntity);
+
+            await _categoryService.CreateInitialCategoriesForUserAsync(user.Id);
 
             var userDto = new AccountUserOutputDto
             {

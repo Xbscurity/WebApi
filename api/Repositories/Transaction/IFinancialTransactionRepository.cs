@@ -21,7 +21,7 @@ namespace api.Repositories.Interfaces
         /// </summary>
         /// <param name="id">The unique identifier of the transaction.</param>
         /// <returns>
-        /// A task representing the asynchronous operation. 
+        /// A task representing the asynchronous operation.
         /// The task result contains the <see cref="FinancialTransaction"/> if found; otherwise, <see langword="null"/>.
         /// </returns>
         Task<FinancialTransaction?> GetByIdAsync(int id);

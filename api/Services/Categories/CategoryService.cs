@@ -1,4 +1,5 @@
 ﻿using api.Constants;
+using api.Data;
 using api.Dtos.Category;
 using api.Extensions;
 using api.Models;
@@ -34,15 +35,8 @@ namespace api.Services.Categories
             string userId, PaginationQueryObject queryObject, bool includeInactive)
         {
             var query = _categoryRepository.GetQueryable()
-        .Where(c =>
-
-            // User's own categories (include inactive if requested)
-            (c.AppUserId == userId && (includeInactive || c.IsActive))
-            ||
-
-            // All active global categories
-            (c.AppUserId == null && c.IsActive));
-
+        .Where(c => c.AppUserId == userId) // Categories for current user
+        .Where(c => includeInactive || c.IsActive); // Apply the active/inactive filter
             var result = await query.ApplySorting(queryObject).Select(c => c.ToOutputDto()).ToPagedQueryAsync(queryObject);
             return new PagedData<BaseCategoryOutputDto>
             {
@@ -165,6 +159,21 @@ namespace api.Services.Categories
 
             await _categoryRepository.DeleteAsync(existingCategory);
             return true;
+        }
+
+        /// <inheritdoc />
+        public async Task CreateInitialCategoriesForUserAsync(string userId)
+        {
+            var templates = DataSeeder.DefaultCategoryTemplates;
+
+            var userCategories = templates.Select(template => new Category
+            {
+                Name = template.Name,
+                AppUserId = userId,
+                IsActive = true,
+            }).ToList();
+
+            await _categoryRepository.CreateRangeAsync(userCategories);
         }
     }
 }

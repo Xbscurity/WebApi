@@ -19,6 +19,5 @@
         /// Gets the date and time when the user was created.
         /// </summary>
         public DateTimeOffset CreatedAt { get; init; }
-
     }
 }

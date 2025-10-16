@@ -29,6 +29,8 @@ namespace api.Tests.Unit.Filters
         [InlineData(ErrorCodes.NotFound, StatusCodes.Status404NotFound)]
         [InlineData(ErrorCodes.ValidationError, StatusCodes.Status422UnprocessableEntity)]
         [InlineData(ErrorCodes.BadRequest, StatusCodes.Status400BadRequest)]
+        [InlineData(ErrorCodes.Unauthorized, StatusCodes.Status401Unauthorized)]
+        [InlineData(ErrorCodes.Forbidden, StatusCodes.Status403Forbidden)]
         [InlineData(null, StatusCodes.Status200OK)]
         public void OnResultExecuting_ErrorCode_SetsExpectedStatusCode(string errorCode, int expectedStatusCode)
         {
