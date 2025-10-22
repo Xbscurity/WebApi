@@ -14,8 +14,7 @@ namespace api.Services.Categories
     {
         /// <summary>
         /// Retrieves a paginated list of categories available to a specific user.
-        /// Includes the user’s own categories (active and optionally inactive)
-        /// and global active categories.
+        /// Includes the user’s own categories (active and optionally inactive).
         /// </summary>
         /// <param name="userId">The unique identifier of the user.</param>
         /// <param name="queryObject">Pagination and sorting parameters.</param>
