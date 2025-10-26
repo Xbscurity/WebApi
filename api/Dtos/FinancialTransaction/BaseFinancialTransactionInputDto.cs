@@ -1,3 +1,4 @@
+using api.Dtos.Interfaces;
 using System.ComponentModel.DataAnnotations;
 
 namespace api.Dtos.FinancialTransaction
@@ -5,7 +6,7 @@ namespace api.Dtos.FinancialTransaction
     /// <summary>
     /// Represents the input DTO for creating or updating a financial transaction.
     /// </summary>
-    public record BaseFinancialTransactionInputDto
+    public record BaseFinancialTransactionInputDto : IHasCategoryId
     {
         /// <summary>
         /// Gets the identifier of the category that the transaction belongs to.

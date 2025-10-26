@@ -1,11 +1,12 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using api.Dtos.Interfaces;
+using System.ComponentModel.DataAnnotations;
 
 namespace api.Dtos.FinancialTransaction
 {
     /// <summary>
     /// Represents the input DTO for a financial transaction for an administrator.
     /// </summary>
-    public record AdminFinancialTransactionInputDto
+    public record AdminFinancialTransactionInputDto : IHasCategoryId
     {
         /// <summary>
         /// Gets the ID of the category associated with the transaction.

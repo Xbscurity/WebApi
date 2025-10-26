@@ -1,4 +1,5 @@
 ﻿using api.Constants;
+using api.Dtos.Interfaces;
 using api.Responses;
 using api.Services.Categories;
 using Microsoft.AspNetCore.Authorization;
@@ -17,25 +18,29 @@ namespace api.Filters
         private readonly IAuthorizationService _authorizationService;
         private readonly ILogger<CategoryAuthorizationFilter> _logger;
         private readonly ICategoryService _categoryService;
-        private readonly string _policy;
+        private readonly string _parameterName;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="CategoryAuthorizationFilter"/> class.
         /// </summary>
         /// <param name="authorizationService">The service for performing authorization checks.</param>
         /// <param name="logger">The logger for this filter.</param>
-        /// <param name="policy">The authorization policy to be applied.</param>
         /// <param name="categoryService">The service for managing categories.</param>
+        /// <param name="parameterName">
+        /// The name of the action method parameter that contains the category identifier.
+        /// Defaults to <c>"id"</c>. This value is used to extract the category ID
+        /// from the <see cref="ActionExecutingContext.ActionArguments"/> collection.
+        /// </param>
         public CategoryAuthorizationFilter(
            IAuthorizationService authorizationService,
            ILogger<CategoryAuthorizationFilter> logger,
            ICategoryService categoryService,
-           string policy)
+           string parameterName = "id")
         {
             _authorizationService = authorizationService;
             _logger = logger;
             _categoryService = categoryService;
-            _policy = policy;
+            _parameterName = parameterName;
         }
 
         /// <summary>
@@ -47,14 +52,30 @@ namespace api.Filters
         /// <returns>A <see cref="Task"/> that represents the asynchronous execution.</returns>
         public async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
         {
-            if (!context.ActionArguments.TryGetValue("id", out var idObj) || idObj is not int categoryId)
+            if (!context.ActionArguments.TryGetValue(_parameterName, out var parameterValue))
             {
-                context.Result = new BadRequestObjectResult(ApiResponse.BadRequest<object>());
+                context.Result = new BadRequestObjectResult(ApiResponse.BadRequest<object>("Missing parameter."));
+                return;
+            }
+
+            int categoryId;
+
+            if (parameterValue is IHasCategoryId hasCategory)
+            {
+                categoryId = hasCategory.CategoryId;
+            }
+            else if (parameterValue is int id)
+            {
+                categoryId = id;
+            }
+            else
+            {
+                context.Result = new BadRequestObjectResult(ApiResponse.BadRequest<object>(
+                    "Invalid category identifier parameter."));
                 return;
             }
 
             var category = await _categoryService.GetByIdRawAsync(categoryId);
-
             if (category == null)
             {
                 context.Result = new NotFoundObjectResult(ApiResponse.NotFound<object>($"Category with ID {categoryId} not found."));
@@ -63,7 +84,7 @@ namespace api.Filters
             }
 
             var user = context.HttpContext.User;
-            var authResult = await _authorizationService.AuthorizeAsync(user, category, _policy);
+            var authResult = await _authorizationService.AuthorizeAsync(user, category, Policies.CategoryAccess);
 
             if (!authResult.Succeeded)
             {
@@ -90,10 +111,16 @@ namespace api.Filters
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="CategoryAuthorizationAttribute"/> class.
+        /// <param name="parameterName">
+        /// The name of the action method parameter that contains the category identifier.
+        /// Defaults to <c>"id"</c>. This value is used to extract the category ID
+        /// from the <see cref="ActionExecutingContext.ActionArguments"/> collection.
+        /// </param>
         /// </summary>
-        public CategoryAuthorizationAttribute()
+        public CategoryAuthorizationAttribute(string parameterName = "id")
             : base(typeof(CategoryAuthorizationFilter))
         {
+            Arguments = new object[] { parameterName };
         }
     }
 }
