@@ -1,6 +1,7 @@
 using api.Constants;
 using api.Dtos.FinancialTransaction;
 using api.Extensions;
+using api.Filters;
 using api.QueryObjects;
 using api.Responses;
 using api.Services.Transaction;
@@ -96,23 +97,24 @@ namespace api.Controllers.FinancialTransaction
         /// <summary>
         /// Creates a new transaction for the authenticated user.
         /// </summary>
-        /// <param name="transactionDto">The transaction creation data.</param>
+        /// <param name="dto">The transaction creation data.</param>
         /// <returns>
         /// An <see cref="ApiResponse{T}"/> containing the newly created transaction.
         /// </returns>
         [HttpPost]
+        [CategoryAuthorization(nameof(dto))]
         public async Task<ApiResponse<BaseFinancialTransactionOutputDto>> Create(
-            [FromBody] BaseFinancialTransactionInputDto transactionDto)
+            [FromBody] BaseFinancialTransactionInputDto dto)
         {
             var userId = User.GetUserId();
-            var result = await FinancialTransactionService.CreateForUserAsync(userId!, transactionDto);
+            var result = await FinancialTransactionService.CreateForUserAsync(userId!, dto);
             if (result == null)
             {
                 Logger.LogInformation(
                                 LoggingEvents.Categories.Common.GetById,
                                 "Category {CategoryId} not found",
-                                transactionDto.CategoryId);
-                return ApiResponse.NotFound<BaseFinancialTransactionOutputDto>($"Category {transactionDto.CategoryId} not found");
+                                dto.CategoryId);
+                return ApiResponse.NotFound<BaseFinancialTransactionOutputDto>($"Category {dto.CategoryId} not found");
             }
 
             Logger.LogInformation(

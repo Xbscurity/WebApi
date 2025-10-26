@@ -34,10 +34,10 @@ namespace api.Services.Transaction
         /// <param name="logger">The logger for audit and debugging information.</param>
         public FinancialTransactionService(
             IFinancialTransactionRepository transactionsRepository,
-            ITimeProvider timeProvider,
-            IEnumerable<IGroupingReportStrategy> strategies,
             ICategoryRepository categoryRepository,
-            ILogger<FinancialTransactionService> logger)
+            ILogger<FinancialTransactionService> logger,
+            ITimeProvider timeProvider,
+            IEnumerable<IGroupingReportStrategy> strategies)
         {
             _transactionRepository = transactionsRepository;
             _timeProvider = timeProvider;
@@ -183,6 +183,13 @@ namespace api.Services.Transaction
             if (existingTransaction is null)
             {
                 _logger.LogDebug("Transaction {TransactionId} not found", id);
+                return null;
+            }
+
+            var existingCategorytransactionDto = await _categoryRepository.GetByIdAsync(transactionDto.CategoryId);
+            if (existingCategorytransactionDto is null)
+            {
+                _logger.LogDebug("Category {CategoryId} not found", transactionDto.CategoryId);
                 return null;
             }
 

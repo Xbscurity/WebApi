@@ -75,6 +75,7 @@ namespace api.Controllers.FinancialTransaction
         /// </returns>
         [HttpPut("{id:int}")]
         [FinancialTransactionAuthorization]
+        [CategoryAuthorization(nameof(dto))]
         public async Task<ApiResponse<BaseFinancialTransactionOutputDto>> Update(
             [FromRoute] int id, [FromBody] BaseFinancialTransactionInputDto dto)
         {
