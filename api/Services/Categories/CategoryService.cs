@@ -35,9 +35,13 @@ namespace api.Services.Categories
             string userId, PaginationQueryObject queryObject, bool includeInactive)
         {
             var query = _categoryRepository.GetQueryable()
-        .Where(c => c.AppUserId == userId) // Categories for current user
-        .Where(c => includeInactive || c.IsActive); // Apply the active/inactive filter
-            var result = await query.ApplySorting(queryObject).Select(c => c.ToOutputDto()).ToPagedQueryAsync(queryObject);
+              .Where(c => c.AppUserId == userId) // Categories for current user
+              .Where(c => includeInactive || c.IsActive); // Apply the active/inactive filter
+
+            var result = await query.ApplySorting(queryObject)
+                .Select(c => c.ToOutputDto())
+                .ToPagedQueryAsync(queryObject);
+
             return new PagedData<BaseCategoryOutputDto>
             {
                 Data = await result.Query.ToListAsync(),
@@ -49,6 +53,7 @@ namespace api.Services.Categories
         public async Task<PagedData<BaseCategoryOutputDto>> GetAllForAdminAsync(PaginationQueryObject queryObject, string? userId)
         {
             var query = _categoryRepository.GetQueryable();
+
             if (userId != null)
             {
                 query = query.Where(c => c.AppUserId == userId);
@@ -69,6 +74,7 @@ namespace api.Services.Categories
             var category = await _categoryRepository.GetByIdAsync(id);
 
             category!.IsActive = !category.IsActive;
+
             await _categoryRepository.UpdateAsync(category);
 
             _logger.LogDebug(
@@ -107,6 +113,7 @@ namespace api.Services.Categories
                 AppUserId = userId,
             };
             await _categoryRepository.CreateAsync(category);
+
             return category.ToOutputDto();
         }
 
@@ -119,6 +126,7 @@ namespace api.Services.Categories
                 AppUserId = categoryDto.AppUserId,
             };
             await _categoryRepository.CreateAsync(category);
+
             return category.ToOutputDto();
         }
 
@@ -128,7 +136,9 @@ namespace api.Services.Categories
             var existingCategory = await _categoryRepository.GetByIdAsync(id);
 
             existingCategory!.Name = categoryDto.Name!.Trim();
+
             await _categoryRepository.UpdateAsync(existingCategory);
+
             return existingCategory.ToOutputDto();
         }
 
@@ -138,6 +148,7 @@ namespace api.Services.Categories
             var existingCategory = await _categoryRepository.GetByIdAsync(id);
 
             await _categoryRepository.DeleteAsync(existingCategory!);
+
             return true;
         }
 
