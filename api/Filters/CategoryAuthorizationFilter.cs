@@ -111,12 +111,12 @@ namespace api.Filters
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="CategoryAuthorizationAttribute"/> class.
+        /// </summary>
         /// <param name="parameterName">
         /// The name of the action method parameter that contains the category identifier.
         /// Defaults to <c>"id"</c>. This value is used to extract the category ID
         /// from the <see cref="ActionExecutingContext.ActionArguments"/> collection.
         /// </param>
-        /// </summary>
         public CategoryAuthorizationAttribute(string parameterName = "id")
             : base(typeof(CategoryAuthorizationFilter))
         {

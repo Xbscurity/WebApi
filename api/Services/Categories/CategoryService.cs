@@ -67,16 +67,8 @@ namespace api.Services.Categories
         public async Task<bool> ToggleActiveAsync(int id)
         {
             var category = await _categoryRepository.GetByIdAsync(id);
-            if (category == null)
-            {
-                _logger.LogDebug(
-                    LoggingEvents.Categories.Common.Toggled,
-                    "Category with ID {CategoryId} was not found, cannot toggle.",
-                    id);
-                return false;
-            }
 
-            category.IsActive = !category.IsActive;
+            category!.IsActive = !category.IsActive;
             await _categoryRepository.UpdateAsync(category);
 
             _logger.LogDebug(
@@ -90,12 +82,8 @@ namespace api.Services.Categories
         public async Task<BaseCategoryOutputDto?> GetByIdAsync(int id)
         {
             var existingCategory = await _categoryRepository.GetByIdAsync(id);
-            if (existingCategory == null)
-            {
-                return null;
-            }
 
-            return existingCategory.ToOutputDto();
+            return existingCategory!.ToOutputDto();
         }
 
         /// <inheritdoc />
@@ -138,12 +126,8 @@ namespace api.Services.Categories
         public async Task<BaseCategoryOutputDto?> UpdateAsync(int id, BaseCategoryUpdateInputDto categoryDto)
         {
             var existingCategory = await _categoryRepository.GetByIdAsync(id);
-            if (existingCategory is null)
-            {
-                return null;
-            }
 
-            existingCategory.Name = categoryDto.Name!.Trim();
+            existingCategory!.Name = categoryDto.Name!.Trim();
             await _categoryRepository.UpdateAsync(existingCategory);
             return existingCategory.ToOutputDto();
         }
@@ -152,12 +136,8 @@ namespace api.Services.Categories
         public async Task<bool> DeleteAsync(int id)
         {
             var existingCategory = await _categoryRepository.GetByIdAsync(id);
-            if (existingCategory is null)
-            {
-                return false;
-            }
 
-            await _categoryRepository.DeleteAsync(existingCategory);
+            await _categoryRepository.DeleteAsync(existingCategory!);
             return true;
         }
 
