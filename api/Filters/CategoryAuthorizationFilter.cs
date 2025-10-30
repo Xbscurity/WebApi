@@ -27,7 +27,7 @@ namespace api.Filters
         /// </summary>
         /// <param name="authorizationService">The service for performing authorization checks.</param>
         /// <param name="logger">The logger for this filter.</param>
-        /// <param name="categoryRepository">The service for managing categories.</param>
+        /// <param name="categoryRepository">The repository for managing categories.</param>
         /// <param name="parameterName">
         /// The name of the action method parameter that contains the category identifier.
         /// Defaults to <c>"id"</c>. This value is used to extract the category ID

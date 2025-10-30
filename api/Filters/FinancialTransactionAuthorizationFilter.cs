@@ -24,7 +24,7 @@ namespace api.Filters
         /// </summary>
         /// <param name="authorizationService">The service for performing authorization checks.</param>
         /// <param name="logger">The logger for this filter.</param>
-        /// <param name="financialTransactionRepository">The service used to manage transactions.</param>
+        /// <param name="financialTransactionRepository">The repository used to manage transactions.</param>
         public FinancialTransactionAuthorizationFilter(
            IAuthorizationService authorizationService,
            ILogger<FinancialTransactionAuthorizationFilter> logger,

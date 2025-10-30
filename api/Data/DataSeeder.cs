@@ -31,7 +31,6 @@ namespace api.Data
         new() { Name = "Entertainment" },
         new() { Name = "Bills" },
         new() { Name = "Health" },
-        new() { Name = "Other" },
     };
 
         /// <summary>
