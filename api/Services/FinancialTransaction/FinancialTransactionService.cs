@@ -130,20 +130,6 @@ namespace api.Services.Transaction
         }
 
         /// <inheritdoc/>
-        public async Task<FinancialTransaction?> GetByIdRawAsync(int id)
-        {
-            var transaction = await _transactionRepository.GetByIdAsync(id);
-
-            if (transaction == null)
-            {
-                _logger.LogDebug("Transaction {TransactionId} not found", id);
-                return null;
-            }
-
-            return transaction;
-        }
-
-        /// <inheritdoc/>
         public async Task<PagedData<GroupedReportOutputDto>> GetReportAsync(string userId, ReportQueryObject queryObject)
         {
             var strategy = _strategies[queryObject.Key];

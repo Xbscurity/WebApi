@@ -30,15 +30,29 @@ namespace api.Repositories.Categories
         }
 
         /// <inheritdoc />
-        public IQueryable<Category> GetQueryable()
+        public IQueryable<Category> GetQueryable(bool includeInactive = false)
         {
-            return _context.Categories.AsNoTracking();
+            var query = _context.Categories.AsQueryable();
+
+            if (includeInactive)
+            {
+                query = query.IgnoreQueryFilters();
+            }
+
+            return query;
         }
 
         /// <inheritdoc />
-        public async Task<Category?> GetByIdAsync(int id)
+        public async Task<Category?> GetByIdAsync(int id, bool includeInactive = false)
         {
-            return await _context.Categories.FindAsync(id);
+            var query = _context.Categories.AsQueryable();
+
+            if (includeInactive)
+            {
+                query = query.IgnoreQueryFilters();
+            }
+
+            return await query.FirstOrDefaultAsync(x => x.Id == id);
         }
 
         /// <inheritdoc />

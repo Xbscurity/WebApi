@@ -42,15 +42,6 @@ namespace api.Services.Transaction
         Task<BaseFinancialTransactionOutputDto?> GetByIdAsync(int id);
 
         /// <summary>
-        /// Retrieves a single transaction entity by its identifier without mapping.
-        /// </summary>
-        /// <param name="id">The transaction identifier.</param>
-        /// <returns>
-        /// A task that returns the raw <see cref="FinancialTransaction"/> entity if found; otherwise, <see langword="null"/>.
-        /// </returns>
-        Task<FinancialTransaction?> GetByIdRawAsync(int id);
-
-        /// <summary>
         /// Creates a new transaction on behalf of a specific user by an administrator.
         /// </summary>
         /// <param name="appUserId">The target user identifier.</param>

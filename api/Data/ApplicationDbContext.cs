@@ -65,6 +65,9 @@ namespace api.Data
             modelBuilder.Entity<RefreshToken>()
                 .HasIndex(rt => rt.TokenHash)
                 .IsUnique();
+
+            modelBuilder.Entity<Category>()
+            .HasQueryFilter(c => c.IsActive);
         }
     }
 }

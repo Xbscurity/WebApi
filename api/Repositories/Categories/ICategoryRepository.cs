@@ -19,20 +19,28 @@ namespace api.Repositories.Categories
         /// <remarks>
         /// This method is useful when building complex LINQ queries that will be executed later.
         /// </remarks>
+        /// <param name="includeInactive">
+        /// Indicates whether inactive categories
+        /// should be included during the query.
+        /// </param>
         /// <returns>
         /// A queryable sequence of <see cref="Category"/> entities.
         /// </returns>
-        IQueryable<Category> GetQueryable();
+        IQueryable<Category> GetQueryable(bool includeInactive = false);
 
         /// <summary>
         /// Retrieves a category by its identifier.
         /// </summary>
         /// <param name="id">The unique identifier of the category.</param>
+        /// <param name="includeInactive">
+        /// Indicates whether inactive categories
+        /// should be included during the query.
+        /// </param>
         /// <returns>
         /// A task representing the asynchronous operation, containing the category if found;
         /// otherwise <see langword="null"/>.
         /// </returns>
-        Task<Category?> GetByIdAsync(int id);
+        Task<Category?> GetByIdAsync(int id, bool includeInactive = false);
 
         /// <summary>
         /// Creates a new category in the database.

@@ -1,5 +1,6 @@
 ﻿using api.Constants;
 using api.Extensions;
+using api.Repositories.Interfaces;
 using api.Responses;
 using api.Services.Transaction;
 using Microsoft.AspNetCore.Authorization;
@@ -16,22 +17,22 @@ namespace api.Filters
     {
         private readonly IAuthorizationService _authorizationService;
         private readonly ILogger<FinancialTransactionAuthorizationFilter> _logger;
-        private readonly IFinancialTransactionService _financialTransactionService;
+        private readonly IFinancialTransactionRepository _financialTransactionRepository;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="FinancialTransactionAuthorizationFilter"/> class.
         /// </summary>
         /// <param name="authorizationService">The service for performing authorization checks.</param>
         /// <param name="logger">The logger for this filter.</param>
-        /// <param name="financialTransactionService">The service used to manage transactions.</param>
+        /// <param name="financialTransactionRepository">The service used to manage transactions.</param>
         public FinancialTransactionAuthorizationFilter(
            IAuthorizationService authorizationService,
            ILogger<FinancialTransactionAuthorizationFilter> logger,
-           IFinancialTransactionService financialTransactionService)
+           IFinancialTransactionRepository financialTransactionRepository)
         {
             _authorizationService = authorizationService;
             _logger = logger;
-            _financialTransactionService = financialTransactionService;
+            _financialTransactionRepository = financialTransactionRepository;
         }
 
         /// <summary>
@@ -49,7 +50,7 @@ namespace api.Filters
                 return;
             }
 
-            var financialTransaction = await _financialTransactionService.GetByIdRawAsync(financialTransactionId);
+            var financialTransaction = await _financialTransactionRepository.GetByIdAsync(financialTransactionId);
 
             if (financialTransaction == null)
             {

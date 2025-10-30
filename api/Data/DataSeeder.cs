@@ -17,7 +17,7 @@ namespace api.Data
             /// <summary>
             /// Gets the default name for the category.
             /// </summary>
-            public string Name { get; init; }
+            public string Name { get; init; } = default!;
         }
 
         /// <summary>
@@ -31,6 +31,7 @@ namespace api.Data
         new() { Name = "Entertainment" },
         new() { Name = "Bills" },
         new() { Name = "Health" },
+        new() { Name = "Other" },
     };
 
         /// <summary>

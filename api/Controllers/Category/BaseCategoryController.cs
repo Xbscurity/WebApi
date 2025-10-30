@@ -113,8 +113,8 @@ namespace api.Controllers.Category
         /// An <see cref="ApiResponse{T}"/> indicating whether the toggle was successful.
         /// </returns>
         [HttpPatch("{id:int}/toggle-active")]
-        [CategoryAuthorization]
-        public async Task<ApiResponse<bool>> ToggleActive([FromRoute] int id)
+        [CategoryAuthorization(includeInactive: true)]
+        public async Task<ApiResponse<string>> ToggleActive([FromRoute] int id)
         {
             var result = await CategoryService.ToggleActiveAsync(id);
 
@@ -123,7 +123,7 @@ namespace api.Controllers.Category
                 "Category with ID {CategoryId} active status successfully toggled.",
                 id);
 
-            return ApiResponse.Success(result!);
+            return ApiResponse.Success(result);
         }
     }
 }

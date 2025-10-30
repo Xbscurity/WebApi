@@ -28,7 +28,8 @@ namespace api.Extensions
             return new BaseFinancialTransactionOutputDto()
             {
                 Id = financialTransaction.Id,
-                CategoryName = financialTransaction.Category?.Name,
+                CategoryId = financialTransaction.Category.Id,
+                CategoryName = financialTransaction.Category.Name,
                 Amount = financialTransaction.Amount,
                 Comment = financialTransaction.Comment,
                 CreatedAt = financialTransaction.CreatedAt,

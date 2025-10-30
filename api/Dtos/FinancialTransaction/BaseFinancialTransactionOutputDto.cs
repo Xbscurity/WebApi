@@ -11,6 +11,11 @@
         public int Id { get; init; }
 
         /// <summary>
+        /// Gets the unique identifier of the category.
+        /// </summary>
+        public int CategoryId { get; init; }
+
+        /// <summary>
         /// Gets the name of the category associated with the transaction.
         /// Can be <see langword="null"/> if the category was deleted or is unavailable.
         /// </summary>

@@ -34,10 +34,8 @@ namespace api.Services.Categories
         public async Task<PagedData<BaseCategoryOutputDto>> GetAllForUserAsync(
             string userId, PaginationQueryObject queryObject, bool includeInactive)
         {
-            var query = _categoryRepository.GetQueryable()
-              .Where(c => c.AppUserId == userId) // Categories for current user
-              .Where(c => includeInactive || c.IsActive); // Apply the active/inactive filter
-
+            var query = _categoryRepository.GetQueryable(includeInactive)
+              .Where(c => c.AppUserId == userId); // Categories for current user
             var result = await query.ApplySorting(queryObject)
                 .Select(c => c.ToOutputDto())
                 .ToPagedQueryAsync(queryObject);
@@ -69,9 +67,9 @@ namespace api.Services.Categories
         }
 
         /// <inheritdoc />
-        public async Task<bool> ToggleActiveAsync(int id)
+        public async Task<string> ToggleActiveAsync(int id)
         {
-            var category = await _categoryRepository.GetByIdAsync(id);
+            var category = await _categoryRepository.GetByIdAsync(id, includeInactive: true);
 
             category!.IsActive = !category.IsActive;
 
@@ -81,7 +79,7 @@ namespace api.Services.Categories
                 LoggingEvents.Categories.Common.Toggled,
                 "Category with ID {CategoryId} active status successfully toggled.",
                 id);
-            return true;
+            return category.IsActive ? "Category activated" : "Category deactivated";
         }
 
         /// <inheritdoc />
@@ -90,18 +88,6 @@ namespace api.Services.Categories
             var existingCategory = await _categoryRepository.GetByIdAsync(id);
 
             return existingCategory!.ToOutputDto();
-        }
-
-        /// <inheritdoc />
-        public async Task<Category?> GetByIdRawAsync(int id)
-        {
-            var existingCategory = await _categoryRepository.GetByIdAsync(id);
-            if (existingCategory == null)
-            {
-                return null;
-            }
-
-            return existingCategory;
         }
 
         /// <inheritdoc />

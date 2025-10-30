@@ -62,7 +62,8 @@ namespace api.Repositories.Interfaces
         {
             return _context.Transactions
                 .AsNoTracking()
-                .Include(t => t.Category);
+                .Include(t => t.Category)
+                .Where(t => t.Category.IsActive == true);
         }
     }
 }

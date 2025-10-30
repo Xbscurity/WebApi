@@ -1,5 +1,6 @@
 ﻿using api.Constants;
 using api.Dtos.Interfaces;
+using api.Repositories.Categories;
 using api.Responses;
 using api.Services.Categories;
 using Microsoft.AspNetCore.Authorization;
@@ -17,30 +18,37 @@ namespace api.Filters
     {
         private readonly IAuthorizationService _authorizationService;
         private readonly ILogger<CategoryAuthorizationFilter> _logger;
-        private readonly ICategoryService _categoryService;
+        private readonly ICategoryRepository _categoryRepository;
         private readonly string _parameterName;
+        private readonly bool _includeInactive;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="CategoryAuthorizationFilter"/> class.
         /// </summary>
         /// <param name="authorizationService">The service for performing authorization checks.</param>
         /// <param name="logger">The logger for this filter.</param>
-        /// <param name="categoryService">The service for managing categories.</param>
+        /// <param name="categoryRepository">The service for managing categories.</param>
         /// <param name="parameterName">
         /// The name of the action method parameter that contains the category identifier.
         /// Defaults to <c>"id"</c>. This value is used to extract the category ID
         /// from the <see cref="ActionExecutingContext.ActionArguments"/> collection.
         /// </param>
+        /// <param name="includeInactive">
+        /// Indicates whether inactive categories
+        /// should be included during the query.
+        /// </param>
         public CategoryAuthorizationFilter(
            IAuthorizationService authorizationService,
            ILogger<CategoryAuthorizationFilter> logger,
-           ICategoryService categoryService,
-           string parameterName = "id")
+           ICategoryRepository categoryRepository,
+           string parameterName = "id",
+           bool includeInactive = false)
         {
             _authorizationService = authorizationService;
             _logger = logger;
-            _categoryService = categoryService;
+            _categoryRepository = categoryRepository;
             _parameterName = parameterName;
+            _includeInactive = includeInactive;
         }
 
         /// <summary>
@@ -75,11 +83,13 @@ namespace api.Filters
                 return;
             }
 
-            var category = await _categoryService.GetByIdRawAsync(categoryId);
+            _logger.LogDebug("includeInactive: {IncludeInactive}", _includeInactive);
+
+            var category = await _categoryRepository.GetByIdAsync(categoryId, _includeInactive);
             if (category == null)
             {
-                context.Result = new NotFoundObjectResult(ApiResponse.NotFound<object>($"Category with ID {categoryId} not found."));
-                _logger.LogDebug("Category {CategoryId} not found.", categoryId);
+                context.Result = new NotFoundObjectResult(ApiResponse.NotFound<object>($"Category with ID {categoryId} not found or deactivated."));
+                _logger.LogDebug("Category {CategoryId} not found or deactivated.", categoryId);
                 return;
             }
 
@@ -117,10 +127,14 @@ namespace api.Filters
         /// Defaults to <c>"id"</c>. This value is used to extract the category ID
         /// from the <see cref="ActionExecutingContext.ActionArguments"/> collection.
         /// </param>
-        public CategoryAuthorizationAttribute(string parameterName = "id")
+        /// <param name="includeInactive">
+        /// Indicates whether inactive categories
+        /// should be included during the query.
+        /// </param>
+        public CategoryAuthorizationAttribute(string parameterName = "id", bool includeInactive = false)
             : base(typeof(CategoryAuthorizationFilter))
         {
-            Arguments = new object[] { parameterName };
+            Arguments = new object[] { parameterName, includeInactive };
         }
     }
 }

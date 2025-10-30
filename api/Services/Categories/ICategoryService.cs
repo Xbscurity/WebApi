@@ -27,7 +27,7 @@ namespace api.Services.Categories
         /// </summary>
         /// <param name="id">The unique identifier of the category.</param>
         /// <returns>A task containing <see langword="true"/> if the operation succeeded; otherwise, <see langword="false"/>.</returns>
-        Task<bool> ToggleActiveAsync(int id);
+        Task<string> ToggleActiveAsync(int id);
 
         /// <summary>
         /// Retrieves a paginated list of categories for administrative purposes.
@@ -44,13 +44,6 @@ namespace api.Services.Categories
         /// <param name="id">The unique identifier of the category.</param>
         /// <returns>A task containing the category DTO if found; otherwise, <see langword="null"/>.</returns>
         Task<BaseCategoryOutputDto?> GetByIdAsync(int id);
-
-        /// <summary>
-        /// Retrieves a raw category entity by its identifier.
-        /// </summary>
-        /// <param name="id">The unique identifier of the category.</param>
-        /// <returns>A task containing the category entity if found; otherwise, <see langword="null"/>.</returns>
-        Task<Category?> GetByIdRawAsync(int id);
 
         /// <summary>
         /// Creates a new category for administrative purposes.
