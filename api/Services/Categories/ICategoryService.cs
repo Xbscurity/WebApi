@@ -27,7 +27,7 @@ namespace api.Services.Categories
         /// </summary>
         /// <param name="id">The unique identifier of the category.</param>
         /// <returns>A task containing <see langword="true"/> if the operation succeeded; otherwise, <see langword="false"/>.</returns>
-        Task<string> ToggleActiveAsync(int id);
+        Task<bool> ToggleActiveAsync(int id);
 
         /// <summary>
         /// Retrieves a paginated list of categories for administrative purposes.
@@ -72,8 +72,8 @@ namespace api.Services.Categories
         /// Deletes a category by its identifier.
         /// </summary>
         /// <param name="id">The unique identifier of the category.</param>
-        /// <returns>A task containing <see langword="true"/> if the deletion succeeded; otherwise, <see langword="false"/>.</returns>
-        Task<bool> DeleteAsync(int id);
+        /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
+        Task DeleteAsync(int id);
 
         /// <summary>
         /// Creates a personalized set of default categories for a newly registered user.

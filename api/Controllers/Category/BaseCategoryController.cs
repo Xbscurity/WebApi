@@ -72,15 +72,16 @@ namespace api.Controllers.Category
         /// </returns>
         [HttpDelete("{id:int}")]
         [CategoryAuthorization]
-        public async virtual Task<ApiResponse<bool>> Delete([FromRoute] int id)
+        public async virtual Task<ApiResponse<string>> Delete([FromRoute] int id)
         {
-            var result = await CategoryService.DeleteAsync(id);
+            await CategoryService.DeleteAsync(id);
 
             Logger.LogInformation(
                 LoggingEvents.Categories.Common.Deleted,
                 "Category with ID {CategoryId} deleted.",
                 id);
-            return ApiResponse.Success(result!);
+
+            return ApiResponse.Success("Category has been deleted");
         }
 
         /// <summary>
@@ -123,7 +124,12 @@ namespace api.Controllers.Category
                 "Category with ID {CategoryId} active status successfully toggled.",
                 id);
 
-            return ApiResponse.Success(result);
+            if (result)
+            {
+                return ApiResponse.Success("Category activated");
+            }
+
+            return ApiResponse.Success("Category deactivated");
         }
     }
 }

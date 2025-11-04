@@ -1,4 +1,5 @@
-﻿using api.Filters;
+﻿using api.Constants;
+using api.Filters;
 using api.Responses;
 using api.Tests.Unit.Helpers;
 using Microsoft.AspNetCore.Http;
@@ -60,7 +61,7 @@ namespace api.Tests.Unit.Filters
             var result = Assert.IsType<UnprocessableEntityObjectResult>(context.Result);
             var response = Assert.IsType<ApiResponse<object>>(result.Value);
 
-            Assert.Equal("VALIDATION_ERROR", response.Error?.Code);
+            Assert.Equal(ErrorCodes.ValidationError, response.Error?.Code);
             Assert.Equal("Validation failed", response.Error?.Message);
 
             var errorData = Assert.IsType<Dictionary<string, List<string>>>(response.Error?.Data);

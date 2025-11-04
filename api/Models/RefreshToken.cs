@@ -40,7 +40,7 @@
         public DateTimeOffset ExpiresAt { get; set; }
 
         /// <summary>
-        /// UTC timestamp when the token was revoked, if applicable.
+        /// Gets or sets uTC timestamp when the token was revoked, if applicable.
         /// </summary>
         public DateTimeOffset? RevokedAt { get; set; }
 

@@ -1,7 +1,7 @@
 ﻿using api.Constants;
 using api.Filters;
 using api.Models;
-using api.Services.Categories;
+using api.Repositories.Categories;
 using api.Tests.Unit.Helpers;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -14,7 +14,7 @@ public class CategoryAuthorizationFilterTests
 {
     private readonly Mock<IAuthorizationService> _authServiceMock;
     private readonly Mock<ILogger<CategoryAuthorizationFilter>> _loggerMock;
-    private readonly Mock<ICategoryService> _categoryServiceMock;
+    private readonly Mock<ICategoryRepository> _categoryRepositoryMock;
     private readonly string _policy;
     private readonly CategoryAuthorizationFilter _filter;
 
@@ -22,12 +22,12 @@ public class CategoryAuthorizationFilterTests
     {
         _authServiceMock = new Mock<IAuthorizationService>();
         _loggerMock = new Mock<ILogger<CategoryAuthorizationFilter>>();
-        _categoryServiceMock = new Mock<ICategoryService>();
+        _categoryRepositoryMock = new Mock<ICategoryRepository>();
         _policy = Policies.CategoryAccess;
         _filter = new CategoryAuthorizationFilter(
             _authServiceMock.Object,
             _loggerMock.Object,
-            _categoryServiceMock.Object,
+            _categoryRepositoryMock.Object,
             _policy
         );
     }
@@ -61,7 +61,7 @@ public class CategoryAuthorizationFilterTests
         // Assert
         Assert.IsType<BadRequestObjectResult>(context.Result);
 
-        _categoryServiceMock.Verify(s => s.GetByIdRawAsync(It.IsAny<int>()), Times.Never);
+        _categoryRepositoryMock.Verify(s => s.GetByIdAsync(It.IsAny<int>(), It.IsAny<bool>()), Times.Never);
         _authServiceMock.Verify(a => a.AuthorizeAsync(
             It.IsAny<ClaimsPrincipal>(),
             It.IsAny<object>(),
@@ -77,7 +77,7 @@ public class CategoryAuthorizationFilterTests
         // Arrange
         var nonExistingCategoryId = 999;
         var context = CreateContext(nonExistingCategoryId);
-        _categoryServiceMock.Setup(s => s.GetByIdRawAsync(nonExistingCategoryId)).ReturnsAsync((Category?)null);
+        _categoryRepositoryMock.Setup(s => s.GetByIdAsync(nonExistingCategoryId, It.IsAny<bool>())).ReturnsAsync((Category?)null);
 
         var next = new Mock<ActionExecutionDelegate>();
 
@@ -87,7 +87,7 @@ public class CategoryAuthorizationFilterTests
         // Assert
         Assert.IsType<NotFoundObjectResult>(context.Result);
 
-        _categoryServiceMock.Verify(x => x.GetByIdRawAsync(nonExistingCategoryId), Times.Once);
+        _categoryRepositoryMock.Verify(x => x.GetByIdAsync(nonExistingCategoryId, It.IsAny<bool>()), Times.Once);
         _authServiceMock.Verify(x => x.AuthorizeAsync(
             It.IsAny<ClaimsPrincipal>(),
             It.IsAny<object>(),
@@ -109,7 +109,7 @@ public class CategoryAuthorizationFilterTests
 
         var context = CreateContext(nonCommonCategory.Id);
 
-        _categoryServiceMock.Setup(s => s.GetByIdRawAsync(nonCommonCategory.Id)).ReturnsAsync(nonCommonCategory);
+        _categoryRepositoryMock.Setup(s => s.GetByIdAsync(nonCommonCategory.Id, It.IsAny<bool>())).ReturnsAsync(nonCommonCategory);
 
         var failedAuthResult = AuthorizationResult.Failed();
 
@@ -125,7 +125,7 @@ public class CategoryAuthorizationFilterTests
         await _filter.OnActionExecutionAsync(context, next.Object);
 
         // Assert
-        _categoryServiceMock.Verify(x => x.GetByIdRawAsync(nonCommonCategory.Id), Times.Once);
+        _categoryRepositoryMock.Verify(x => x.GetByIdAsync(nonCommonCategory.Id, It.IsAny<bool>()), Times.Once);
 
         _authServiceMock.Verify(x => x.AuthorizeAsync(
             It.IsAny<ClaimsPrincipal>(),
@@ -153,8 +153,8 @@ public class CategoryAuthorizationFilterTests
 
         var context = CreateContext(category.Id);
 
-        _categoryServiceMock
-            .Setup(s => s.GetByIdRawAsync(category.Id))
+        _categoryRepositoryMock
+            .Setup(s => s.GetByIdAsync(category.Id, It.IsAny<bool>()))
             .ReturnsAsync(category);
 
         var successfulAuthResult = AuthorizationResult.Success();
@@ -171,7 +171,7 @@ public class CategoryAuthorizationFilterTests
         await _filter.OnActionExecutionAsync(context, next.Object);
 
         // Assert
-        _categoryServiceMock.Verify(x => x.GetByIdRawAsync(category.Id), Times.Once);
+        _categoryRepositoryMock.Verify(x => x.GetByIdAsync(category.Id, It.IsAny<bool>()), Times.Once);
         _authServiceMock.Verify(x => x.AuthorizeAsync(
             It.IsAny<ClaimsPrincipal>(),
             category,

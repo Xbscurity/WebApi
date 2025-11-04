@@ -2,6 +2,7 @@
 using api.Filters;
 using api.Models;
 using api.Providers.Interfaces;
+using api.Repositories.Interfaces;
 using api.Responses;
 using api.Services.Transaction;
 using api.Tests.Unit.Helpers;
@@ -18,7 +19,7 @@ namespace api.Tests.Unit.Filters
     {
         private readonly Mock<IAuthorizationService> _authServiceMock;
         private readonly Mock<ILogger<FinancialTransactionAuthorizationFilter>> _loggerMock;
-        private readonly Mock<IFinancialTransactionService> _transactionServiceMock;
+        private readonly Mock<IFinancialTransactionRepository> _transactionServiceMock;
 
         private readonly FinancialTransactionAuthorizationFilter _filter;
         private readonly Mock<ITimeProvider> _timeProviderMock;
@@ -31,7 +32,7 @@ namespace api.Tests.Unit.Filters
 
             _authServiceMock = new Mock<IAuthorizationService>();
             _loggerMock = new Mock<ILogger<FinancialTransactionAuthorizationFilter>>();
-            _transactionServiceMock = new Mock<IFinancialTransactionService>();
+            _transactionServiceMock = new Mock<IFinancialTransactionRepository>();
 
             _filter = new FinancialTransactionAuthorizationFilter(
                 _authServiceMock.Object,
@@ -71,7 +72,7 @@ namespace api.Tests.Unit.Filters
             // Assert
             Assert.IsType<BadRequestObjectResult>(context.Result);
 
-            _transactionServiceMock.Verify(s => s.GetByIdRawAsync(It.IsAny<int>()), Times.Never);
+            _transactionServiceMock.Verify(s => s.GetByIdAsync(It.IsAny<int>()), Times.Never);
             _authServiceMock.Verify(a => a.AuthorizeAsync(
                 It.IsAny<ClaimsPrincipal>(),
                 It.IsAny<object>(),
@@ -88,7 +89,7 @@ namespace api.Tests.Unit.Filters
             var nonExistingId = 999;
             var context = CreateContext(nonExistingId);
 
-            _transactionServiceMock.Setup(s => s.GetByIdRawAsync(nonExistingId)).ReturnsAsync((FinancialTransaction?)null);
+            _transactionServiceMock.Setup(s => s.GetByIdAsync(nonExistingId)).ReturnsAsync((FinancialTransaction?)null);
 
             var next = new Mock<ActionExecutionDelegate>();
 
@@ -98,7 +99,7 @@ namespace api.Tests.Unit.Filters
             // Assert
             Assert.IsType<NotFoundObjectResult>(context.Result);
 
-            _transactionServiceMock.Verify(x => x.GetByIdRawAsync(nonExistingId), Times.Once);
+            _transactionServiceMock.Verify(x => x.GetByIdAsync(nonExistingId), Times.Once);
 
             _authServiceMock.Verify(x => x.AuthorizeAsync(
                 It.IsAny<ClaimsPrincipal>(),
@@ -116,7 +117,7 @@ namespace api.Tests.Unit.Filters
             var transaction = new FinancialTransaction(_timeProviderMock.Object) { Id = 1 };
             var context = CreateContext(transaction.Id);
 
-            _transactionServiceMock.Setup(s => s.GetByIdRawAsync(transaction.Id)).ReturnsAsync(transaction);
+            _transactionServiceMock.Setup(s => s.GetByIdAsync(transaction.Id)).ReturnsAsync(transaction);
 
             var failedAuthResult = AuthorizationResult.Failed();
             _authServiceMock.Setup(a => a.AuthorizeAsync(
@@ -131,7 +132,7 @@ namespace api.Tests.Unit.Filters
             await _filter.OnActionExecutionAsync(context, next.Object);
 
             // Assert
-            _transactionServiceMock.Verify(x => x.GetByIdRawAsync(transaction.Id), Times.Once);
+            _transactionServiceMock.Verify(x => x.GetByIdAsync(transaction.Id), Times.Once);
             _authServiceMock.Verify(x => x.AuthorizeAsync(
                 It.IsAny<ClaimsPrincipal>(),
                 transaction,
@@ -151,10 +152,17 @@ namespace api.Tests.Unit.Filters
         public async Task OnActionExecutionAsync_AuthorizationSucceeds_CallsNextDelegate()
         {
             // Arrange
-            var transaction = new FinancialTransaction(_timeProviderMock.Object) { Id = 1 };
+            var transaction = new FinancialTransaction(_timeProviderMock.Object)
+            {
+                Id = 1,
+                Category = new Category
+                {
+                    IsActive = false
+                }
+            };
             var context = CreateContext(transaction.Id);
 
-            _transactionServiceMock.Setup(s => s.GetByIdRawAsync(transaction.Id)).ReturnsAsync(transaction);
+            _transactionServiceMock.Setup(s => s.GetByIdAsync(transaction.Id)).ReturnsAsync(transaction);
 
             var successfulAuthResult = AuthorizationResult.Success();
             _authServiceMock
@@ -170,7 +178,7 @@ namespace api.Tests.Unit.Filters
             await _filter.OnActionExecutionAsync(context, next.Object);
 
             // Assert
-            _transactionServiceMock.Verify(x => x.GetByIdRawAsync(transaction.Id), Times.Once);
+            _transactionServiceMock.Verify(x => x.GetByIdAsync(transaction.Id), Times.Once);
             _authServiceMock.Verify(x => x.AuthorizeAsync(
                 It.IsAny<ClaimsPrincipal>(),
                 transaction,

@@ -33,7 +33,8 @@ namespace api.Repositories.Interfaces
         /// <inheritdoc />
         public async Task<FinancialTransaction?> GetByIdAsync(int id)
         {
-            return await _context.Transactions.Include(t => t.Category).FirstOrDefaultAsync(t => t.Id == id);
+            return await _context.Transactions.Include(t => t.Category).
+                FirstOrDefaultAsync(t => t.Id == id);
         }
 
         /// <inheritdoc />

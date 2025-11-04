@@ -35,7 +35,7 @@ namespace api.Services.Categories
             string userId, PaginationQueryObject queryObject, bool includeInactive)
         {
             var query = _categoryRepository.GetQueryable(includeInactive)
-              .Where(c => c.AppUserId == userId); // Categories for current user
+              .Where(c => c.AppUserId == userId);
             var result = await query.ApplySorting(queryObject)
                 .Select(c => c.ToOutputDto())
                 .ToPagedQueryAsync(queryObject);
@@ -67,7 +67,7 @@ namespace api.Services.Categories
         }
 
         /// <inheritdoc />
-        public async Task<string> ToggleActiveAsync(int id)
+        public async Task<bool> ToggleActiveAsync(int id)
         {
             var category = await _categoryRepository.GetByIdAsync(id, includeInactive: true);
 
@@ -79,7 +79,7 @@ namespace api.Services.Categories
                 LoggingEvents.Categories.Common.Toggled,
                 "Category with ID {CategoryId} active status successfully toggled.",
                 id);
-            return category.IsActive ? "Category activated" : "Category deactivated";
+            return category.IsActive ? true : false;
         }
 
         /// <inheritdoc />
@@ -129,13 +129,11 @@ namespace api.Services.Categories
         }
 
         /// <inheritdoc />
-        public async Task<bool> DeleteAsync(int id)
+        public async Task DeleteAsync(int id)
         {
             var existingCategory = await _categoryRepository.GetByIdAsync(id);
 
             await _categoryRepository.DeleteAsync(existingCategory!);
-
-            return true;
         }
 
         /// <inheritdoc />

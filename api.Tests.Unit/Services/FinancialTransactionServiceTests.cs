@@ -3,48 +3,63 @@ using api.Enums;
 using api.Models;
 using api.Providers.Interfaces;
 using api.QueryObjects;
+using api.Repositories.Categories;
 using api.Repositories.Interfaces;
+using api.Services.Categories;
 using api.Services.Transaction;
+using Microsoft.Extensions.Logging;
 using MockQueryable.Moq;
 using Moq;
+using Serilog.Core;
 
 namespace api.Tests.Unit.Services
 {
-    public class TransactionServiceTests
+    public class FinancialTransactionServiceTests
     {
         private readonly Mock<IFinancialTransactionRepository> _transactionRepositoryMock;
+        private readonly Mock<ICategoryRepository> _categoryRepositoryMock;
         private readonly Mock<ITimeProvider> _timeStub;
         private readonly FinancialTransactionService _transactionService;
 
-        public TransactionServiceTests()
+        public FinancialTransactionServiceTests()
         {
             _transactionRepositoryMock = new Mock<IFinancialTransactionRepository>();
-
+            _categoryRepositoryMock = new Mock<ICategoryRepository>();
             _timeStub = new Mock<ITimeProvider>();
             var fixedTime = new DateTimeOffset(2025, 1, 1, 12, 0, 0, TimeSpan.Zero);
             _timeStub.Setup(t => t.UtcNow).Returns(fixedTime);
 
             var strategiesStub = new List<IGroupingReportStrategy> { };
-            _transactionService = new TransactionService(
+            var loggerStub = Mock.Of<ILogger<FinancialTransactionService>>();
+            _transactionService = new FinancialTransactionService(
                 _transactionRepositoryMock.Object,
-                _timeStub.Object, strategiesStub);
+                _categoryRepositoryMock.Object,
+                loggerStub,
+                _timeStub.Object,
+                strategiesStub);
         }
 
         [Fact]
-        public async Task UpdateAsync_CategoryNotExists_ReturnsNull()
+        public async Task UpdateAsync_NonExistingCategory_ReturnsNull()
         {
             // Arrange
-            const int notExistingCategoryId = 999;
-            var inputDto = new BaseFinancialTransactionInputDto { Comment = "Anything" };
+            const int nonExistingCategoryId = 999;
+            var inputDto = new BaseFinancialTransactionInputDto
+            {
+                CategoryId = nonExistingCategoryId,
+                Comment = "Anything",
+                Amount = 100
+            };
             _transactionRepositoryMock
-                .Setup(r => r.GetByIdAsync(notExistingCategoryId))
+                .Setup(r => r.GetByIdAsync(nonExistingCategoryId))
                 .ReturnsAsync((FinancialTransaction?)null);
 
             // Act
-            var result = await _transactionService.UpdateAsync(notExistingCategoryId, inputDto);
+            var result = await _transactionService.UpdateAsync(nonExistingCategoryId, inputDto);
 
             // Assert
             Assert.Null(result);
+            _categoryRepositoryMock.Verify(r => r.GetByIdAsync());
             _transactionRepositoryMock.Verify(r => r.UpdateAsync(It.IsAny<FinancialTransaction>()), Times.Never);
 
         }
