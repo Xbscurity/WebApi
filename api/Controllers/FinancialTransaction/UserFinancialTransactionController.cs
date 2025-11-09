@@ -99,29 +99,19 @@ namespace api.Controllers.FinancialTransaction
         /// </summary>
         /// <param name="dto">The transaction creation data.</param>
         /// <returns>
-        /// An <see cref="ApiResponse{T}"/> containing the newly created transaction.
+        /// An <see cref="ApiResponse{T}"/> containing the newly created transaction and location header to it.
         /// </returns>
         [HttpPost]
         [CategoryAuthorization(nameof(dto))]
-        public async Task<ApiResponse<BaseFinancialTransactionOutputDto>> Create(
+        public async Task<ActionResult<ApiResponse<BaseFinancialTransactionMinimalOutputDto?>>> Create(
             [FromBody] BaseFinancialTransactionInputDto dto)
         {
             var userId = User.GetUserId();
             var result = await FinancialTransactionService.CreateForUserAsync(userId!, dto);
-            if (result == null)
-            {
-                Logger.LogInformation(
-                                LoggingEvents.Categories.Common.GetById,
-                                "Category {CategoryId} not found",
-                                dto.CategoryId);
-                return ApiResponse.NotFound<BaseFinancialTransactionOutputDto>($"Category {dto.CategoryId} not found");
-            }
-
-            Logger.LogInformation(
-                LoggingEvents.FinancialTransactions.User.Created,
-                "Created new transaction {transactionId}",
-                result.Id);
-            return ApiResponse.Success(result);
+            return CreatedAtAction(
+                actionName: nameof(GetById),
+                routeValues: new { id = result!.Id },
+                value: ApiResponse.Success(result));
         }
     }
 }

@@ -71,19 +71,18 @@ namespace api.Controllers.FinancialTransaction
         /// </summary>
         /// <param name="transactionDto">The transaction creation data.</param>
         /// <returns>
-        /// An <see cref="ApiResponse{T}"/> containing the newly created transaction.
+        /// An <see cref="ApiResponse{T}"/> containing the newly created transaction and location header to it.
         /// </returns>
         [HttpPost]
-        public async Task<ApiResponse<BaseFinancialTransactionOutputDto>> Create(
+        public async Task<ActionResult<ApiResponse<BaseFinancialTransactionMinimalOutputDto>>> Create(
             [FromBody] AdminFinancialTransactionInputDto transactionDto)
         {
-            var result = await FinancialTransactionService.CreateForAdminAsync(transactionDto.AppUserId!, transactionDto);
-            Logger.LogInformation(
-                LoggingEvents.Categories.Admin.Created,
-                "Created new transaction {transactionId} for user {UserId}",
-                result.Id,
-                result.AppUserId);
-            return ApiResponse.Success(result);
+            var result = await FinancialTransactionService.CreateForAdminAsync(transactionDto);
+
+            return CreatedAtAction(
+                actionName: nameof(GetById),
+                routeValues: new { id = result.Id },
+                value: ApiResponse.Success(result));
         }
     }
 }

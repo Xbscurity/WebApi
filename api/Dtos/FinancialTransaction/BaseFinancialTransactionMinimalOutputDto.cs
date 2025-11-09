@@ -1,9 +1,9 @@
 ﻿namespace api.Dtos.FinancialTransaction
 {
     /// <summary>
-    /// Represents the output DTO for retrieving a detailed financial transaction.
+    /// Represents the output DTO for retrieving a minimal financial transaction details.
     /// </summary>
-    public record BaseFinancialTransactionOutputDto
+    public class BaseFinancialTransactionMinimalOutputDto
     {
         /// <summary>
         /// Gets the unique identifier of the transaction.
@@ -14,11 +14,6 @@
         /// Gets the unique identifier of the category.
         /// </summary>
         public int CategoryId { get; init; }
-
-        /// <summary>
-        /// Gets the name of the category associated with the transaction.
-        /// </summary>
-        public string CategoryName { get; init; } = default!;
 
         /// <summary>
         /// Gets the transaction amount.

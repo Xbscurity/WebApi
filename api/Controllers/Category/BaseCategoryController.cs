@@ -56,10 +56,7 @@ namespace api.Controllers.Category
         public async virtual Task<ApiResponse<BaseCategoryOutputDto>> GetById([FromRoute] int id)
         {
             var result = await CategoryService.GetByIdAsync(id);
-            Logger.LogInformation(
-                LoggingEvents.Categories.Common.Toggled,
-                "Category with ID {CategoryId} retrieved.",
-                id);
+
             return ApiResponse.Success(result!);
         }
 
@@ -75,11 +72,6 @@ namespace api.Controllers.Category
         public async virtual Task<ApiResponse<string>> Delete([FromRoute] int id)
         {
             await CategoryService.DeleteAsync(id);
-
-            Logger.LogInformation(
-                LoggingEvents.Categories.Common.Deleted,
-                "Category with ID {CategoryId} deleted.",
-                id);
 
             return ApiResponse.Success("Category has been deleted");
         }
@@ -99,10 +91,6 @@ namespace api.Controllers.Category
         {
             var result = await CategoryService.UpdateAsync(id, categoryDto);
 
-            Logger.LogInformation(
-                LoggingEvents.Categories.Common.Updated,
-                "Category with ID {CategoryId} updated.",
-                id);
             return ApiResponse.Success(result!);
         }
 
@@ -118,11 +106,6 @@ namespace api.Controllers.Category
         public async Task<ApiResponse<string>> ToggleActive([FromRoute] int id)
         {
             var result = await CategoryService.ToggleActiveAsync(id);
-
-            Logger.LogInformation(
-                LoggingEvents.Categories.Common.Toggled,
-                "Category with ID {CategoryId} active status successfully toggled.",
-                id);
 
             if (result)
             {

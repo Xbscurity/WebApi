@@ -65,6 +65,7 @@ namespace api.Controllers.Category
                 categories.Pagination.PageNumber,
                 categories.Pagination.PageSize,
                 queryObject.SortBy);
+
             return ApiResponse.Success(categories.Data, categories.Pagination);
         }
 
@@ -76,12 +77,16 @@ namespace api.Controllers.Category
         /// An <see cref="ApiResponse{T}"/> containing the newly created category.
         /// </returns>
         [HttpPost]
-        public async Task<ApiResponse<BaseCategoryOutputDto>> Create([FromBody] BaseCategoryUpdateInputDto categoryDto)
+        public async Task<ActionResult<ApiResponse<BaseCategoryOutputDto>>> Create([FromBody] BaseCategoryUpdateInputDto categoryDto)
         {
             var userId = User.GetUserId();
+
             var result = await CategoryService.CreateForUserAsync(userId!, categoryDto);
-            Logger.LogInformation(LoggingEvents.Categories.User.Created, "Created new transaction {categoryId}", result.Id);
-            return ApiResponse.Success(result);
+
+            return CreatedAtAction(
+                actionName: nameof(GetById),
+                routeValues: new { id = result.Id },
+                value: ApiResponse.Success(result));
         }
     }
 }

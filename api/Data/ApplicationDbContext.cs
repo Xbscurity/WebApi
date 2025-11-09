@@ -50,7 +50,6 @@ namespace api.Data
                 .HasForeignKey(transaction => transaction.CategoryId)
                 .OnDelete(DeleteBehavior.SetNull);
 
-            // Configure CreatedAt column type to timestamptz and conversion to UTC
             modelBuilder.Entity<FinancialTransaction>()
                 .Property(t => t.CreatedAt)
                 .HasColumnType("timestamptz");

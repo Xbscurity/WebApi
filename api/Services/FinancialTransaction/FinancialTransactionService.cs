@@ -47,26 +47,35 @@ namespace api.Services.Transaction
         }
 
         /// <inheritdoc/>
-        public async Task<BaseFinancialTransactionOutputDto> CreateForAdminAsync(
-            string userId, AdminFinancialTransactionInputDto transactionDto)
+        public async Task<BaseFinancialTransactionMinimalOutputDto> CreateForAdminAsync(
+            AdminFinancialTransactionInputDto transactionDto)
         {
             var transaction = transactionDto.ToModel(_timeProvider);
 
             await _transactionRepository.CreateAsync(transaction);
 
-            return transaction.ToOutputDto();
+            _logger.LogInformation(
+                LoggingEvents.Categories.Admin.Created,
+                "Created new transaction {transactionId} for user {UserId}",
+                transaction.Id,
+                transaction.AppUserId);
+
+            return transaction.ToMinimalOutputDto();
         }
 
         /// <inheritdoc/>
-        public async Task<BaseFinancialTransactionOutputDto?> CreateForUserAsync(
+        public async Task<BaseFinancialTransactionMinimalOutputDto?> CreateForUserAsync(
             string userId, BaseFinancialTransactionInputDto transactionDto)
         {
-            var category = await _categoryRepository.GetByIdAsync(transactionDto.CategoryId);
-
             var transaction = transactionDto.ToModel(userId!, _timeProvider);
 
             await _transactionRepository.CreateAsync(transaction);
-            return transaction.ToOutputDto();
+
+            _logger.LogInformation(
+                LoggingEvents.FinancialTransactions.User.Created,
+                "Created new transaction {transactionId}",
+                transaction.Id);
+            return transaction.ToMinimalOutputDto();
         }
 
         /// <inheritdoc/>
@@ -74,6 +83,10 @@ namespace api.Services.Transaction
         {
             var existingTransaction = await _transactionRepository.GetByIdAsync(id);
 
+            _logger.LogInformation(
+                LoggingEvents.FinancialTransactions.Common.Deleted,
+                "Financial transaction with ID {FinancialTransactionId} deleted.",
+                id);
             await _transactionRepository.DeleteAsync(existingTransaction!);
             return true;
         }
@@ -126,6 +139,11 @@ namespace api.Services.Transaction
         {
             var transaction = await _transactionRepository.GetByIdAsync(id);
 
+            _logger.LogInformation(
+                LoggingEvents.FinancialTransactions.Common.GetById,
+                "Financial transaction with ID {FinancialTransactionId} retrieved.",
+                id);
+
             return transaction!.ToOutputDto();
         }
 
@@ -162,6 +180,11 @@ namespace api.Services.Transaction
             existingTransaction.Comment = transactionDto.Comment.Trim();
 
             await _transactionRepository.UpdateAsync(existingTransaction);
+
+            _logger.LogInformation(
+                LoggingEvents.FinancialTransactions.Common.Updated,
+                "Financial transaction with ID {FinancialTransactionId} updated.",
+                id);
 
             return existingTransaction.ToOutputDto();
         }

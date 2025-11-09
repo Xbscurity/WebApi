@@ -87,6 +87,10 @@ namespace api.Services.Categories
         {
             var existingCategory = await _categoryRepository.GetByIdAsync(id);
 
+            _logger.LogDebug(
+                "Category with ID {CategoryId} retrieved.",
+                id);
+
             return existingCategory!.ToOutputDto();
         }
 
@@ -100,20 +104,27 @@ namespace api.Services.Categories
             };
             await _categoryRepository.CreateAsync(category);
 
+            _logger.LogInformation(
+                LoggingEvents.Categories.User.Created,
+                "Created new transaction {categoryId}",
+                category.Id);
+
             return category.ToOutputDto();
         }
 
         /// <inheritdoc />
         public async Task<BaseCategoryOutputDto> CreateForAdminAsync(AdminCategoryCreateInputDto categoryDto)
         {
-            Category category = new Category
-            {
-                Name = categoryDto.Name!.Trim(),
-                AppUserId = categoryDto.AppUserId,
-            };
-            await _categoryRepository.CreateAsync(category);
+            Category category = categoryDto.ToModel();
 
-            return category.ToOutputDto();
+            await _categoryRepository.CreateAsync(category);
+            _logger.LogInformation(
+                LoggingEvents.Categories.Admin.Created,
+                "Created new category {categoryId} for user {UserId}",
+                category.Id,
+                category.AppUserId);
+
+            return category.ToOutputDto() !;
         }
 
         /// <inheritdoc />
@@ -125,6 +136,10 @@ namespace api.Services.Categories
 
             await _categoryRepository.UpdateAsync(existingCategory);
 
+            _logger.LogInformation(
+                LoggingEvents.Categories.Common.Updated,
+                "Category with ID {CategoryId} updated.",
+                id);
             return existingCategory.ToOutputDto();
         }
 
@@ -132,6 +147,11 @@ namespace api.Services.Categories
         public async Task DeleteAsync(int id)
         {
             var existingCategory = await _categoryRepository.GetByIdAsync(id);
+
+            _logger.LogInformation(
+                LoggingEvents.Categories.Common.Deleted,
+                "Category with ID {CategoryId} deleted.",
+                id);
 
             await _categoryRepository.DeleteAsync(existingCategory!);
         }

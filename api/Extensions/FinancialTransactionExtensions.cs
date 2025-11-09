@@ -28,8 +28,34 @@ namespace api.Extensions
             return new BaseFinancialTransactionOutputDto()
             {
                 Id = financialTransaction.Id,
-                CategoryId = financialTransaction.Category.Id,
+                CategoryId = financialTransaction.CategoryId,
                 CategoryName = financialTransaction.Category.Name,
+                Amount = financialTransaction.Amount,
+                Comment = financialTransaction.Comment,
+                CreatedAt = financialTransaction.CreatedAt,
+                AppUserId = financialTransaction.AppUserId,
+            };
+        }
+
+        /// <summary>
+        /// Converts a <see cref="FinancialTransaction"/> entity to a <see cref="BaseFinancialTransactionMinimalOutputDto"/>.
+        /// </summary>
+        /// <param name="financialTransaction">The financial transaction entity to convert.</param>
+        /// <returns>
+        /// A <see cref="BaseFinancialTransactionOutputDto"/> representation of the entity,
+        /// or <see langword="null"/> if the input is <see langword="null"/>.
+        /// </returns>
+        public static BaseFinancialTransactionMinimalOutputDto ToMinimalOutputDto(this FinancialTransaction financialTransaction)
+        {
+            if (financialTransaction is null)
+            {
+                return null!;
+            }
+
+            return new BaseFinancialTransactionMinimalOutputDto()
+            {
+                Id = financialTransaction.Id,
+                CategoryId = financialTransaction.CategoryId,
                 Amount = financialTransaction.Amount,
                 Comment = financialTransaction.Comment,
                 CreatedAt = financialTransaction.CreatedAt,

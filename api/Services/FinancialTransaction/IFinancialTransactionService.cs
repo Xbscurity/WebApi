@@ -44,11 +44,9 @@ namespace api.Services.Transaction
         /// <summary>
         /// Creates a new transaction on behalf of a specific user by an administrator.
         /// </summary>
-        /// <param name="appUserId">The target user identifier.</param>
         /// <param name="transaction">The transaction data transfer object.</param>
         /// <returns>A task that returns the created transaction DTO.</returns>
-        Task<BaseFinancialTransactionOutputDto> CreateForAdminAsync(
-            string appUserId, AdminFinancialTransactionInputDto transaction);
+        Task<BaseFinancialTransactionMinimalOutputDto> CreateForAdminAsync(AdminFinancialTransactionInputDto transaction);
 
         /// <summary>
         /// Creates a new transaction for the given user.
@@ -58,7 +56,7 @@ namespace api.Services.Transaction
         /// <returns>
         /// A task that returns the created transaction DTO if successful; otherwise, <see langword="null"/>.
         /// </returns>
-        Task<BaseFinancialTransactionOutputDto?> CreateForUserAsync(
+        Task<BaseFinancialTransactionMinimalOutputDto?> CreateForUserAsync(
             string userId, BaseFinancialTransactionInputDto transaction);
 
         /// <summary>

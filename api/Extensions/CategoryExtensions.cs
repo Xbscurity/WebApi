@@ -32,5 +32,50 @@ namespace api.Extensions
                 IsActive = category.IsActive,
             };
         }
+
+        /// <summary>
+        /// Converts a <see cref="AdminCategoryCreateInputDto"/> dto to a <see cref="Category"/> model entity.
+        /// </summary>
+        /// <param name="dto">The <see cref="AdminCategoryCreateInputDto"/> dto to convert.</param>
+        /// <returns>
+        /// A <see cref="Category"/> entity model,
+        /// or <see langword="null"/> if the input is <see langword="null"/>.
+        /// </returns>
+        public static Category ToModel(this AdminCategoryCreateInputDto dto)
+        {
+            if (dto is null)
+            {
+                return null!;
+            }
+
+            return new Category
+            {
+                AppUserId = dto.AppUserId,
+                Name = dto.Name.Trim(),
+            };
+        }
+
+        /// <summary>
+        /// Converts a <see cref="BaseCategoryUpdateInputDto"/> dto to a <see cref="Category"/> model entity.
+        /// </summary>
+        /// <param name="dto">The <see cref="BaseCategoryUpdateInputDto"/> dto to convert.</param>
+        /// <param name="userId"> <see cref="Category"/> entity will be created for this user id. </param>
+        /// <returns>
+        /// A <see cref="Category"/> entity model,
+        /// or <see langword="null"/> if the input is <see langword="null"/>.
+        /// </returns>
+        public static Category ToModel(this BaseCategoryUpdateInputDto dto, string userId)
+        {
+            if (dto is null)
+            {
+                return null!;
+            }
+
+            return new Category
+            {
+                AppUserId = userId,
+                Name = dto.Name.Trim(),
+            };
+        }
     }
 }

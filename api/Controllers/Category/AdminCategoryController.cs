@@ -73,15 +73,14 @@ namespace api.Controllers.Category
         /// An <see cref="ApiResponse{T}"/> containing the newly created category.
         /// </returns>
         [HttpPost]
-        public async Task<ApiResponse<BaseCategoryOutputDto>> Create([FromBody] AdminCategoryCreateInputDto categoryDto)
+        public async Task<ActionResult<ApiResponse<BaseCategoryOutputDto>>> Create([FromBody] AdminCategoryCreateInputDto categoryDto)
         {
             var result = await CategoryService.CreateForAdminAsync(categoryDto);
-            Logger.LogInformation(
-                LoggingEvents.Categories.Admin.Created,
-                "Created new category {categoryId} for user {UserId}",
-                result.Id,
-                result.AppUserId);
-            return ApiResponse.Success(result);
+
+            return CreatedAtAction(
+               actionName: nameof(GetById),
+               routeValues: new { id = result.Id },
+               value: ApiResponse.Success(result));
         }
     }
 }
