@@ -9,6 +9,7 @@ using api.Services.Categories;
 using api.Tests.Unit.Helpers;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
+using MockQueryable.Moq;
 using Moq;
 
 namespace api.Tests.Unit.Services
@@ -29,53 +30,97 @@ namespace api.Tests.Unit.Services
 
         [Fact]
         public async Task GetAllForUserAsync_ExcludeInactiveCategories_ReturnsOnlyOwnActiveCategories()
-        {  
+        {
             // Arrange
-            var categories = TestData.GetCategories(TestUserId, OtherUserId);
+            var includeInactive = false;
+            var categoriesMock = new List<Category>()
+            {
+                new() { Id = 1, Name = "Active", AppUserId = TestUserId, IsActive = true },
+                new() { Id = 2, Name = "Active", AppUserId = TestUserId, IsActive = true },
 
-            _categoryRepositoryMock.Setup(r => r.GetQueryable(It.IsAny<bool>())).Returns(categories);
+                new() { Id = 3, Name = "Other user Active", AppUserId = OtherUserId, IsActive = true },
+                new() { Id = 4, Name = "Other user Active", AppUserId = OtherUserId, IsActive = true },
+
+            }.AsQueryable().BuildMockDbSet();
+
+            _categoryRepositoryMock.Setup(r => r.GetQueryable(includeInactive)).
+                Returns(categoriesMock.Object);
 
             var queryObject = new PaginationQueryObject { Page = 1, Size = 10 };
 
             // Act
-            var result = await _categoryService.GetAllForUserAsync(TestUserId, queryObject, includeInactive: false);
+            var result = await _categoryService.GetAllForUserAsync(
+                TestUserId, queryObject, includeInactive: false);
 
             // Assert
-            Assert.Equal(2, result.Data.Count);
+            var categoriesCount = categoriesMock.Object.Count(
+                x => x.AppUserId == TestUserId);
+
+            Assert.Equal(categoriesCount, result.Data.Count);
             Assert.Contains(result.Data, c => c.Id == 1);
             Assert.Contains(result.Data, c => c.Id == 2);
 
-            _categoryRepositoryMock.Verify(r => r.GetQueryable(It.IsAny<bool>()), Times.Once);
+            Assert.Equal(categoriesCount, result.Pagination.TotalItems);
+            Assert.False(result.Pagination.HasNext);
+            Assert.False(result.Pagination.HasPrevious);
+            Assert.Equal(queryObject.Page, result.Pagination.PageNumber);
+            Assert.Equal(queryObject.Size, result.Pagination.PageSize);
+
+            _categoryRepositoryMock.Verify(r => r.GetQueryable(includeInactive), Times.Once);
         }
 
         [Fact]
         public async Task GetAllForUserAsync_IncludeInactiveCategories_ReturnsAllOwnCategories()
         {
+            var includeInactive = true;
             // Arrange
-            var categories = TestData.GetCategories(TestUserId, OtherUserId);
+            var categoriesMock = new List<Category>()
+            {
+                new() { Id = 1, Name = "Active", AppUserId = TestUserId, IsActive = true },
+                new() { Id = 2, Name = "Active", AppUserId = TestUserId, IsActive = true },
+                new() { Id = 3, Name = "Inactive", AppUserId = TestUserId, IsActive = false },
+                new() { Id = 4, Name = "Inactive", AppUserId = TestUserId, IsActive = false },
 
-            _categoryRepositoryMock.Setup(r => r.GetQueryable(It.IsAny<bool>())).Returns(categories);
+                new() { Id = 5, Name = "Other user Active", AppUserId = OtherUserId, IsActive = true },
+                new() { Id = 6, Name = "Other user Active", AppUserId = OtherUserId, IsActive = true },
+                new() { Id = 7, Name = "Other user Inactive", AppUserId = OtherUserId, IsActive = false },
+                new() { Id = 8, Name = "Other user Inactive", AppUserId = OtherUserId, IsActive = false },
+
+            }.AsQueryable().BuildMockDbSet();
+
+            _categoryRepositoryMock.Setup(r => r.GetQueryable(includeInactive)).Returns(categoriesMock.Object);
 
             var queryObject = new PaginationQueryObject { Page = 1, Size = 10 };
 
             // Act
-            var result = await _categoryService.GetAllForUserAsync(TestUserId, queryObject, includeInactive: true);
+            var result = await _categoryService.GetAllForUserAsync(
+                TestUserId, queryObject, includeInactive: true);
 
             // Assert
-            Assert.Equal(2, result.Data.Count);
+            var categoriesCount = categoriesMock.Object.Count(x => x.AppUserId == TestUserId);
+
+            Assert.Equal(categoriesCount, result.Data.Count);
             Assert.Contains(result.Data, c => c.Id == 1);
             Assert.Contains(result.Data, c => c.Id == 2);
+            Assert.Contains(result.Data, c => c.Id == 3);
+            Assert.Contains(result.Data, c => c.Id == 4);
 
-            _categoryRepositoryMock.Verify(r => r.GetQueryable(It.IsAny<bool>()), Times.Once);
+            Assert.Equal(categoriesCount, result.Pagination.TotalItems);
+            Assert.False(result.Pagination.HasNext);
+            Assert.False(result.Pagination.HasPrevious);
+            Assert.Equal(queryObject.Page, result.Pagination.PageNumber);
+            Assert.Equal(queryObject.Size, result.Pagination.PageSize);
+
+            _categoryRepositoryMock.Verify(r => r.GetQueryable(includeInactive), Times.Once);
         }
 
         [Fact]
         public async Task GetAllForUserAsync_NoCategories_ReturnsEmptyList()
         {
             // Arrange
-            var categories = new List<Category>().AsQueryable();
+            var categoriesMock = new List<Category>().AsQueryable().BuildMockDbSet();
 
-            _categoryRepositoryMock.Setup(r => r.GetQueryable(It.IsAny<bool>())).Returns(categories);
+            _categoryRepositoryMock.Setup(r => r.GetQueryable(It.IsAny<bool>())).Returns(categoriesMock.Object);
 
             var queryObject = new PaginationQueryObject { Page = 1, Size = 10 };
 
@@ -83,9 +128,17 @@ namespace api.Tests.Unit.Services
             var result = await _categoryService.GetAllForUserAsync(TestUserId, queryObject, includeInactive: true);
 
             // Assert
+
+            var categoriesCount = categoriesMock.Object.Count();
+
             Assert.NotNull(result);
             Assert.Empty(result.Data);
-            Assert.NotNull(result.Pagination);
+
+            Assert.Equal(categoriesCount, result.Pagination.TotalItems);
+            Assert.False(result.Pagination.HasNext);
+            Assert.False(result.Pagination.HasPrevious);
+            Assert.Equal(queryObject.Page, result.Pagination.PageNumber);
+            Assert.Equal(queryObject.Size, result.Pagination.PageSize);
 
             _categoryRepositoryMock.Verify(r => r.GetQueryable(It.IsAny<bool>()), Times.Once);
         }
@@ -94,8 +147,21 @@ namespace api.Tests.Unit.Services
         public async Task GetAllForAdminAsync_WithoutUserId_ReturnsAllCategories()
         {
             // Arrange
-            var categories = TestData.GetCategories(TestUserId, OtherUserId);
-            _categoryRepositoryMock.Setup(r => r.GetQueryable(It.IsAny<bool>())).Returns(categories);
+            var categoriesMock = new List<Category>()
+            {
+                new() { Id = 1, Name = "Active", AppUserId = TestUserId, IsActive = true },
+                new() { Id = 2, Name = "Active", AppUserId = TestUserId, IsActive = true },
+                new() { Id = 3, Name = "Active", AppUserId = TestUserId, IsActive = false },
+                new() { Id = 4, Name = "Active", AppUserId = TestUserId, IsActive = false },
+
+                new() { Id = 5, Name = "Other user Active", AppUserId = OtherUserId, IsActive = true },
+                new() { Id = 6, Name = "Other user Active", AppUserId = OtherUserId, IsActive = true },
+                new() { Id = 7, Name = "Other user Active", AppUserId = OtherUserId, IsActive = false },
+                new() { Id = 8, Name = "Other user Active", AppUserId = OtherUserId, IsActive = false },
+
+            }.AsQueryable().BuildMockDbSet();
+
+            _categoryRepositoryMock.Setup(r => r.GetQueryable(It.IsAny<bool>())).Returns(categoriesMock.Object);
 
             var queryObject = new PaginationQueryObject { Page = 1, Size = 10 };
 
@@ -103,30 +169,58 @@ namespace api.Tests.Unit.Services
             var result = await _categoryService.GetAllForAdminAsync(queryObject, userId: null);
 
             // Assert
-            Assert.Equal(8, result.Data.Count);
-            Assert.Contains(result.Data, c => c.Id == 1);
-            Assert.Contains(result.Data, c => c.Id == 8);
+            var categoriesCount = categoriesMock.Object.Count();
+
+            var expectedIds = Enumerable.Range(1, 8);
+            Assert.All(expectedIds, id => Assert.Contains(result.Data, c => c.Id == id));
+
+            Assert.Equal(categoriesCount, result.Pagination.TotalItems);
+            Assert.False(result.Pagination.HasNext);
+            Assert.False(result.Pagination.HasPrevious);
+            Assert.Equal(queryObject.Page, result.Pagination.PageNumber);
+            Assert.Equal(queryObject.Size, result.Pagination.PageSize);
 
             _categoryRepositoryMock.Verify(r => r.GetQueryable(It.IsAny<bool>()), Times.Once);
         }
 
         [Fact]
-        public async Task GetAllForAdminAsync_WithUserId_ReturnsOnlyThatUserCategories()
+        public async Task GetAllForAdminAsync_WithUserId_ReturnsOnlyTestUserIdCategories()
         {
             // Arrange
-            var categories = TestData.GetCategories(TestUserId, OtherUserId);
-            _categoryRepositoryMock.Setup(r => r.GetQueryable(It.IsAny<bool>())).Returns(categories);
+            var categoriesMock = new List<Category>()
+            {
+                new() { Id = 1, Name = "Active", AppUserId = TestUserId, IsActive = true },
+                new() { Id = 2, Name = "Active", AppUserId = TestUserId, IsActive = true },
+                new() { Id = 3, Name = "Active", AppUserId = TestUserId, IsActive = false },
+                new() { Id = 4, Name = "Active", AppUserId = TestUserId, IsActive = false },
+
+                new() { Id = 5, Name = "Other user Active", AppUserId = OtherUserId, IsActive = true },
+                new() { Id = 6, Name = "Other user Active", AppUserId = OtherUserId, IsActive = true },
+                new() { Id = 7, Name = "Other user Active", AppUserId = OtherUserId, IsActive = false },
+                new() { Id = 8, Name = "Other user Active", AppUserId = OtherUserId, IsActive = false },
+
+            }.AsQueryable().BuildMockDbSet();
+
+            _categoryRepositoryMock.Setup(r => r.GetQueryable(It.IsAny<bool>())).Returns(categoriesMock.Object);
 
             var queryObject = new PaginationQueryObject { Page = 1, Size = 10 };
 
+            var userId = TestUserId;
             // Act
-            var result = await _categoryService.GetAllForAdminAsync(queryObject, userId: TestUserId);
+            var result = await _categoryService.GetAllForAdminAsync(queryObject, userId: userId);
 
             // Assert
-            Assert.Equal(4, result.Data.Count);
+            var categoriesCount = categoriesMock.Object.Count(x => x.AppUserId == userId);
+
+            Assert.Equal(categoriesCount, result.Data.Count);
             Assert.All(result.Data, c => Assert.Equal(TestUserId, c.AppUserId));
 
-            // Verify
+            Assert.Equal(categoriesCount, result.Pagination.TotalItems);
+            Assert.False(result.Pagination.HasNext);
+            Assert.False(result.Pagination.HasPrevious);
+            Assert.Equal(queryObject.Page, result.Pagination.PageNumber);
+            Assert.Equal(queryObject.Size, result.Pagination.PageSize);
+
             _categoryRepositoryMock.Verify(r => r.GetQueryable(It.IsAny<bool>()), Times.Once);
         }
 
@@ -134,8 +228,9 @@ namespace api.Tests.Unit.Services
         public async Task GetAllForAdminAsync_NoCategories_ReturnsEmptyList()
         {
             // Arrange
-            var emptyCategories = new List<Category>().AsQueryable();
-            _categoryRepositoryMock.Setup(r => r.GetQueryable(It.IsAny<bool>())).Returns(emptyCategories);
+            var emptyCategoriesMock = new List<Category>().AsQueryable().BuildMockDbSet();
+            _categoryRepositoryMock.Setup(r => r.GetQueryable(It.IsAny<bool>()))
+                .Returns(emptyCategoriesMock.Object);
 
             var queryObject = new PaginationQueryObject { Page = 1, Size = 10 };
 
@@ -145,7 +240,14 @@ namespace api.Tests.Unit.Services
             // Assert
             Assert.NotNull(result);
             Assert.Empty(result.Data);
-            Assert.NotNull(result.Pagination);
+
+            var categoriesCount = emptyCategoriesMock.Object.Count();
+
+            Assert.Equal(categoriesCount, result.Pagination.TotalItems);
+            Assert.False(result.Pagination.HasNext);
+            Assert.False(result.Pagination.HasPrevious);
+            Assert.Equal(queryObject.Page, result.Pagination.PageNumber);
+            Assert.Equal(queryObject.Size, result.Pagination.PageSize);
 
             // Verify
             _categoryRepositoryMock.Verify(r => r.GetQueryable(It.IsAny<bool>()), Times.Once);
@@ -168,9 +270,9 @@ namespace api.Tests.Unit.Services
                 It.Is<List<Category>>(actualCategories =>
                     // 1. Check the count
                     actualCategories.Count == expectedCount &&
-                    // 2. Check the UserId and IsActive flag for all created categories
+                    // 2. Check the UserId and IsActive flag for all created categoriesMock
                     actualCategories.All(c => c.AppUserId == TestUserId && c.IsActive == true) &&
-                    // 3. Check that all template names are present in the created categories
+                    // 3. Check that all template names are present in the created categoriesMock
                     expectedNames.All(name => actualCategories.Any(c => c.Name == name))
                 )),
                 Times.Once
@@ -316,8 +418,11 @@ namespace api.Tests.Unit.Services
             var result = await _categoryService.ToggleActiveAsync(existingCategory.Id);
 
             // Assert
-            _categoryRepositoryMock.Verify(r => r.GetByIdAsync(existingCategory.Id, It.IsAny<bool>()), Times.Once);
-            _categoryRepositoryMock.Verify(r => r.UpdateAsync(existingCategory), Times.Once);
+            _categoryRepositoryMock.Verify(r => r.GetByIdAsync(existingCategory.Id,
+                It.IsAny<bool>()), Times.Once);
+
+            _categoryRepositoryMock.Verify(r => r.UpdateAsync(existingCategory),
+                Times.Once);
 
             Assert.Equal(!isActive, existingCategory.IsActive);
         }
