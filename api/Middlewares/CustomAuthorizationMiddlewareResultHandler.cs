@@ -33,11 +33,14 @@ namespace api.Middlewares
         /// <param name="next">The next middleware in the pipeline.</param>
         /// <param name="context">The <see cref="HttpContext"/> for the current request.</param>
         /// <param name="policy">The <see cref="AuthorizationPolicy"/> being applied.</param>
-        /// <param name="authorizeResult">The <see cref="PolicyAuthorizationResult"/> produced by the authorization middleware.</param>
+        /// <param name="authorizeResult">The <see cref="PolicyAuthorizationResult"/>
+        /// produced by the authorization middleware.</param>
         /// <returns>A task representing the asynchronous operation.</returns>
         /// <remarks>
-        /// <para>- Returns <see cref="StatusCodes.Status403Forbidden"/> with a standardized <see cref="ApiResponse"/> if the user is authenticated but lacks required permissions.</para>
-        /// - Returns <see cref="StatusCodes.Status401Unauthorized"/> with a standardized <see cref="ApiResponse"/> if the user is not authenticated.
+        /// <para>- Returns <see cref="StatusCodes.Status403Forbidden"/> with a standardized <see cref="ApiResponse"/>
+        /// if the user is authenticated but lacks required permissions.</para>
+        /// - Returns <see cref="StatusCodes.Status401Unauthorized"/> with a standardized <see cref="ApiResponse"/>
+        /// if the user is not authenticated.
         /// <para>- Delegates other cases to the default <see cref="AuthorizationMiddlewareResultHandler"/>.</para>
         /// </remarks>
         public async Task HandleAsync(
@@ -50,7 +53,9 @@ namespace api.Middlewares
             {
                 context.Response.StatusCode = StatusCodes.Status403Forbidden;
                 var requirements = string.Join(", ", policy.Requirements.Select(r => r.GetType().Name));
-                _logger.LogWarning("Access forbidden for user {UserId}. Requirements not met: {@Requirements}.", context.User.GetUserId(), requirements);
+                _logger.LogWarning(
+                    "Access forbidden for user {UserId}. Requirements not met: {@Requirements}.",
+                    context.User.GetUserId(), requirements);
                 await context.Response.WriteAsJsonAsync(ApiResponse.Forbidden<object>());
                 return;
             }

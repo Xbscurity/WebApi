@@ -2,7 +2,6 @@
 using api.Dtos.FinancialTransaction;
 using api.Enums;
 using api.Extensions;
-using api.Models;
 using api.Providers.Interfaces;
 using api.QueryObjects;
 using api.Repositories.Categories;
@@ -148,7 +147,9 @@ namespace api.Services.Transaction
         }
 
         /// <inheritdoc/>
-        public async Task<PagedData<GroupedReportOutputDto>> GetReportAsync(string userId, ReportQueryObject queryObject)
+        public async Task<PagedData<GroupedReportOutputDto>> GetReportAsync(
+            string userId,
+            ReportQueryObject queryObject)
         {
             var strategy = _strategies[queryObject.Key];
 

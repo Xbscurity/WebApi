@@ -1,5 +1,4 @@
-﻿using api.Constants;
-using api.Dtos.FinancialTransaction;
+﻿using api.Dtos.FinancialTransaction;
 using api.Filters;
 using api.Responses;
 using api.Services.Transaction;

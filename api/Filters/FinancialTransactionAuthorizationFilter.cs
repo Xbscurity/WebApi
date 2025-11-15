@@ -2,7 +2,6 @@
 using api.Extensions;
 using api.Repositories.Interfaces;
 using api.Responses;
-using api.Services.Transaction;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
@@ -54,7 +53,9 @@ namespace api.Filters
 
             if (financialTransaction == null)
             {
-                context.Result = new NotFoundObjectResult(ApiResponse.NotFound<object>($"Financial transaction with ID {financialTransactionId} not found."));
+                context.Result = new NotFoundObjectResult(
+                    ApiResponse.NotFound<object>($"Financial transaction with ID {financialTransactionId} not found."));
+
                 _logger.LogDebug("FinancialTransaction {FinancialTransactionId} not found.", financialTransactionId);
                 return;
             }
@@ -65,7 +66,11 @@ namespace api.Filters
                 financialTransaction,
                 user.GetUserId(),
                 Policies.TransactionAccess);
-            var authResult = await _authorizationService.AuthorizeAsync(user, financialTransaction, Policies.TransactionAccess);
+
+            var authResult = await _authorizationService.AuthorizeAsync(
+                user,
+                financialTransaction,
+                Policies.TransactionAccess);
 
             if (!authResult.Succeeded)
             {
@@ -74,7 +79,8 @@ namespace api.Filters
                     "Access denied to financial transaction {FinancialTransactionId}",
                     financialTransactionId);
 
-                context.Result = new ObjectResult(ApiResponse.Forbidden<object>("Forbidden access to financial transaction."))
+                context.Result = new ObjectResult(ApiResponse.Forbidden<object>(
+                    "Forbidden access to financial transaction."))
                 {
                     StatusCode = 403,
                 };

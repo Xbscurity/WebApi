@@ -1,5 +1,4 @@
-﻿using api.Constants;
-using api.Dtos.Category;
+﻿using api.Dtos.Category;
 using api.Filters;
 using api.Responses;
 using api.Services.Categories;

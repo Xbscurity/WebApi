@@ -19,7 +19,8 @@
         /// </summary>
         /// <param name="field">The field name provided by the client.</param>
         /// <returns>
-        /// <see langword="true"/> if the field is <see langword="null"/>, empty, or contained in <see cref="ValidFields"/>; otherwise <see langword="false"/>.
+        /// <see langword="true"/> if the field is <see langword="null"/>, empty,
+        /// or contained in <see cref="ValidFields"/>; otherwise <see langword="false"/>.
         /// </returns>
         public bool IsValid(string? field) =>
             string.IsNullOrWhiteSpace(field) || ValidFields.Contains(field);

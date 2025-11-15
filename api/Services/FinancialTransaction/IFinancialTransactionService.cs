@@ -1,5 +1,4 @@
 ﻿using api.Dtos.FinancialTransaction;
-using api.Models;
 using api.QueryObjects;
 using api.Responses;
 
@@ -27,7 +26,8 @@ namespace api.Services.Transaction
         /// Retrieves a paginated list of transactions for administrative purposes.
         /// </summary>
         /// <param name="queryObject">Pagination and sorting parameters.</param>
-        /// <param name="appUserId">Optional filter to restrict results to a specific user, or <see langword="null"/> to include all users.</param>
+        /// <param name="appUserId">Optional filter to restrict results to a specific user,
+        /// or <see langword="null"/> to include all users.</param>
         /// <returns>A task that returns paged transactions for administration.</returns>
         Task<PagedData<BaseFinancialTransactionOutputDto>> GetAllForAdminAsync(
             PaginationQueryObject queryObject, string? appUserId);
@@ -46,7 +46,8 @@ namespace api.Services.Transaction
         /// </summary>
         /// <param name="transaction">The transaction data transfer object.</param>
         /// <returns>A task that returns the created transaction DTO.</returns>
-        Task<BaseFinancialTransactionMinimalOutputDto> CreateForAdminAsync(AdminFinancialTransactionInputDto transaction);
+        Task<BaseFinancialTransactionMinimalOutputDto> CreateForAdminAsync(
+            AdminFinancialTransactionInputDto transaction);
 
         /// <summary>
         /// Creates a new transaction for the given user.
@@ -75,7 +76,8 @@ namespace api.Services.Transaction
         /// </summary>
         /// <param name="id">The transaction identifier.</param>
         /// <returns>
-        /// A task that returns <see langword="true"/> if the transaction was deleted; otherwise, <see langword="false"/>.
+        /// A task that returns <see langword="true"/> if the transaction was deleted;
+        /// otherwise, <see langword="false"/>.
         /// </returns>
         Task<bool> DeleteAsync(int id);
 

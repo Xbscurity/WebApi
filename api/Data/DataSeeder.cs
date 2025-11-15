@@ -40,7 +40,9 @@ namespace api.Data
         /// <param name="userManager">The <see cref="UserManager{AppUser}"/> used to manage users.</param>
         /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
         /// <exception cref="Exception">Thrown if role or admin user creation fails.</exception>
-        public static async Task SeedRolesAndAdminAsync(RoleManager<IdentityRole> roleManager, UserManager<AppUser> userManager)
+        public static async Task SeedRolesAndAdminAsync(
+            RoleManager<IdentityRole> roleManager,
+            UserManager<AppUser> userManager)
         {
             string[] roleNames = { "Admin", "User" };
 

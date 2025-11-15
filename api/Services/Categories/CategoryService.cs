@@ -48,7 +48,8 @@ namespace api.Services.Categories
         }
 
         /// <inheritdoc />
-        public async Task<PagedData<BaseCategoryOutputDto>> GetAllForAdminAsync(PaginationQueryObject queryObject, string? userId)
+        public async Task<PagedData<BaseCategoryOutputDto>> GetAllForAdminAsync(
+            PaginationQueryObject queryObject, string? userId)
         {
             var query = _categoryRepository.GetQueryable();
 
@@ -95,7 +96,9 @@ namespace api.Services.Categories
         }
 
         /// <inheritdoc />
-        public async Task<BaseCategoryOutputDto> CreateForUserAsync(string userId, BaseCategoryUpdateInputDto categoryDto)
+        public async Task<BaseCategoryOutputDto> CreateForUserAsync(
+            string userId,
+            BaseCategoryUpdateInputDto categoryDto)
         {
             Category category = new Category
             {
@@ -124,7 +127,7 @@ namespace api.Services.Categories
                 category.Id,
                 category.AppUserId);
 
-            return category.ToOutputDto() !;
+            return category.ToOutputDto()!;
         }
 
         /// <inheritdoc />

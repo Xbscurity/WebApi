@@ -51,8 +51,12 @@ namespace api.Controllers.Category
         {
             if (!_sortValidator.IsValid(queryObject.SortBy))
             {
-                Logger.LogWarning(LoggingEvents.Categories.Common.SortInvalid, _sortValidator.GetErrorMessage(queryObject.SortBy!));
-                return ApiResponse.BadRequest<List<BaseCategoryOutputDto>>(_sortValidator.GetErrorMessage(queryObject.SortBy!));
+                Logger.LogWarning(
+                    LoggingEvents.Categories.Common.SortInvalid,
+                    _sortValidator.GetErrorMessage(queryObject.SortBy!));
+
+                return ApiResponse.BadRequest<List<BaseCategoryOutputDto>>(
+                    _sortValidator.GetErrorMessage(queryObject.SortBy!));
             }
 
             var userId = User.GetUserId();
@@ -77,7 +81,8 @@ namespace api.Controllers.Category
         /// An <see cref="ApiResponse{T}"/> containing the newly created category.
         /// </returns>
         [HttpPost]
-        public async Task<ActionResult<ApiResponse<BaseCategoryOutputDto>>> Create([FromBody] BaseCategoryUpdateInputDto categoryDto)
+        public async Task<ActionResult<ApiResponse<BaseCategoryOutputDto>>> Create(
+            [FromBody] BaseCategoryUpdateInputDto categoryDto)
         {
             var userId = User.GetUserId();
 

@@ -18,7 +18,8 @@ namespace api.Extensions
         /// A <see cref="BaseFinancialTransactionOutputDto"/> representation of the entity,
         /// or <see langword="null"/> if the input is <see langword="null"/>.
         /// </returns>
-        public static BaseFinancialTransactionOutputDto ToOutputDto(this FinancialTransaction financialTransaction)
+        public static BaseFinancialTransactionOutputDto ToOutputDto(
+            this FinancialTransaction financialTransaction)
         {
             if (financialTransaction is null)
             {
@@ -45,7 +46,8 @@ namespace api.Extensions
         /// A <see cref="BaseFinancialTransactionOutputDto"/> representation of the entity,
         /// or <see langword="null"/> if the input is <see langword="null"/>.
         /// </returns>
-        public static BaseFinancialTransactionMinimalOutputDto ToMinimalOutputDto(this FinancialTransaction financialTransaction)
+        public static BaseFinancialTransactionMinimalOutputDto ToMinimalOutputDto(
+            this FinancialTransaction financialTransaction)
         {
             if (financialTransaction is null)
             {
@@ -73,7 +75,9 @@ namespace api.Extensions
         /// A new <see cref="FinancialTransaction"/> entity populated with the DTO data,
         /// or <see langword="null"/> if the input is <see langword="null"/>.
         /// </returns>
-        public static FinancialTransaction ToModel(this BaseFinancialTransactionInputDto transactionInputDto, string appUserId, ITimeProvider timeProvider)
+        public static FinancialTransaction ToModel(
+            this BaseFinancialTransactionInputDto transactionInputDto,
+            string appUserId, ITimeProvider timeProvider)
         {
             if (transactionInputDto is null)
             {
@@ -98,7 +102,8 @@ namespace api.Extensions
         /// A new <see cref="FinancialTransaction"/> entity populated with the DTO data,
         /// or <see langword="null"/> if the input is <see langword="null"/>.
         /// </returns>
-        public static FinancialTransaction ToModel(this AdminFinancialTransactionInputDto transactionInputDto, ITimeProvider timeProvider)
+        public static FinancialTransaction ToModel(
+            this AdminFinancialTransactionInputDto transactionInputDto, ITimeProvider timeProvider)
         {
             if (transactionInputDto is null)
             {

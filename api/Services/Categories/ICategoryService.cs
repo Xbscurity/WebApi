@@ -1,6 +1,5 @@
 ﻿using api.Data;
 using api.Dtos.Category;
-using api.Models;
 using api.QueryObjects;
 using api.Responses;
 
@@ -20,13 +19,17 @@ namespace api.Services.Categories
         /// <param name="queryObject">Pagination and sorting parameters.</param>
         /// <param name="includeInactive">Whether to include inactive categories owned by the user.</param>
         /// <returns>A task containing paginated category data.</returns>
-        Task<PagedData<BaseCategoryOutputDto>> GetAllForUserAsync(string userId, PaginationQueryObject queryObject, bool includeInactive);
+        Task<PagedData<BaseCategoryOutputDto>> GetAllForUserAsync(
+            string userId,
+            PaginationQueryObject queryObject,
+            bool includeInactive);
 
         /// <summary>
         /// Toggles the active status of a category by its identifier.
         /// </summary>
         /// <param name="id">The unique identifier of the category.</param>
-        /// <returns>A task containing <see langword="true"/> if the operation succeeded; otherwise, <see langword="false"/>.</returns>
+        /// <returns>A task containing <see langword="true"/>
+        /// if the operation succeeded; otherwise, <see langword="false"/>.</returns>
         Task<bool> ToggleActiveAsync(int id);
 
         /// <summary>
@@ -65,7 +68,8 @@ namespace api.Services.Categories
         /// </summary>
         /// <param name="id">The unique identifier of the category.</param>
         /// <param name="category">The updated category data.</param>
-        /// <returns>A task containing the updated category DTO if successful; otherwise, <see langword="null"/>.</returns>
+        /// <returns>A task containing the updated category DTO if successful;
+        /// otherwise, <see langword="null"/>.</returns>
         Task<BaseCategoryOutputDto?> UpdateAsync(int id, BaseCategoryUpdateInputDto category);
 
         /// <summary>
@@ -82,7 +86,8 @@ namespace api.Services.Categories
         /// This method retrieves the static templates from <see cref="DataSeeder.DefaultCategoryTemplates"/>,
         /// assigns the provided user ID to each category, and saves the new records to the database.
         /// </remarks>
-        /// <param name="userId">The unique identifier (GUID or string) of the user for whom the categories are being created.</param>
+        /// <param name="userId">The unique identifier (GUID or string)
+        /// of the user for whom the categories are being created.</param>
         /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
         Task CreateInitialCategoriesForUserAsync(string userId);
     }

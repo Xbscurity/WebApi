@@ -11,7 +11,8 @@ namespace api.Services.Token
         /// Generates a new JWT access token for the specified user.
         /// </summary>
         /// <param name="appUser">The application user for whom the token is generated.</param>
-        /// <returns>A task that represents the asynchronous operation. The task result contains the signed JWT access token.</returns>
+        /// <returns>A task that represents the asynchronous operation.
+        /// The task result contains the signed JWT access token.</returns>
         Task<string> GenerateAccessTokenAsync(AppUser appUser);
 
         /// <summary>
@@ -25,7 +26,8 @@ namespace api.Services.Token
         /// </summary>
         /// <param name="plainToken">The raw refresh token string.</param>
         /// <param name="user">The user to whom the token belongs.</param>
-        /// <param name="ipAddress">The IP address from which the token was created, or <see langword="null"/> if unknown.</param>
+        /// <param name="ipAddress">The IP address from which the token was created,
+        /// or <see langword="null"/> if unknown.</param>
         /// <returns>A <see cref="RefreshToken"/> entity ready for storage.</returns>
         RefreshToken GenerateRefreshTokenEntity(string plainToken, AppUser user, string? ipAddress);
 

@@ -17,8 +17,12 @@ namespace api.Middlewares
         /// </summary>
         /// <param name="next">The next delegate in the middleware pipeline.</param>
         /// <param name="logger">The logger used to log unhandled exceptions.</param>
-        /// <param name="env">The hosting environment, used to determine whether to include detailed error information.</param>
-        public ErrorHandlingMiddleware(RequestDelegate next, ILogger<ErrorHandlingMiddleware> logger, IHostEnvironment env)
+        /// <param name="env">The hosting environment,
+        /// used to determine whether to include detailed error information.</param>
+        public ErrorHandlingMiddleware(
+            RequestDelegate next,
+            ILogger<ErrorHandlingMiddleware> logger,
+            IHostEnvironment env)
         {
             _next = next;
             _logger = logger;

@@ -8,11 +8,11 @@
     /// making it easier to test time-dependent logic by substituting with mock or
     /// custom implementations.
     /// </remarks>
-        public interface ITimeProvider
-        {
-            /// <summary>
-            /// Gets the current date and time in Coordinated Universal Time (UTC).
-            /// </summary>
-            DateTimeOffset UtcNow { get; }
-        }
+    public interface ITimeProvider
+    {
+        /// <summary>
+        /// Gets the current date and time in Coordinated Universal Time (UTC).
+        /// </summary>
+        DateTimeOffset UtcNow { get; }
+    }
 }

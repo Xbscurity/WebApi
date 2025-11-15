@@ -49,8 +49,12 @@ namespace api.Controllers.FinancialTransaction
         {
             if (!_sortValidator.IsValid(queryObject!.SortBy))
             {
-                Logger.LogWarning(LoggingEvents.FinancialTransactions.Common.SortInvalid, _sortValidator.GetErrorMessage(queryObject.SortBy!));
-                return ApiResponse.BadRequest<List<GroupedReportOutputDto>>(_sortValidator.GetErrorMessage(queryObject.SortBy!));
+                Logger.LogWarning(
+                    LoggingEvents.FinancialTransactions.Common.SortInvalid,
+                    _sortValidator.GetErrorMessage(queryObject.SortBy!));
+
+                return ApiResponse.BadRequest<List<GroupedReportOutputDto>>(
+                    _sortValidator.GetErrorMessage(queryObject.SortBy!));
             }
 
             var userId = User.GetUserId();
@@ -74,16 +78,22 @@ namespace api.Controllers.FinancialTransaction
         /// An <see cref="ApiResponse{T}"/> containing a paginated list of transactions.
         /// </returns>
         [HttpGet]
-        public async Task<ApiResponse<List<BaseFinancialTransactionOutputDto>>> GetAll([FromQuery] PaginationQueryObject queryObject)
+        public async Task<ApiResponse<List<BaseFinancialTransactionOutputDto>>> GetAll(
+            [FromQuery] PaginationQueryObject queryObject)
         {
             if (!_sortValidator.IsValid(queryObject.SortBy))
             {
-                Logger.LogWarning(LoggingEvents.FinancialTransactions.Common.SortInvalid, _sortValidator.GetErrorMessage(queryObject.SortBy!));
-                return ApiResponse.BadRequest<List<BaseFinancialTransactionOutputDto>>(_sortValidator.GetErrorMessage(queryObject.SortBy!));
+                Logger.LogWarning(
+                    LoggingEvents.FinancialTransactions.Common.SortInvalid,
+                    _sortValidator.GetErrorMessage(queryObject.SortBy!));
+
+                return ApiResponse.BadRequest<List<BaseFinancialTransactionOutputDto>>(
+                    _sortValidator.GetErrorMessage(queryObject.SortBy!));
             }
 
             var userId = User.GetUserId();
             var transactions = await FinancialTransactionService.GetAllForUserAsync(userId!, queryObject);
+
             Logger.LogInformation(
                 LoggingEvents.FinancialTransactions.User.GetAll,
                 "Returning {Count} transactions. Page={PageNumber}, Size={PageSize}, SortBy={SortBy}",
@@ -91,6 +101,7 @@ namespace api.Controllers.FinancialTransaction
                 transactions.Pagination.PageNumber,
                 transactions.Pagination.PageSize,
                 queryObject.SortBy);
+
             return ApiResponse.Success(transactions.Data, transactions.Pagination);
         }
 

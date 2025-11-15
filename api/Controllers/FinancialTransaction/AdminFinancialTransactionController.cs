@@ -49,7 +49,10 @@ namespace api.Controllers.FinancialTransaction
         {
             if (!_sortValidator.IsValid(queryObject.SortBy))
             {
-                Logger.LogWarning(LoggingEvents.FinancialTransactions.Common.SortInvalid, _sortValidator.GetErrorMessage(queryObject.SortBy!));
+                Logger.LogWarning(
+                    LoggingEvents.FinancialTransactions.Common.SortInvalid,
+                    _sortValidator.GetErrorMessage(queryObject.SortBy!));
+
                 return ApiResponse.BadRequest<List<BaseFinancialTransactionOutputDto>>(
                     _sortValidator.GetErrorMessage(queryObject.SortBy!));
             }

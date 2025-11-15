@@ -10,7 +10,8 @@ namespace api.Middlewares
     /// for the duration of each request:
     /// <list type="bullet">
     /// <item>
-    /// <description><c>UserId</c> — the ID of the authenticated user, or <c>"Anonymous"</c> if not authenticated.</description>
+    /// <description><c>UserId</c> — the ID of the authenticated user,
+    /// or <c>"Anonymous"</c> if not authenticated.</description>
     /// </item>
     /// <item>
     /// <description><c>ClientIp</c> — the remote IP address of the client making the request.</description>

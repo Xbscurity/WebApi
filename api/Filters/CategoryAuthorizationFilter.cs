@@ -2,7 +2,6 @@
 using api.Dtos.Interfaces;
 using api.Repositories.Categories;
 using api.Responses;
-using api.Services.Categories;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
@@ -88,7 +87,9 @@ namespace api.Filters
             var category = await _categoryRepository.GetByIdAsync(categoryId, _includeInactive);
             if (category == null)
             {
-                context.Result = new NotFoundObjectResult(ApiResponse.NotFound<object>($"Category with ID {categoryId} not found or deactivated."));
+                context.Result = new NotFoundObjectResult(
+                    ApiResponse.NotFound<object>($"Category with ID {categoryId} not found or deactivated."));
+
                 _logger.LogDebug("Category {CategoryId} not found or deactivated.", categoryId);
                 return;
             }
@@ -102,6 +103,7 @@ namespace api.Filters
                     LoggingEvents.Categories.Common.NoAccess,
                     "Access denied to category {CategoryId}",
                     categoryId);
+
                 context.Result = new ObjectResult(ApiResponse.Forbidden<object>("Forbidden access to category."))
                 {
                     StatusCode = 403,
