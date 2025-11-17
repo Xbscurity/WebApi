@@ -1,7 +1,9 @@
 ﻿using api.Constants;
+using api.Dtos.FinancialTransaction;
 using api.Filters;
 using api.Models;
 using api.Repositories.Categories;
+using api.Responses;
 using api.Tests.Unit.Helpers;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -10,175 +12,373 @@ using Microsoft.Extensions.Logging;
 using Moq;
 using System.Security.Claims;
 
-public class CategoryAuthorizationFilterTests
+namespace api.Tests.Unit.Filters
 {
-    private readonly Mock<IAuthorizationService> _authServiceMock;
-    private readonly Mock<ILogger<CategoryAuthorizationFilter>> _loggerMock;
-    private readonly Mock<ICategoryRepository> _categoryRepositoryMock;
-    private readonly string _policy;
-    private readonly CategoryAuthorizationFilter _filter;
-
-    public CategoryAuthorizationFilterTests()
+    public class CategoryAuthorizationFilterTests
     {
-        _authServiceMock = new Mock<IAuthorizationService>();
-        _loggerMock = new Mock<ILogger<CategoryAuthorizationFilter>>();
-        _categoryRepositoryMock = new Mock<ICategoryRepository>();
-        _policy = Policies.CategoryAccess;
-        _filter = new CategoryAuthorizationFilter(
-            _authServiceMock.Object,
-            _loggerMock.Object,
-            _categoryRepositoryMock.Object,
-            _policy
-        );
-    }
-    private static ActionExecutingContext CreateContext(object? id = null)
-    {
-        var actionContext = FilterTestHelper.CreateActionContext();
+        private readonly Mock<IAuthorizationService> _mockAuthService;
+        private readonly Mock<ILogger<CategoryAuthorizationFilter>> _mockLogger;
+        private readonly Mock<ICategoryRepository> _mockCategoryRepository;
+        private readonly CategoryAuthorizationFilter _filter;
 
-        var actionArguments = new Dictionary<string, object?>();
-        if (id != null)
-            actionArguments["id"] = id;
-
-        return new ActionExecutingContext(
-            actionContext,
-            new List<IFilterMetadata>(),
-            actionArguments,
-            controller: null
-        );
-    }
-    [Theory]
-    [InlineData(null)]
-    [InlineData("not_an_int")]
-    public async Task OnActionExecutionAsync_InvalidOrMissingId_ReturnsBadRequest(object? id)
-    {
-        // Arrange
-        var context = CreateContext(id);
-        var next = new Mock<ActionExecutionDelegate>();
-
-        // Act
-        await _filter.OnActionExecutionAsync(context, next.Object);
-
-        // Assert
-        Assert.IsType<BadRequestObjectResult>(context.Result);
-
-        _categoryRepositoryMock.Verify(s => s.GetByIdAsync(It.IsAny<int>(), It.IsAny<bool>()), Times.Never);
-        _authServiceMock.Verify(a => a.AuthorizeAsync(
-            It.IsAny<ClaimsPrincipal>(),
-            It.IsAny<object>(),
-            It.IsAny<string>()),
-            Times.Never
-        );
-        next.Verify(x => x(), Times.Never);
-    }
-
-    [Fact]
-    public async Task OnActionExecutionAsync_CategoryNotFound_ReturnsNotFound()
-    {
-        // Arrange
-        var nonExistingCategoryId = 999;
-        var context = CreateContext(nonExistingCategoryId);
-        _categoryRepositoryMock.Setup(s => s.GetByIdAsync(nonExistingCategoryId, It.IsAny<bool>())).ReturnsAsync((Category?)null);
-
-        var next = new Mock<ActionExecutionDelegate>();
-
-        // Act
-        await _filter.OnActionExecutionAsync(context, next.Object);
-
-        // Assert
-        Assert.IsType<NotFoundObjectResult>(context.Result);
-
-        _categoryRepositoryMock.Verify(x => x.GetByIdAsync(nonExistingCategoryId, It.IsAny<bool>()), Times.Once);
-        _authServiceMock.Verify(x => x.AuthorizeAsync(
-            It.IsAny<ClaimsPrincipal>(),
-            It.IsAny<object>(),
-            It.IsAny<string>()),
-            Times.Never
-        );
-        next.Verify(x => x(), Times.Never);
-    }
-
-    [Fact]
-    public async Task OnActionExecutionAsync_CategoryAccessPolicyFails_ReturnsForbidden()
-    {
-        // Arrange
-
-        var nonCommonCategory = new Category
+        public CategoryAuthorizationFilterTests()
         {
-            Id = 1,
-        };
+            _mockAuthService = new Mock<IAuthorizationService>();
+            _mockLogger = new Mock<ILogger<CategoryAuthorizationFilter>>();
+            _mockCategoryRepository = new Mock<ICategoryRepository>();
 
-        var context = CreateContext(nonCommonCategory.Id);
+            var actionContext = FilterTestHelper.CreateActionContext();
 
-        _categoryRepositoryMock.Setup(s => s.GetByIdAsync(nonCommonCategory.Id, It.IsAny<bool>())).ReturnsAsync(nonCommonCategory);
+            _filter = new CategoryAuthorizationFilter(
+                _mockAuthService.Object,
+                _mockLogger.Object,
+                _mockCategoryRepository.Object);
+        }
 
-        var failedAuthResult = AuthorizationResult.Failed();
-
-        _authServiceMock.Setup(a => a.AuthorizeAsync(
-            It.IsAny<ClaimsPrincipal>(),
-            nonCommonCategory,
-            _policy))
-            .ReturnsAsync(failedAuthResult);
-
-        var next = new Mock<ActionExecutionDelegate>();
-
-        // Act
-        await _filter.OnActionExecutionAsync(context, next.Object);
-
-        // Assert
-        _categoryRepositoryMock.Verify(x => x.GetByIdAsync(nonCommonCategory.Id, It.IsAny<bool>()), Times.Once);
-
-        _authServiceMock.Verify(x => x.AuthorizeAsync(
-            It.IsAny<ClaimsPrincipal>(),
-            nonCommonCategory,
-            _policy),
-            Times.Once
-        );
-
-        next.Verify(x => x(), Times.Never);
-
-        Assert.NotNull(context.Result);
-
-        var objectResult = Assert.IsType<ObjectResult>(context.Result);
-
-        Assert.Equal(403, objectResult.StatusCode);
-    }
-    [Fact]
-    public async Task OnActionExecutionAsync_AuthorizationSucceeds_CallsNextDelegate()
-    {
-        // Arrange
-        var category = new Category
+        private static ActionExecutingContext CreateContext(object? id = null, string argumentName = "id")
         {
-            Id = 1,
-        };
+            var actionContext = FilterTestHelper.CreateActionContext();
 
-        var context = CreateContext(category.Id);
+            var actionArguments = new Dictionary<string, object?>();
+            if (id != null)
+                actionArguments[argumentName] = id;
 
-        _categoryRepositoryMock
-            .Setup(s => s.GetByIdAsync(category.Id, It.IsAny<bool>()))
-            .ReturnsAsync(category);
+            return new ActionExecutingContext(
+                actionContext,
+                new List<IFilterMetadata>(),
+                actionArguments,
+                controller: new object()
+            );
+        }
+        [Fact]
+        public async Task OnActionExecutionAsync_MissingParameter_ReturnsBadRequest()
+        {
+            // Arrange
+            var context = CreateContext(null);
 
-        var successfulAuthResult = AuthorizationResult.Success();
-        _authServiceMock
-            .Setup(a => a.AuthorizeAsync(
+            var nextCalled = false;
+
+            ActionExecutionDelegate next = () =>
+            {
+                nextCalled = true;
+                return Task.FromResult<ActionExecutedContext>(null!);
+            };
+
+            // Act
+            await _filter.OnActionExecutionAsync(context, next);
+
+            // Assert
+            Assert.False(nextCalled);
+
+            var result = Assert.IsType<BadRequestObjectResult>(context.Result);
+
+            Assert.IsType<ApiResponse<object>>(result.Value);
+
+            _mockCategoryRepository.Verify(
+                r => r.GetByIdAsync(
+                    It.IsAny<int>(),
+                    It.IsAny<bool>()),
+                Times.Never);
+
+            _mockAuthService.Verify(
+                s => s.AuthorizeAsync(
+                    It.IsAny<ClaimsPrincipal>(),
+                    It.IsAny<object>(),
+                    It.IsAny<string>()),
+                Times.Never);
+
+        }
+
+        [Fact]
+        public async Task OnActionExecutionAsync_InvalidParameterType_ReturnsBadRequest()
+        {
+            // Arrange
+            var context = CreateContext("not-an-int-or-dto");
+
+            var nextCalled = false;
+
+            ActionExecutionDelegate next = () =>
+            {
+                nextCalled = true;
+                return Task.FromResult<ActionExecutedContext>(null!);
+            };
+
+            // Act
+            await _filter.OnActionExecutionAsync(context, next);
+
+            // Assert
+            Assert.False(nextCalled);
+
+            var result = Assert.IsType<BadRequestObjectResult>(context.Result);
+
+            Assert.IsType<ApiResponse<object>>(result.Value);
+
+            _mockCategoryRepository.Verify(
+                r => r.GetByIdAsync(
+                    It.IsAny<int>(),
+                    It.IsAny<bool>()),
+                Times.Never);
+
+            _mockAuthService.Verify(
+                s => s.AuthorizeAsync(
+                    It.IsAny<ClaimsPrincipal>(),
+                    It.IsAny<object>(),
+                    It.IsAny<string>()),
+                Times.Never);
+        }
+
+        [Fact]
+        public async Task OnActionExecutionAsync_CategoryNotFound_ReturnsNotFound()
+        {
+            // Arrange
+            int categoryId = 999;
+
+            var context = CreateContext(categoryId);
+
+            var nextCalled = false;
+
+            ActionExecutionDelegate next = () =>
+            {
+                nextCalled = true;
+                return Task.FromResult<ActionExecutedContext>(null!);
+            };
+
+            _mockCategoryRepository.Setup(
+                r => r.GetByIdAsync(categoryId, false))
+                .ReturnsAsync((Category?)null);
+
+            // Act
+            await _filter.OnActionExecutionAsync(context, next);
+
+            // Assert
+            Assert.False(nextCalled);
+
+            var result = Assert.IsType<NotFoundObjectResult>(context.Result);
+
+            Assert.IsType<ApiResponse<object>>(result.Value);
+
+            _mockCategoryRepository.Verify(r => r.GetByIdAsync(categoryId, false), Times.Once);
+
+            _mockAuthService.Verify(
+                s => s.AuthorizeAsync(
+                    It.IsAny<ClaimsPrincipal>(),
+                    It.IsAny<object>(),
+                    It.IsAny<string>()),
+                Times.Never);
+
+        }
+
+        [Fact]
+        public async Task OnActionExecutionAsync_AuthorizationFailed_ReturnsForbidden()
+        {
+            // Arrange
+            var existingCategory = new Category { Id = 1, Name = "Test Category" };
+
+            var context = CreateContext(existingCategory.Id);
+
+            bool nextCalled = false;
+
+            ActionExecutionDelegate next = () =>
+            {
+                nextCalled = true;
+                return Task.FromResult<ActionExecutedContext>(null!);
+            };
+
+            _mockCategoryRepository.Setup(
+                r => r.GetByIdAsync(
+                    existingCategory.Id, false)).
+                    ReturnsAsync(existingCategory);
+
+            _mockAuthService.Setup(
+                s => s.AuthorizeAsync(
+                    It.IsAny<ClaimsPrincipal>(),
+                    existingCategory,
+                    Policies.CategoryAccess)).
+                    ReturnsAsync(AuthorizationResult.Failed());
+
+            // Act
+            await _filter.OnActionExecutionAsync(context, next);
+
+            // Assert
+            Assert.False(nextCalled);
+
+            var result = Assert.IsType<ObjectResult>(context.Result);
+
+            Assert.Equal(403, result.StatusCode);
+
+            Assert.IsType<ApiResponse<object>>(result.Value);
+
+            _mockCategoryRepository.Verify(r => r.GetByIdAsync(existingCategory.Id, false), Times.Once);
+
+            _mockAuthService.Verify(
+                s => s.AuthorizeAsync(
+                    It.IsAny<ClaimsPrincipal>(),
+                    existingCategory,
+                    Policies.CategoryAccess),
+                Times.Once);
+        }
+
+        [Fact]
+        public async Task OnActionExecutionAsync_ParameterIsIHasCategoryIdDto_ExtractsIdCorrectlyAndCallsNext()
+        {
+            // Arrange
+            var existingCategory = new Category { Id = 1, Name = "Test Category" };
+
+            var dto = new BaseFinancialTransactionInputDto
+            {
+                CategoryId = 1,
+                Amount = 100,
+                Comment = "Test"
+            };
+            var context = CreateContext(dto);
+
+            bool nextCalled = false;
+
+            ActionExecutionDelegate next = () =>
+            {
+                nextCalled = true;
+                return Task.FromResult<ActionExecutedContext>(null!);
+            };
+
+
+            _mockCategoryRepository.Setup(r => r.GetByIdAsync(existingCategory.Id, false))
+                .ReturnsAsync(existingCategory);
+
+            _mockAuthService.Setup(
+                s => s.AuthorizeAsync(
+                    It.IsAny<ClaimsPrincipal>(),
+                    existingCategory,
+                    Policies.CategoryAccess)).
+                    ReturnsAsync(AuthorizationResult.Success());
+
+            // Act
+            await _filter.OnActionExecutionAsync(context, next);
+
+            // Assert
+            Assert.Null(context.Result);
+
+            Assert.True(nextCalled);
+
+            _mockCategoryRepository.Verify(r => r.GetByIdAsync(existingCategory.Id, false), Times.Once);
+
+            _mockAuthService.Verify(
+                s => s.AuthorizeAsync(
+                    It.IsAny<ClaimsPrincipal>(),
+                    existingCategory,
+                    Policies.CategoryAccess),
+                Times.Once);
+        }
+
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task OnActionExecutionAsync_IncludeInactiveConfigured_PassesCorrectFlagToRepositoryAndCallsNext(
+            bool includeInactive)
+        {
+            // Arrange
+            var existingCategory = new Category { Id = 1, Name = "Test Category" };
+
+            var context = CreateContext(existingCategory.Id);
+
+            bool nextCalled = false;
+
+            ActionExecutionDelegate next = () =>
+            {
+                nextCalled = true;
+                return Task.FromResult<ActionExecutedContext>(null!);
+            };
+
+            var includeInactiveFilter = new CategoryAuthorizationFilter(
+                _mockAuthService.Object,
+                _mockLogger.Object,
+                _mockCategoryRepository.Object,
+                includeInactive: includeInactive);
+
+            _mockCategoryRepository.Setup(r => r.GetByIdAsync(existingCategory.Id, includeInactive)).
+                ReturnsAsync(existingCategory);
+
+            _mockAuthService.Setup(s => s.AuthorizeAsync(
                 It.IsAny<ClaimsPrincipal>(),
-                category,
-                It.IsAny<string>()))
-            .ReturnsAsync(successfulAuthResult);
+                existingCategory,
+                Policies.CategoryAccess))
+                .ReturnsAsync(AuthorizationResult.Success());
 
-        var next = new Mock<ActionExecutionDelegate>();
+            // Act
+            await includeInactiveFilter.OnActionExecutionAsync(context, next);
 
-        // Act
-        await _filter.OnActionExecutionAsync(context, next.Object);
+            // Assert
+            Assert.Null(context.Result);
 
-        // Assert
-        _categoryRepositoryMock.Verify(x => x.GetByIdAsync(category.Id, It.IsAny<bool>()), Times.Once);
-        _authServiceMock.Verify(x => x.AuthorizeAsync(
-            It.IsAny<ClaimsPrincipal>(),
-            category,
-            It.IsAny<string>()), Times.Once);
+            Assert.True(nextCalled);
 
-        next.Verify(x => x(), Times.Once);
+            _mockCategoryRepository.Verify(
+                r => r.GetByIdAsync(existingCategory.Id, includeInactive),
+                Times.Once);
 
-        Assert.Null(context.Result);
+            _mockAuthService.Verify(s => s.AuthorizeAsync(
+                It.IsAny<ClaimsPrincipal>(),
+                existingCategory,
+                Policies.CategoryAccess),
+                Times.Once);
+        }
+
+        [Theory]
+        [InlineData("custom_id")]
+        [InlineData("id")]  
+        public async Task OnActionExecutionAsync_AuthorizationSucceeded_CallsNext(string argumentName)
+        {
+            // Arrange
+            var filter = new CategoryAuthorizationFilter(
+                _mockAuthService.Object,
+                _mockLogger.Object,
+                _mockCategoryRepository.Object,
+                parameterName: argumentName);
+
+            var existingCategory = new Category { Id = 1, Name = "Test Category" };
+
+
+            var context = CreateContext(existingCategory.Id, argumentName);
+
+            bool nextCalled = false;
+
+            ActionExecutionDelegate next = () =>
+            {
+                nextCalled = true;
+                return Task.FromResult<ActionExecutedContext>(null!);
+            };
+
+            _mockCategoryRepository.Setup(
+                r => r.GetByIdAsync(
+                    existingCategory.Id, false)).
+                    ReturnsAsync(existingCategory);
+
+            _mockAuthService.Setup(
+                s => s.AuthorizeAsync(
+                    It.IsAny<ClaimsPrincipal>(),
+                    existingCategory,
+                    Policies.CategoryAccess))
+                .ReturnsAsync(AuthorizationResult.Success());
+
+
+            // Act
+            await filter.OnActionExecutionAsync(context, next);
+
+            // Assert
+            Assert.Null(context.Result);
+
+            Assert.True(nextCalled);
+
+            _mockCategoryRepository.Verify(
+                r => r.GetByIdAsync(
+                    existingCategory.Id, false),
+                Times.Once);
+
+            _mockAuthService.Verify(
+                s => s.AuthorizeAsync(
+                    It.IsAny<ClaimsPrincipal>(),
+                    existingCategory,
+                    Policies.CategoryAccess),
+                Times.Once);
+        }   
     }
 }
