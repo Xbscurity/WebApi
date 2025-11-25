@@ -21,7 +21,7 @@ namespace api.Services.Transaction
                 {
                     transactions.CreatedAt.Year,
                     transactions.CreatedAt.Month,
-                    Category = transactions.Category == null ? "No category" : transactions.Category.Name.Trim(),
+                    Category = transactions.Category.Name.Trim().ToLowerInvariant(),
                 })
                 .Select(group => new GroupedReportOutputDto
                 {

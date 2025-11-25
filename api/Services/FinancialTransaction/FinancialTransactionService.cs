@@ -174,8 +174,6 @@ namespace api.Services.Transaction
         {
             var existingTransaction = await _transactionRepository.GetByIdAsync(id);
 
-            var existingCategorytransactionDto = await _categoryRepository.GetByIdAsync(transactionDto.CategoryId);
-
             existingTransaction!.CategoryId = transactionDto.CategoryId;
             existingTransaction.Amount = transactionDto.Amount;
             existingTransaction.Comment = transactionDto.Comment.Trim();
