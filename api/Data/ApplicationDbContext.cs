@@ -1,5 +1,6 @@
 using api.Models;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.CodeAnalysis;
 using Microsoft.EntityFrameworkCore;
 
 namespace api.Data
@@ -35,6 +36,27 @@ namespace api.Data
         /// </summary>
         public DbSet<RefreshToken> RefreshTokens { get; set; }
 
+        /// <inheritdoc/>
+        public override async Task<int> SaveChangesAsync(
+        CancellationToken cancellationToken = default)
+        {
+            foreach (var entry in ChangeTracker.Entries<ITrackedEntity>())
+            {
+                if (entry.State == EntityState.Added)
+                {
+                    entry.Entity.CreatedAt = DateTimeOffset.UtcNow;
+                    entry.Entity.UpdatedAt = DateTimeOffset.UtcNow;
+                }
+
+                if (entry.State == EntityState.Modified)
+                {
+                    entry.Entity.UpdatedAt = DateTimeOffset.UtcNow;
+                }
+            }
+
+            return await base.SaveChangesAsync(cancellationToken);
+        }
+
         /// <summary>
         /// Configures the entity mappings, relationships, and database-specific behaviors.
         /// </summary>
@@ -43,30 +65,28 @@ namespace api.Data
         {
             base.OnModelCreating(modelBuilder);
 
-            // Configure FinancialTransaction -> Category relationship with nullable foreign key
             modelBuilder.Entity<FinancialTransaction>()
                 .HasOne(transaction => transaction.Category)
                 .WithMany()
                 .HasForeignKey(transaction => transaction.CategoryId)
-                .OnDelete(DeleteBehavior.SetNull);
+                .OnDelete(DeleteBehavior.Restrict);
 
-            modelBuilder.Entity<FinancialTransaction>()
-                .Property(t => t.CreatedAt)
-                .HasColumnType("timestamptz");
-
-            modelBuilder.Entity<FinancialTransaction>()
-                .Property(t => t.CreatedAt)
-                .HasConversion(
-                    source => source.ToUniversalTime(),
-                    stored => stored.ToLocalTime());
-
-            // Ensure RefreshToken.TokenHash is unique
             modelBuilder.Entity<RefreshToken>()
                 .HasIndex(rt => rt.TokenHash)
                 .IsUnique();
 
-            modelBuilder.Entity<Category>()
-            .HasQueryFilter(c => c.IsActive);
+            modelBuilder.Entity<RefreshToken>()
+                .Ignore(rt => rt.IsExpired)
+                .Ignore(rt => rt.IsRevoked);
+
+            modelBuilder.Entity<FinancialTransaction>()
+                .Property(ft => ft.Type)
+                .HasConversion<string>()
+                .HasMaxLength(20);
+
+            modelBuilder.Entity<FinancialTransaction>()
+                .Property(t => t.Amount)
+                .HasColumnType("numeric(18,2)");
         }
     }
 }

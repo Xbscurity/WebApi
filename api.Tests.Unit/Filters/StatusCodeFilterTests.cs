@@ -1,7 +1,4 @@
-﻿using api.Constants;
-using api.Filters;
-using api.Responses;
-using api.Tests.Unit.Helpers;
+﻿using api.Tests.Unit.Helpers;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
@@ -14,7 +11,7 @@ namespace api.Tests.Unit.Filters
         {
             var response = new ApiResponse
             {
-                Error = new ApiError { Code = errorCode }
+                Error = new Error { Code = errorCode }
             };
 
             var result = new ObjectResult(response);

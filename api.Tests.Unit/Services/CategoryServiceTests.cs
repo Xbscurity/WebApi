@@ -2,7 +2,6 @@
 using api.Dtos.Category;
 using api.Models;
 using api.QueryObjects;
-using api.Repositories.Categories;
 using api.Services.Categories;
 using Microsoft.Extensions.Logging;
 using MockQueryable.Moq;
@@ -42,7 +41,7 @@ namespace api.Tests.Unit.Services
             _categoryRepositoryMock.Setup(r => r.GetQueryable(includeInactive)).
                 Returns(categoriesMock.Object);
 
-            var queryObject = new PaginationQueryObject { Page = 1, Size = 10 };
+            var queryObject = new EntityQuery { Page = 1, Size = 10 };
 
             // Act
             var result = await _categoryService.GetAllForUserAsync(
@@ -86,7 +85,7 @@ namespace api.Tests.Unit.Services
 
             _categoryRepositoryMock.Setup(r => r.GetQueryable(includeInactive)).Returns(categoriesMock.Object);
 
-            var queryObject = new PaginationQueryObject { Page = 1, Size = 10 };
+            var queryObject = new EntityQuery { Page = 1, Size = 10 };
 
             // Act
             var result = await _categoryService.GetAllForUserAsync(
@@ -116,7 +115,7 @@ namespace api.Tests.Unit.Services
 
             _categoryRepositoryMock.Setup(r => r.GetQueryable(It.IsAny<bool>())).Returns(categoriesMock.Object);
 
-            var queryObject = new PaginationQueryObject { Page = 1, Size = 10 };
+            var queryObject = new EntityQuery { Page = 1, Size = 10 };
 
             // Act
             var result = await _categoryService.GetAllForUserAsync(TestUserId, queryObject, includeInactive: true);
@@ -159,7 +158,7 @@ namespace api.Tests.Unit.Services
 
             _categoryRepositoryMock.Setup(r => r.GetQueryable(It.IsAny<bool>())).Returns(categoriesMock.Object);
 
-            var queryObject = new PaginationQueryObject { Page = 1, Size = 10 };
+            var queryObject = new EntityQuery { Page = 1, Size = 10 };
 
             // Act
             var result = await _categoryService.GetAllForAdminAsync(queryObject, userId: userId);
@@ -187,7 +186,7 @@ namespace api.Tests.Unit.Services
             _categoryRepositoryMock.Setup(r => r.GetQueryable(It.IsAny<bool>()))
                 .Returns(emptyCategoriesMock.Object);
 
-            var queryObject = new PaginationQueryObject { Page = 1, Size = 10 };
+            var queryObject = new EntityQuery { Page = 1, Size = 10 };
 
             // Act
             var result = await _categoryService.GetAllForAdminAsync(queryObject, userId: null);
@@ -260,7 +259,7 @@ namespace api.Tests.Unit.Services
         {
             // Arrange
             var category = new Category { Id = 1, Name = "Old" };
-            var inputDto = new BaseCategoryUpdateInputDto { Name = "  New Name  " };
+            var inputDto = new CategoryUpdateInputDto { Name = "  New Name  " };
 
             _categoryRepositoryMock.Setup(r => r.GetByIdAsync(category.Id, It.IsAny<bool>()))
                     .ReturnsAsync(category);
@@ -314,7 +313,7 @@ namespace api.Tests.Unit.Services
         public async Task CreateForUserAsync_ValidInput_ReturnsCorrectDtoWithTrimmedName()
         {
             // Arrange
-            var inputDto = new BaseCategoryUpdateInputDto
+            var inputDto = new CategoryUpdateInputDto
             {
                 Name = "  New Category  ",
             };
@@ -370,7 +369,7 @@ namespace api.Tests.Unit.Services
                 .ReturnsAsync(existingCategory);
 
             // Act
-            var result = await _categoryService.ToggleActiveAsync(existingCategory.Id);
+            var result = await _categoryService.SetActiveAsync(existingCategory.Id);
 
             // Assert
             _categoryRepositoryMock.Verify(r => r.GetByIdAsync(existingCategory.Id,

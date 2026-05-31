@@ -1,33 +1,18 @@
 ﻿namespace api.Services.Token
 {
     /// <summary>
-    /// Represents the result of a refresh token operation.
+    /// Represents a pair of authentication tokens issued after a successful rotation operation.
     /// </summary>
-    public class RefreshTokenResult
+    public record RefreshTokenDto
     {
         /// <summary>
-        /// Gets a value indicating whether the refresh operation succeeded.
+        /// Gets the newly generated JWT access token.
         /// </summary>
-        public bool IsSuccess => Error == null;
+        required public string AccessToken { get; init; }
 
         /// <summary>
-        /// Gets or sets an error message if the refresh operation failed; otherwise, <see langword="null"/>.
-        /// </summary>.
-        public string? Error { get; set; }
-
-        /// <summary>
-        /// Gets or sets the newly issued access token, if the operation succeeded.
+        /// Gets the new cryptographically strong refresh token.
         /// </summary>
-        public string? NewAccessToken { get; set; }
-
-        /// <summary>
-        /// Gets or sets the newly issued refresh token, if the operation succeeded.
-        /// </summary>
-        public string? NewRefreshToken { get; set; }
-
-        /// <summary>
-        /// Gets or sets the expiration date and time of the new refresh token, if issued.
-        /// </summary>
-        public DateTimeOffset? ExpiresAt { get; set; }
+        required public string RefreshToken { get; init; }
     }
 }

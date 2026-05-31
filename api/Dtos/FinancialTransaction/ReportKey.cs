@@ -1,32 +1,37 @@
-﻿namespace api.Dtos.FinancialTransaction
+﻿using System.Text.Json.Serialization;
+
+namespace api.Dtos.FinancialTransaction
 {
     /// <summary>
     /// Represents a grouping key used in financial transaction reports.
     /// </summary>
     /// <remarks>
-    /// A report can be grouped by one of the following strategies:
-    /// <list type="number">
-    /// <item><description><b>By year and month</b> – groups transactions by their transaction date (year and month).</description></item>
-    /// <item><description><b>By category</b> – groups transactions by their assigned category.</description></item>
-    /// <item><description><b>By category, year, and month</b> – groups transactions simultaneously by category and transaction date.</description></item>
-    /// </list>
-    /// Depending on the selected strategy, some properties may be <see langword="null"/>.
+    /// This abstract record serves as a base type for all supported
+    /// report grouping key variants.
     /// </remarks>
-    public record ReportKey
+    [JsonPolymorphic(TypeDiscriminatorPropertyName = "type")]
+    [JsonDerivedType(typeof(CategoryKey), typeDiscriminator: "category")]
+    [JsonDerivedType(typeof(DateKey), typeDiscriminator: "date")]
+    [JsonDerivedType(typeof(CategoryAndDateKey), typeDiscriminator: "categoryAndDate")]
+    public abstract record ReportKey
     {
-        /// <summary>
-        /// Gets the category name used for grouping, if applicable.
-        /// </summary>
-        public string? Category { get; init; }
+        private ReportKey()
+        {
+        }
 
         /// <summary>
-        /// Gets the year used for grouping, if applicable.
+        /// Represents grouping by transaction category.
         /// </summary>
-        public int? Year { get; init; }
+        public sealed record CategoryKey(string Name) : ReportKey;
 
         /// <summary>
-        /// Gets the month used for grouping, if applicable.
+        /// Represents grouping by year and month of transaction creation date.
         /// </summary>
-        public int? Month { get; init; }
+        public sealed record DateKey(int Year, int Month) : ReportKey;
+
+        /// <summary>
+        /// Represents grouping by both category and transaction creation date.
+        /// </summary>
+        public sealed record CategoryAndDateKey(string Name, int Year, int Month) : ReportKey;
     }
 }

@@ -1,70 +1,81 @@
-﻿using api.Extensions;
-using api.Responses;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authorization.Policy;
 
 namespace api.Middlewares
 {
     /// <summary>
-    /// Custom authorization middleware result handler.
+    /// Provides custom handling for authorization middleware results.
     /// </summary>
     /// <remarks>
-    /// Intercepts authorization results to return standardized <see cref="ApiResponse"/> objects
-    /// for forbidden (<c>403</c>) and unauthorized (<c>401</c>) requests, while delegating
-    /// successful or default cases to the built-in handler.
+    /// This handler customizes HTTP responses for authentication
+    /// and authorization failures by returning standardized
+    /// <c>ProblemDetails</c> responses for:
+    /// <list type="bullet">
+    /// <item>
+    /// <description>
+    /// HTTP 401 Unauthorized responses when authentication is required.
+    /// </description>
+    /// </item>
+    /// <item>
+    /// <description>
+    /// HTTP 403 Forbidden responses when access is denied.
+    /// </description>
+    /// </item>
+    /// </list>
+    /// All other authorization results are delegated to the default
+    /// <see cref="AuthorizationMiddlewareResultHandler"/> implementation.
     /// </remarks>
     public class CustomAuthorizationMiddlewareResultHandler : IAuthorizationMiddlewareResultHandler
     {
         private readonly AuthorizationMiddlewareResultHandler _defaultHandler = new();
-        private readonly ILogger<CustomAuthorizationMiddlewareResultHandler> _logger;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="CustomAuthorizationMiddlewareResultHandler"/> class.
+        /// Initializes a new instance of the
+        /// <see cref="CustomAuthorizationMiddlewareResultHandler"/> class.
         /// </summary>
-        /// <param name="logger">The logger used to record authorization events.</param>
-        public CustomAuthorizationMiddlewareResultHandler(ILogger<CustomAuthorizationMiddlewareResultHandler> logger)
+        public CustomAuthorizationMiddlewareResultHandler()
         {
-            _logger = logger;
         }
 
         /// <summary>
-        /// Handles the result of an authorization check.
+        /// Handles the authorization result for the current HTTP request.
         /// </summary>
-        /// <param name="next">The next middleware in the pipeline.</param>
-        /// <param name="context">The <see cref="HttpContext"/> for the current request.</param>
-        /// <param name="policy">The <see cref="AuthorizationPolicy"/> being applied.</param>
-        /// <param name="authorizeResult">The <see cref="PolicyAuthorizationResult"/>
-        /// produced by the authorization middleware.</param>
-        /// <returns>A task representing the asynchronous operation.</returns>
-        /// <remarks>
-        /// <para>- Returns <see cref="StatusCodes.Status403Forbidden"/> with a standardized <see cref="ApiResponse"/>
-        /// if the user is authenticated but lacks required permissions.</para>
-        /// - Returns <see cref="StatusCodes.Status401Unauthorized"/> with a standardized <see cref="ApiResponse"/>
-        /// if the user is not authenticated.
-        /// <para>- Delegates other cases to the default <see cref="AuthorizationMiddlewareResultHandler"/>.</para>
-        /// </remarks>
+        /// <param name="next">
+        /// The delegate representing the next middleware in the pipeline.
+        /// </param>
+        /// <param name="context">
+        /// The current HTTP request context.
+        /// </param>
+        /// <param name="policy">
+        /// The authorization policy applied to the request.
+        /// </param>
+        /// <param name="authorizeResult">
+        /// The result of the authorization evaluation.
+        /// </param>
+        /// <returns>
+        /// A task that represents the asynchronous authorization handling operation.
+        /// </returns>
         public async Task HandleAsync(
             RequestDelegate next,
             HttpContext context,
             AuthorizationPolicy policy,
             PolicyAuthorizationResult authorizeResult)
         {
-            if (authorizeResult.Forbidden)
+            if (authorizeResult.Challenged)
             {
-                context.Response.StatusCode = StatusCodes.Status403Forbidden;
-                var requirements = string.Join(", ", policy.Requirements.Select(r => r.GetType().Name));
-                _logger.LogWarning(
-                    "Access forbidden for user {UserId}. Requirements not met: {@Requirements}.",
-                    context.User.GetUserId(), requirements);
-                await context.Response.WriteAsJsonAsync(ApiResponse.Forbidden<object>());
+                await Results.Problem(
+                    detail: "Authentication required.",
+                    statusCode: StatusCodes.Status401Unauthorized)
+                    .ExecuteAsync(context);
                 return;
             }
 
-            if (authorizeResult.Challenged)
+            if (authorizeResult.Forbidden)
             {
-                context.Response.StatusCode = StatusCodes.Status401Unauthorized;
-                _logger.LogDebug("Unauthorized access attempt");
-                await context.Response.WriteAsJsonAsync(ApiResponse.Unauthorized<object>());
+                await Results.Problem(
+                    detail: "You do not have permission to perform this action.",
+                    statusCode: StatusCodes.Status403Forbidden)
+                    .ExecuteAsync(context);
                 return;
             }
 

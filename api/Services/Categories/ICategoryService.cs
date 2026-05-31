@@ -1,94 +1,104 @@
 ﻿using api.Data;
 using api.Dtos.Category;
 using api.QueryObjects;
-using api.Responses;
+using api.Services.Shared;
+using ErrorOr;
 
 namespace api.Services.Categories
 {
     /// <summary>
-    /// Provides methods for managing categories, including retrieval, creation, updating, deletion,
-    /// and toggling active status. Supports both user-specific and admin-level operations.
+    /// Defines operations for managing categories.
     /// </summary>
     public interface ICategoryService
     {
         /// <summary>
-        /// Retrieves a paginated list of categories available to a specific user.
-        /// Includes the user’s own categories (active and optionally inactive).
+        /// Retrieves a paginated list of categories.
         /// </summary>
-        /// <param name="userId">The unique identifier of the user.</param>
-        /// <param name="queryObject">Pagination and sorting parameters.</param>
-        /// <param name="includeInactive">Whether to include inactive categories owned by the user.</param>
-        /// <returns>A task containing paginated category data.</returns>
-        Task<PagedData<BaseCategoryOutputDto>> GetAllForUserAsync(
-            string userId,
-            PaginationQueryObject queryObject,
-            bool includeInactive);
+        /// <param name="query">
+        /// The query parameters used for paging and sorting.
+        /// </param>
+        /// <returns>
+        /// An instance of <see cref="ErrorOr{T}"/> containing a <see cref="PagedItems{T}"/>
+        /// containing <see cref="CategoryOutputDto"/> if successful; otherwise, an error.
+        /// </returns>
+        Task<ErrorOr<PagedItems<CategoryOutputDto>>> GetAllAsync(EntityQuery query);
 
         /// <summary>
-        /// Toggles the active status of a category by its identifier.
+        /// Retrieves a category by its identifier.
         /// </summary>
-        /// <param name="id">The unique identifier of the category.</param>
-        /// <returns>A task containing <see langword="true"/>
-        /// if the operation succeeded; otherwise, <see langword="false"/>.</returns>
-        Task<bool> ToggleActiveAsync(int id);
+        /// <param name="id">
+        /// The identifier of the category.
+        /// </param>
+        /// <returns>
+        /// An instance of <see cref="ErrorOr{T}"/> containing a <see cref="CategoryOutputDto"/>
+        /// if successful; otherwise, an error.
+        /// </returns>
+        Task<ErrorOr<CategoryOutputDto>> GetByIdAsync(Guid id);
 
         /// <summary>
-        /// Retrieves a paginated list of categories for administrative purposes.
-        /// Can filter categories by user if a user ID is provided.
+        /// Creates a new category.
         /// </summary>
-        /// <param name="queryObject">Pagination and sorting parameters.</param>
-        /// <param name="userId">Optional user ID to filter categories.</param>
-        /// <returns>A task containing paginated category data.</returns>
-        Task<PagedData<BaseCategoryOutputDto>> GetAllForAdminAsync(PaginationQueryObject queryObject, string? userId);
+        /// <param name="categoryDto">
+        /// The data required to create the category.
+        /// </param>
+        /// <returns>
+        /// An instance of <see cref="ErrorOr{T}"/> containing a <see cref="CategoryOutputDto"/>
+        /// if successful; otherwise, an error.
+        /// </returns>
+        Task<ErrorOr<CategoryOutputDto>> CreateAsync(CategoryCreateInputDto categoryDto);
 
         /// <summary>
-        /// Retrieves a category by its identifier and maps it to an output DTO.
+        /// Updates an existing category.
         /// </summary>
-        /// <param name="id">The unique identifier of the category.</param>
-        /// <returns>A task containing the category DTO if found; otherwise, <see langword="null"/>.</returns>
-        Task<BaseCategoryOutputDto?> GetByIdAsync(int id);
+        /// <param name="id">
+        /// The identifier of the category to update.
+        /// </param>
+        /// <param name="categoryDto">
+        /// The updated category data.
+        /// </param>
+        /// <returns>
+        /// An instance of <see cref="ErrorOr{T}"/> containing a <see cref="CategoryOutputDto"/>
+        /// if successful; otherwise, an error.
+        /// </returns>
+        Task<ErrorOr<CategoryOutputDto>> UpdateAsync(Guid id, CategoryUpdateInputDto categoryDto);
 
         /// <summary>
-        /// Creates a new category for administrative purposes.
+        /// Sets the active status of a category.
         /// </summary>
-        /// <param name="category">The input data for creating a category, including user ID.</param>
-        /// <returns>A task containing the created category DTO.</returns>
-        Task<BaseCategoryOutputDto> CreateForAdminAsync(AdminCategoryCreateInputDto category);
+        /// <param name="id">
+        /// The identifier of the category.
+        /// </param>
+        /// <param name="isActive">
+        /// The value indicating whether the category should be active.
+        /// </param>
+        /// <returns>
+        /// An instance of <see cref="ErrorOr{T}"/> containing a <see cref="ToggleActiveOutputDto"/>
+        /// if successful; otherwise, an error.
+        /// </returns>
+        Task<ErrorOr<ToggleActiveOutputDto>> SetActiveAsync(Guid id, bool isActive);
 
         /// <summary>
-        /// Creates a new category for a specific user.
+        /// Deletes a category.
         /// </summary>
-        /// <param name="userId">The unique identifier of the user.</param>
-        /// <param name="categoryDto">The input data for creating a category.</param>
-        /// <returns>A task containing the created category DTO.</returns>
-        Task<BaseCategoryOutputDto> CreateForUserAsync(string userId, BaseCategoryUpdateInputDto categoryDto);
+        /// <param name="id">
+        /// The identifier of the category to delete.
+        /// </param>
+        /// <returns>
+        /// An instance of <see cref="ErrorOr{T}"/> containing a <see cref="Deleted"/>
+        /// if successful; otherwise, an error.
+        /// </returns>
+        Task<ErrorOr<Deleted>> DeleteAsync(Guid id);
 
         /// <summary>
-        /// Updates an existing category by its identifier.
+        /// Creates the default set of categories for a user.
         /// </summary>
-        /// <param name="id">The unique identifier of the category.</param>
-        /// <param name="category">The updated category data.</param>
-        /// <returns>A task containing the updated category DTO if successful;
-        /// otherwise, <see langword="null"/>.</returns>
-        Task<BaseCategoryOutputDto?> UpdateAsync(int id, BaseCategoryUpdateInputDto category);
-
-        /// <summary>
-        /// Deletes a category by its identifier.
-        /// </summary>
-        /// <param name="id">The unique identifier of the category.</param>
-        /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
-        Task DeleteAsync(int id);
-
-        /// <summary>
-        /// Creates a personalized set of default categories for a newly registered user.
-        /// </summary>
-        /// <remarks>
-        /// This method retrieves the static templates from <see cref="DataSeeder.DefaultCategoryTemplates"/>,
-        /// assigns the provided user ID to each category, and saves the new records to the database.
-        /// </remarks>
-        /// <param name="userId">The unique identifier (GUID or string)
-        /// of the user for whom the categories are being created.</param>
-        /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
-        Task CreateInitialCategoriesForUserAsync(string userId);
+        /// <param name="userId">
+        /// The identifier of the user for whom the categories should be created.
+        /// </param>
+        /// <returns>
+        /// An instance of <see cref="ErrorOr{T}"/> containing a <see cref="Success"/>
+        /// if successful; otherwise, an error.
+        /// </returns>
+        Task<ErrorOr<Success>> CreateInitialCategoriesForUserAsync(string userId);
     }
 }

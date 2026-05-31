@@ -1,6 +1,5 @@
 ﻿using api.Models;
-using api.Providers.Interfaces;
-using api.Services.Transaction;
+using api.Services.FinancialTransactions;
 using MockQueryable;
 using Moq;
 
@@ -30,7 +29,7 @@ namespace api.Tests.Unit.Services.FinancialTranasction
                 };
 
             var data = new List<FinancialTransaction>
-            {  
+            {
                 NewFt(1, "Food "),
                 NewFt(2, "   food "),
                 NewFt(3, "Food"),

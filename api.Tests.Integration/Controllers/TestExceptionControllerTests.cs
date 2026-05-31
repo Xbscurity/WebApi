@@ -1,5 +1,4 @@
-﻿using api.Responses;
-using api.Tests.Integration.Collections.Fixtures;
+﻿using api.Tests.Integration.Collections.Fixtures;
 using System.Net;
 using System.Net.Http.Json;
 

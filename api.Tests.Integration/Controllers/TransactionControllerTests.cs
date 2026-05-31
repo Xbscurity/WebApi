@@ -1,5 +1,4 @@
 ﻿using api.Dtos.FinancialTransaction;
-using api.Responses;
 using api.Tests.Integration.Collections.Fixtures;
 using System.Net;
 using System.Net.Http.Json;
@@ -26,26 +25,26 @@ namespace api.Tests.Integration.Controllers
             var categoryPostResponse = await _client.PostAsJsonAsync("/api/categories", categoryDto);
             categoryPostResponse.EnsureSuccessStatusCode();
 
-            var financialTransactionDto2 = new BaseFinancialTransactionInputDto
+            var financialTransactionDto2 = new FinancialTransactionUpdateInputDto
             {
-                CategoryId = 1,
+                RequestedCategoryId = 1,
                 Amount = 200,
                 Comment = "test",
             };
             var financialTransactionPostResponse2 = await _client.PostAsJsonAsync("/api/transactions", financialTransactionDto2);
             financialTransactionPostResponse2.EnsureSuccessStatusCode();
 
-            var financialTransactionDto1 = new BaseFinancialTransactionInputDto
+            var financialTransactionDto1 = new FinancialTransactionUpdateInputDto
             {
-                CategoryId = 1,
+                RequestedCategoryId = 1,
                 Amount = 100,
                 Comment = "test",
             };
             var financialTransactionPostResponse1 = await _client.PostAsJsonAsync("/api/transactions", financialTransactionDto1);
             financialTransactionPostResponse1.EnsureSuccessStatusCode();
-            var financialTransactionDto3 = new BaseFinancialTransactionInputDto
+            var financialTransactionDto3 = new FinancialTransactionUpdateInputDto
             {
-                CategoryId = 1,
+                RequestedCategoryId = 1,
                 Amount = 300,
                 Comment = "test",
             };
@@ -56,7 +55,7 @@ namespace api.Tests.Integration.Controllers
             response.EnsureSuccessStatusCode();
 
             // Assert
-            var result = await response.Content.ReadFromJsonAsync<ApiResponse<List<BaseFinancialTransactionOutputDto>>>();
+            var result = await response.Content.ReadFromJsonAsync<ApiResponse<List<FinancialTransactionOutputDto>>>();
             Assert.NotNull(result);
             Assert.Equal(2, result.Data.Count);
             Assert.Equal(100, result.Data[0].Amount);
@@ -77,26 +76,26 @@ namespace api.Tests.Integration.Controllers
             var categoryPostResponse2 = await _client.PostAsJsonAsync("/api/categories", categoryDto2);
             categoryPostResponse2.EnsureSuccessStatusCode();
 
-            var financialTransactionDto2 = new BaseFinancialTransactionInputDto
+            var financialTransactionDto2 = new FinancialTransactionUpdateInputDto
             {
-                CategoryId = 1,
+                RequestedCategoryId = 1,
                 Amount = 200,
                 Comment = "test",
             };
             var financialTransactionPostResponse2 = await _client.PostAsJsonAsync("/api/transactions", financialTransactionDto2);
             financialTransactionPostResponse2.EnsureSuccessStatusCode();
 
-            var financialTransactionDto1 = new BaseFinancialTransactionInputDto
+            var financialTransactionDto1 = new FinancialTransactionUpdateInputDto
             {
-                CategoryId = 1,
+                RequestedCategoryId = 1,
                 Amount = 100,
                 Comment = "test",
             };
             var financialTransactionPostResponse1 = await _client.PostAsJsonAsync("/api/transactions", financialTransactionDto1);
             financialTransactionPostResponse1.EnsureSuccessStatusCode();
-            var financialTransactionDto3 = new BaseFinancialTransactionInputDto
+            var financialTransactionDto3 = new FinancialTransactionUpdateInputDto
             {
-                CategoryId = 2,
+                RequestedCategoryId = 2,
                 Amount = 300,
                 Comment = "test",
             };
@@ -122,9 +121,9 @@ namespace api.Tests.Integration.Controllers
             var firstCategory = new CategoryInputDto { Name = "abc" };
             var categoryPostResponse = await _client.PostAsJsonAsync("/api/categories", firstCategory);
             categoryPostResponse.EnsureSuccessStatusCode();
-            var transactionDto = new BaseFinancialTransactionInputDto
+            var transactionDto = new FinancialTransactionUpdateInputDto
             {
-                CategoryId = 1,
+                RequestedCategoryId = 1,
                 Amount = 100,
                 Comment = "test",
             };
@@ -134,7 +133,7 @@ namespace api.Tests.Integration.Controllers
             var getResponse = await _client.GetAsync("/api/transactions/1");
             getResponse.EnsureSuccessStatusCode();
 
-            var result = await getResponse.Content.ReadFromJsonAsync<ApiResponse<BaseFinancialTransactionOutputDto>>();
+            var result = await getResponse.Content.ReadFromJsonAsync<ApiResponse<FinancialTransactionOutputDto>>();
             Assert.NotNull(result);
             Assert.Equal(100, result.Data.Amount);
             Assert.Equal("test", result.Data.Comment);
@@ -148,9 +147,9 @@ namespace api.Tests.Integration.Controllers
             var categoryPostResponse = await _client.PostAsJsonAsync("/api/categories", firstCategory);
             categoryPostResponse.EnsureSuccessStatusCode();
 
-            var transactionDto = new BaseFinancialTransactionInputDto
+            var transactionDto = new FinancialTransactionUpdateInputDto
             {
-                CategoryId = 1,
+                RequestedCategoryId = 1,
                 Amount = 100,
                 Comment = "Original",
             };
@@ -158,9 +157,9 @@ namespace api.Tests.Integration.Controllers
             var financialTransactionResponse = await _client.PostAsJsonAsync("/api/transactions", transactionDto);
             financialTransactionResponse.EnsureSuccessStatusCode();
 
-            var updateDto = new BaseFinancialTransactionInputDto
+            var updateDto = new FinancialTransactionUpdateInputDto
             {
-                CategoryId = 1,
+                RequestedCategoryId = 1,
                 Amount = 100,
                 Comment = "Updated",
             };
@@ -168,7 +167,7 @@ namespace api.Tests.Integration.Controllers
             var updateResponse = await _client.PutAsJsonAsync("/api/transactions/1", updateDto);
             updateResponse.EnsureSuccessStatusCode();
 
-            var updated = await updateResponse.Content.ReadFromJsonAsync<ApiResponse<BaseFinancialTransactionOutputDto>>();
+            var updated = await updateResponse.Content.ReadFromJsonAsync<ApiResponse<FinancialTransactionOutputDto>>();
             Assert.Equal("Updated", updated.Data.Comment);
         }
         [Fact]
@@ -179,9 +178,9 @@ namespace api.Tests.Integration.Controllers
             var firstCategory = new CategoryInputDto { Name = "abc" };
             var categoryPostResponse = await _client.PostAsJsonAsync("/api/categories", firstCategory);
             categoryPostResponse.EnsureSuccessStatusCode();
-            var transactionDto = new BaseFinancialTransactionInputDto
+            var transactionDto = new FinancialTransactionUpdateInputDto
             {
-                CategoryId = 1,
+                RequestedCategoryId = 1,
                 Amount = 100,
                 Comment = "test",
             };
@@ -202,7 +201,7 @@ namespace api.Tests.Integration.Controllers
         {
             await _fixture.ResetCheckpointAsync();
 
-            var invalidFinancialTransactions = new BaseFinancialTransactionInputDto { };
+            var invalidFinancialTransactions = new FinancialTransactionUpdateInputDto { };
             var response = await _client.PostAsJsonAsync("/api/transactions", invalidFinancialTransactions);
             var apiResponse = await response.Content.ReadFromJsonAsync<ApiResponse>();
             Assert.Equal(HttpStatusCode.UnprocessableEntity, response.StatusCode);

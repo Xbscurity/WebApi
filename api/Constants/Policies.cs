@@ -1,29 +1,30 @@
-﻿namespace api.Constants
+﻿using Microsoft.AspNetCore.Authorization;
+
+namespace api.Constants
 {
     /// <summary>
-    /// Contains names of authorization policies used throughout the API.
+    /// Defines authorization policy names used across the application.
     /// </summary>
+    /// <remarks>
+    /// These policies are registered in the authorization configuration
+    /// and used via <see cref="AuthorizeAttribute"/> to protect endpoints
+    /// based on business rules.
+    /// </remarks>
     public static class Policies
     {
         /// <summary>
-        /// Policy that ensures the user is not banned.
+        /// Policy that allows access only to users who are not banned.
         /// </summary>
-        public const string UserNotBanned = nameof(UserNotBanned);
+        public const string NotBanned = nameof(NotBanned);
 
         /// <summary>
-        /// Policy that restricts access to administrators only.
-        /// </summary>
-        public const string Admin = nameof(Admin);
-
-        /// <summary>
-        /// Policy that allows access to categories.
+        /// Policy that enforces access control for category-related operations.
         /// </summary>
         public const string CategoryAccess = nameof(CategoryAccess);
 
         /// <summary>
-        /// Policy that ensures users can only access their own financial transactions,
-        /// unless they are administrators.
+        /// Policy that enforces access control for financial transaction operations.
         /// </summary>
-        public const string TransactionAccess = nameof(TransactionAccess);
+        public const string FinancialTransactionAccess = nameof(FinancialTransactionAccess);
     }
 }

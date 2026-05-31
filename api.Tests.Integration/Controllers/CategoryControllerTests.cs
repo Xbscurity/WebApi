@@ -1,5 +1,4 @@
 ﻿using api.Models;
-using api.Responses;
 using api.Tests.Integration.Collections.Fixtures;
 using Microsoft.AspNetCore.Http;
 using System.Net;

@@ -1,4 +1,6 @@
-﻿using api.Models;
+﻿using api.Constants;
+using api.Models;
+using api.Options;
 using Microsoft.AspNetCore.Identity;
 
 namespace api.Data
@@ -38,13 +40,15 @@ namespace api.Data
         /// </summary>
         /// <param name="roleManager">The <see cref="RoleManager{IdentityRole}"/> used to manage roles.</param>
         /// <param name="userManager">The <see cref="UserManager{AppUser}"/> used to manage users.</param>
+        /// <param name="options">Configuration options for seeding.</param>
         /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
         /// <exception cref="Exception">Thrown if role or admin user creation fails.</exception>
         public static async Task SeedRolesAndAdminAsync(
             RoleManager<IdentityRole> roleManager,
-            UserManager<AppUser> userManager)
+            UserManager<AppUser> userManager,
+            SeedOptions options)
         {
-            string[] roleNames = { "Admin", "User" };
+            string[] roleNames = { Roles.Admin, Roles.User };
 
             foreach (var role in roleNames)
             {
@@ -64,27 +68,26 @@ namespace api.Data
                 }
             }
 
-            var adminEmail = "admin@example.com";
-            var adminUser = await userManager.FindByEmailAsync(adminEmail);
+            var adminUser = await userManager.FindByEmailAsync(options.AdminEmail);
 
             if (adminUser == null)
             {
                 var newAdmin = new AppUser
                 {
                     UserName = "admin",
-                    Email = adminEmail,
+                    Email = options.AdminEmail,
                     EmailConfirmed = true,
                     CreatedAt = DateTimeOffset.UtcNow,
                 };
 
-                var createResult = await userManager.CreateAsync(newAdmin, "Admin123!");
+                var createResult = await userManager.CreateAsync(newAdmin, options.AdminPassword);
 
                 if (!createResult.Succeeded)
                 {
                     throw new Exception($"Failed to create admin user: {string.Join(", ", createResult.Errors.Select(e => e.Description))}");
                 }
 
-                var addRoleResult = await userManager.AddToRoleAsync(newAdmin, "Admin");
+                var addRoleResult = await userManager.AddToRoleAsync(newAdmin, Roles.Admin);
 
                 if (!addRoleResult.Succeeded)
                 {

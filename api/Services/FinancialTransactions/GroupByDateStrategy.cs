@@ -1,0 +1,31 @@
+﻿using api.Dtos.FinancialTransaction;
+using api.Interfaces;
+using api.QueryObjects;
+using api.Specifications;
+
+namespace api.Services.FinancialTransactions
+{
+    /// <summary>
+    /// Provides grouping logic for financial transaction reports by category and date.
+    /// </summary>
+    public class GroupByDateStrategy : IGroupingReportStrategy
+    {
+        private readonly IFinancialTransactionRepository _repository;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="GroupByDateStrategy"/> class.
+        /// </summary>
+        /// <param name="repository">
+        /// The repository used to retrieve grouped financial transaction data.
+        /// </param>
+        public GroupByDateStrategy(IFinancialTransactionRepository repository)
+            => _repository = repository;
+
+        /// <inheritdoc/>
+        public GroupingReportStrategyKey Key => GroupingReportStrategyKey.ByDate;
+
+        /// <inheritdoc/>
+        public Task<List<GroupedReportOutputDto>> GetGroupedAsync(FinancialTransactionReportSpecification spec, ReportQuery query)
+            => _repository.GetGroupedListByDate(spec, query);
+    }
+}

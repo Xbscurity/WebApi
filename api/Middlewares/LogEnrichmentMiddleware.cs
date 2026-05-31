@@ -1,53 +1,53 @@
 ﻿using api.Extensions;
+using Serilog.Context;
 
 namespace api.Middlewares
 {
     /// <summary>
-    /// Middleware for enriching Serilog log events with additional contextual information.
+    /// Middleware that enriches structured logs with request-related context data.
     /// </summary>
     /// <remarks>
-    /// This middleware adds the following properties to the Serilog log context
-    /// for the duration of each request:
+    /// This middleware adds the following properties to the Serilog log context:
     /// <list type="bullet">
     /// <item>
-    /// <description><c>UserId</c> — the ID of the authenticated user,
-    /// or <c>"Anonymous"</c> if not authenticated.</description>
+    /// <description>User identifier.</description>
     /// </item>
     /// <item>
-    /// <description><c>ClientIp</c> — the remote IP address of the client making the request.</description>
+    /// <description>Client IP address.</description>
+    /// </item>
+    /// <item>
+    /// <description>User-Agent header value.</description>
     /// </item>
     /// </list>
-    /// These properties will automatically appear in all Serilog logs generated
-    /// during the request processing.
+    /// These properties are available for all log entries generated
+    /// during the lifetime of the current HTTP request.
     /// </remarks>
-    public class LogEnrichmentMiddleware
+    public class LogEnrichmentMiddleware : IMiddleware
     {
-        private readonly RequestDelegate _next;
-
         /// <summary>
-        /// Initializes a new instance of the <see cref="LogEnrichmentMiddleware"/> class.
+        /// Invokes the middleware and enriches the logging context
+        /// with request-specific metadata.
         /// </summary>
-        /// <param name="next">The next middleware delegate in the HTTP request pipeline.</param>
-        public LogEnrichmentMiddleware(RequestDelegate next)
+        /// <param name="context">
+        /// The current HTTP request context.
+        /// </param>
+        /// <param name="next">
+        /// The delegate representing the next middleware in the pipeline.
+        /// </param>
+        /// <returns>
+        /// A task that represents the asynchronous middleware operation.
+        /// </returns>
+        public async Task InvokeAsync(HttpContext context, RequestDelegate next)
         {
-            _next = next;
-        }
+            var userId = context.User.GetUserId() ?? "Anonymous";
+            var clientIp = context.Connection.RemoteIpAddress?.ToString() ?? "Unknown";
+            var userAgent = context.Request.Headers.UserAgent.ToString();
 
-        /// <summary>
-        /// Invokes the middleware to enrich the Serilog log context with <c>UserId</c> and <c>ClientIp</c>.
-        /// </summary>
-        /// <param name="context">The current HTTP context.</param>
-        /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
-        public async Task Invoke(HttpContext context)
-        {
-            var userName = context.User.GetUserId() ?? "Anonymous";
-
-            var clientIp = context.Connection.RemoteIpAddress?.ToString();
-
-            using (Serilog.Context.LogContext.PushProperty("UserId", userName))
-            using (Serilog.Context.LogContext.PushProperty("ClientIp", clientIp))
+            using (LogContext.PushProperty("UserId", userId))
+            using (LogContext.PushProperty("ClientIp", clientIp))
+            using (LogContext.PushProperty("UserAgent", userAgent))
             {
-                await _next(context);
+                await next(context);
             }
         }
     }

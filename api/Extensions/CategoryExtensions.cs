@@ -4,77 +4,35 @@ using api.Models;
 namespace api.Extensions
 {
     /// <summary>
-    /// Provides extension methods for mapping <see cref="Category"/> entities
-    /// to their corresponding Data Transfer Objects (DTOs).
+    /// Provides extension methods for <see cref="Category"/> entities.
     /// </summary>
     public static class CategoryExtensions
     {
         /// <summary>
-        /// Converts a <see cref="Category"/> entity to a <see cref="BaseCategoryOutputDto"/>.
+        /// Converts a <see cref="Category"/> entity
+        /// into a <see cref="CategoryOutputDto"/>.
         /// </summary>
-        /// <param name="category">The <see cref="Category"/> entity to convert.</param>
+        /// <param name="category">
+        /// The financial transaction entity to convert.
+        /// </param>
         /// <returns>
-        /// A <see cref="BaseCategoryOutputDto"/> representation of the category,
-        /// or <see langword="null"/> if the input is <see langword="null"/>.
+        /// A DTO representation of the financial transaction.
         /// </returns>
-        public static BaseCategoryOutputDto ToOutputDto(this Category category)
+        /// <exception cref="ArgumentNullException">
+        /// Thrown when <paramref name="category"/> is <see langword="null"/>.
+        /// </exception>
+        public static CategoryOutputDto ToOutputDto(this Category category)
         {
-            if (category is null)
-            {
-                return null!;
-            }
+            ArgumentNullException.ThrowIfNull(category);
 
-            return new BaseCategoryOutputDto
+            return new CategoryOutputDto
             {
                 Id = category.Id,
                 Name = category.Name,
                 AppUserId = category.AppUserId,
                 IsActive = category.IsActive,
-            };
-        }
-
-        /// <summary>
-        /// Converts a <see cref="AdminCategoryCreateInputDto"/> dto to a <see cref="Category"/> model entity.
-        /// </summary>
-        /// <param name="dto">The <see cref="AdminCategoryCreateInputDto"/> dto to convert.</param>
-        /// <returns>
-        /// A <see cref="Category"/> entity model,
-        /// or <see langword="null"/> if the input is <see langword="null"/>.
-        /// </returns>
-        public static Category ToModel(this AdminCategoryCreateInputDto dto)
-        {
-            if (dto is null)
-            {
-                return null!;
-            }
-
-            return new Category
-            {
-                AppUserId = dto.AppUserId,
-                Name = dto.Name.Trim(),
-            };
-        }
-
-        /// <summary>
-        /// Converts a <see cref="BaseCategoryUpdateInputDto"/> dto to a <see cref="Category"/> model entity.
-        /// </summary>
-        /// <param name="dto">The <see cref="BaseCategoryUpdateInputDto"/> dto to convert.</param>
-        /// <param name="userId"> <see cref="Category"/> entity will be created for this user id. </param>
-        /// <returns>
-        /// A <see cref="Category"/> entity model,
-        /// or <see langword="null"/> if the input is <see langword="null"/>.
-        /// </returns>
-        public static Category ToModel(this BaseCategoryUpdateInputDto dto, string userId)
-        {
-            if (dto is null)
-            {
-                return null!;
-            }
-
-            return new Category
-            {
-                AppUserId = userId,
-                Name = dto.Name.Trim(),
+                CreatedAt = category.CreatedAt,
+                UpdatedAt = category.UpdatedAt,
             };
         }
     }

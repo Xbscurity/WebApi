@@ -1,8 +1,5 @@
 ﻿using api.Constants;
-using api.Filters;
 using api.Models;
-using api.Providers.Interfaces;
-using api.Repositories.Interfaces;
 using api.Tests.Unit.Helpers;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -149,7 +146,7 @@ namespace api.Tests.Unit.Filters
             _authServiceMock.Setup(a => a.AuthorizeAsync(
                 It.IsAny<ClaimsPrincipal>(),
                 transaction,
-                Policies.TransactionAccess))
+                Policies.FinancialTransactionAccess))
                 .ReturnsAsync(failedAuthResult);
 
             // Act
@@ -158,7 +155,7 @@ namespace api.Tests.Unit.Filters
             // Assert
             Assert.False(nextCalled);
 
-             
+
             var objectResult = Assert.IsType<ObjectResult>(context.Result);
 
             Assert.Equal(403, objectResult.StatusCode);
@@ -168,7 +165,7 @@ namespace api.Tests.Unit.Filters
             _authServiceMock.Verify(x => x.AuthorizeAsync(
                 It.IsAny<ClaimsPrincipal>(),
                 transaction,
-                Policies.TransactionAccess),
+                Policies.FinancialTransactionAccess),
                 Times.Once
             );
 
@@ -205,7 +202,7 @@ namespace api.Tests.Unit.Filters
                 .Setup(a => a.AuthorizeAsync(
                     It.IsAny<ClaimsPrincipal>(),
                     transaction,
-                    Policies.TransactionAccess))
+                    Policies.FinancialTransactionAccess))
                 .ReturnsAsync(successfulAuthResult);
 
             // Act
@@ -221,7 +218,7 @@ namespace api.Tests.Unit.Filters
             _authServiceMock.Verify(x => x.AuthorizeAsync(
                 It.IsAny<ClaimsPrincipal>(),
                 transaction,
-                Policies.TransactionAccess),
+                Policies.FinancialTransactionAccess),
                 Times.Once);
         }
     }

@@ -3,20 +3,18 @@
 namespace api.Dtos.Account
 {
     /// <summary>
-    /// Defines the input DTO for changing a user's password.
+    /// Represents the data required to change a user's password.
     /// </summary>
     public record ChangePasswordInputDto
     {
         /// <summary>
-        /// Gets the current password of the user.
-        /// <para>This property is required.</para>
+        /// Gets the user's current password.
         /// </summary>
         [Required]
         required public string CurrentPassword { get; init; }
 
         /// <summary>
-        /// Gets the new password to be set for the user.
-        /// <para>This property is required.</para>
+        /// Gets the new password to assign to the account.
         /// </summary>
         [Required]
         required public string NewPassword { get; init; }

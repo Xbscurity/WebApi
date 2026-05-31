@@ -1,6 +1,4 @@
-﻿using api.Validation;
-
-namespace api.Tests.Unit.Validation
+﻿namespace api.Tests.Unit.Validation
 {
     public class CategorySortValidatorTests
     {

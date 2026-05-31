@@ -1,70 +1,55 @@
 ﻿using api.Models;
+using api.Options;
+using ErrorOr;
 
 namespace api.Services.Token
 {
     /// <summary>
-    /// Defines operations for generating, validating, refreshing, and revoking access and refresh tokens.
+    /// Provides functionality for generating and managing access and refresh tokens.
     /// </summary>
     public interface ITokenService
     {
         /// <summary>
-        /// Generates a new JWT access token for the specified user.
+        /// Generates a JWT access token for the specified user.
         /// </summary>
-        /// <param name="appUser">The application user for whom the token is generated.</param>
-        /// <returns>A task that represents the asynchronous operation.
-        /// The task result contains the signed JWT access token.</returns>
+        /// <param name="appUser">The user for whom the token is created.</param>
+        /// <returns>The generated access token.</returns>
         Task<string> GenerateAccessTokenAsync(AppUser appUser);
 
         /// <summary>
-        /// Generates a new refresh token as a random string.
+        /// Validates a refresh token against stored data.
         /// </summary>
-        /// <returns>A cryptographically secure random refresh token string.</returns>
-        string GenerateRefreshToken();
-
-        /// <summary>
-        /// Creates a refresh token entity for persistence, including its hash and metadata.
-        /// </summary>
-        /// <param name="plainToken">The raw refresh token string.</param>
-        /// <param name="user">The user to whom the token belongs.</param>
-        /// <param name="ipAddress">The IP address from which the token was created,
-        /// or <see langword="null"/> if unknown.</param>
-        /// <returns>A <see cref="RefreshToken"/> entity ready for storage.</returns>
-        RefreshToken GenerateRefreshTokenEntity(string plainToken, AppUser user, string? ipAddress);
-
-        /// <summary>
-        /// Persists a refresh token in the database.
-        /// </summary>
-        /// <param name="token">The refresh token entity to save.</param>
-        /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
-        Task SaveRefreshTokenAsync(RefreshToken token);
-
-        /// <summary>
-        /// Attempts to refresh access and refresh tokens using an existing refresh token.
-        /// </summary>
-        /// <param name="refreshTokenPlain">The plain refresh token string provided by the client.</param>
-        /// <param name="ipAddress">The IP address of the request, or <see langword="null"/> if unavailable.</param>
+        /// <param name="refreshTokenPlain">The plain-text refresh token.</param>
         /// <returns>
-        /// A task that represents the asynchronous operation.
-        /// The task result contains a <see cref="RefreshTokenResult"/> with the outcome of the operation.
+        /// An instance of <see cref="ErrorOr{T}"/> containing a <see cref="RefreshToken"/>
+        /// if successful; otherwise, an error.
         /// </returns>
-        Task<RefreshTokenResult> TryRefreshTokensAsync(string? refreshTokenPlain, string? ipAddress);
+        Task<ErrorOr<RefreshToken>> ValidateStoredTokenAsync(string? refreshTokenPlain);
 
         /// <summary>
-        /// Revokes a specific refresh token, preventing its future use.
+        /// Replaces an existing refresh token and issues a new access token.
         /// </summary>
-        /// <param name="token">The plain refresh token string to revoke.</param>
-        /// <param name="ipAddress">The IP address of the request, or <see langword="null"/>.</param>
-        /// <param name="reason">The reason for revocation.</param>
-        /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
-        Task RevokeRefreshTokenAsync(string token, string? ipAddress, string reason);
+        /// <param name="user">The user associated with the token.</param>
+        /// <param name="stored">The existing stored refresh token.</param>
+        /// <returns>
+        /// An instance of <see cref="ErrorOr{T}"/> containing a <see cref="RefreshTokenDto"/>
+        /// if successful; otherwise, an error.
+        /// </returns>
+        Task<ErrorOr<RefreshTokenDto>> RotateTokensAsync(AppUser user, RefreshToken stored);
 
         /// <summary>
-        /// Revokes all active refresh tokens for the specified user.
+        /// Creates and stores a new refresh token for the specified user.
         /// </summary>
-        /// <param name="userId">The unique identifier of the user whose tokens should be revoked.</param>
-        /// <param name="ipAddress">The IP address of the request, or <see langword="null"/>.</param>
+        /// <param name="userId">The identifier of the user.</param>
+        /// <returns>The plain-text refresh token.</returns>
+        Task<string> CreateRefreshTokenAsync(string userId);
+
+        /// <summary>
+        /// Revokes a refresh token.
+        /// </summary>
+        /// <param name="token">The plain-text refresh token.</param>
         /// <param name="reason">The reason for revocation.</param>
         /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
-        Task RevokeAllRefreshTokensAsync(string userId, string? ipAddress, string reason);
+        Task RevokeRefreshTokenAsync(string token, string reason);
     }
 }

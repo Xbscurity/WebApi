@@ -1,6 +1,5 @@
 ﻿using api.Models;
-using api.Providers.Interfaces;
-using api.Services.Transaction;
+using api.Services.FinancialTransactions;
 using MockQueryable;
 using Moq;
 

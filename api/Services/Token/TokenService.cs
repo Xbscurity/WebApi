@@ -1,7 +1,12 @@
-﻿using api.Data;
+﻿using api.Constants;
 using api.Models;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
+using api.Options;
+using api.Providers.ClientIpProvider;
+using api.Providers.Time;
+using api.Repositories;
+using api.Services.User;
+using ErrorOr;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -11,37 +16,57 @@ using System.Text;
 namespace api.Services.Token
 {
     /// <summary>
-    /// Provides functionality for generating, refreshing, and revoking JWT access and refresh tokens.
+    /// Default implementation of <see cref="ITokenService"/>.
     /// </summary>
     public class TokenService : ITokenService
     {
-        private readonly IConfiguration _config;
+        private readonly JwtOptions _jwtOptions;
+        private readonly ITokenRepository _tokenRepository;
+        private readonly ITimeProvider _timeProvider;
+        private readonly IUserService _userService;
+        private readonly RefreshTokenOptions _refreshTokenOptions;
+        private readonly ILogger<TokenService> _logger;
+        private readonly IClientIpProvider _clientIpProvider;
         private readonly SymmetricSecurityKey _key;
-        private readonly UserManager<AppUser> _userManager;
-        private readonly ApplicationDbContext _context;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="TokenService"/> class.
         /// </summary>
-        /// <param name="config">The application configuration containing JWT settings.</param>
-        /// <param name="userManager">The user manager for retrieving user roles.</param>
-        /// <param name="context">The database context used for managing refresh tokens.</param>
-        public TokenService(IConfiguration config, UserManager<AppUser> userManager, ApplicationDbContext context)
+        /// <param name="jwtOptions">JWT configuration options.</param>
+        /// <param name="tokenRepository">The repository used to store refresh tokens.</param>
+        /// <param name="timeProvider">Provides the current time.</param>
+        /// <param name="userService">Provides user-related operations.</param>
+        /// <param name="refreshTokenOptions">Refresh token configuration options.</param>
+        /// <param name="logger">The logger instance.</param>
+        /// <param name="clientIpProvider">Provides the client IP address.</param>
+        public TokenService(
+            IOptions<JwtOptions> jwtOptions,
+            ITokenRepository tokenRepository,
+            ITimeProvider timeProvider,
+            IUserService userService,
+            IOptions<RefreshTokenOptions> refreshTokenOptions,
+            ILogger<TokenService> logger,
+            IClientIpProvider clientIpProvider)
         {
-            _config = config;
-            _key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["JWT:SigningKey"]));
-            _userManager = userManager;
-            _context = context;
+            _jwtOptions = jwtOptions.Value;
+            _tokenRepository = tokenRepository;
+            _timeProvider = timeProvider;
+            _userService = userService;
+            _refreshTokenOptions = refreshTokenOptions.Value;
+            _logger = logger;
+            _clientIpProvider = clientIpProvider;
+            _key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtOptions.SigningKey));
         }
 
         /// <inheritdoc/>
-        public async Task<string> GenerateAccessTokenAsync(AppUser appUser)
+        public async Task<string> GenerateAccessTokenAsync(AppUser user)
         {
             var claims = new List<Claim>
             {
-    new Claim(JwtRegisteredClaimNames.Sub, appUser.Id),
+                new Claim(JwtRegisteredClaimNames.Sub, user.Id),
             };
-            var roles = await _userManager.GetRolesAsync(appUser);
+            var roles = await _userService.GetRolesAsync(user);
+
             foreach (var role in roles)
             {
                 claims.Add(new Claim(ClaimTypes.Role, role));
@@ -51,173 +76,134 @@ namespace api.Services.Token
             var tokenDescriptor = new SecurityTokenDescriptor
             {
                 Subject = new ClaimsIdentity(claims),
-                Expires = DateTime.UtcNow.AddMinutes(30),
+                Expires = _timeProvider.UtcNow.AddMinutes(_jwtOptions.ExpirationMinutes).UtcDateTime,
                 SigningCredentials = creds,
-                Issuer = _config["JWT:Issuer"],
-                Audience = _config["JWT:Audience"],
+                Issuer = _jwtOptions.Issuer,
+                Audience = _jwtOptions.Audience,
             };
             var tokenHandler = new JwtSecurityTokenHandler();
             var token = tokenHandler.CreateToken(tokenDescriptor);
+
+            _logger.LogInformation(
+                "Access token successfully generated");
+
             return tokenHandler.WriteToken(token);
         }
 
         /// <inheritdoc/>
-        public string GenerateRefreshToken()
+        public async Task<string> CreateRefreshTokenAsync(string userId)
         {
-            return Convert.ToHexString(RandomNumberGenerator.GetBytes(64)).ToLowerInvariant();
-        }
-
-        /// <inheritdoc/>
-        public RefreshToken GenerateRefreshTokenEntity(string plainToken, AppUser user, string? ipAddress)
-        {
+            var plainToken = Convert.ToHexString(RandomNumberGenerator.GetBytes(_refreshTokenOptions.Length)).ToLowerInvariant();
             var tokenHash = HashToken(plainToken);
-            var newToken = new RefreshToken
+            var ipAddress = _clientIpProvider.GetClientIp() ?? "unknown";
+
+            _logger.LogInformation(
+                "Creating refresh token entity, IP={IP}",
+                ipAddress);
+
+            var refreshToken = new RefreshToken
             {
                 TokenHash = tokenHash,
-                UserId = user.Id,
-                CreatedByIp = ipAddress ?? "unknown",
-                ExpiresAt = DateTimeOffset.UtcNow.AddDays(7),
+                UserId = userId,
+                CreatedByIp = ipAddress,
+                CreatedAt = _timeProvider.UtcNow,
+                ExpiresAt = _timeProvider.UtcNow.AddDays(_refreshTokenOptions.ExpirationDays),
             };
-            return newToken;
+            await _tokenRepository.AddAsync(refreshToken);
+            return plainToken;
         }
 
         /// <inheritdoc/>
-        public async Task SaveRefreshTokenAsync(RefreshToken token)
+        public async Task<ErrorOr<RefreshToken>> ValidateStoredTokenAsync(string? refreshTokenPlain)
         {
-            _context.RefreshTokens.Add(token);
-            await _context.SaveChangesAsync();
-        }
-
-        /// <inheritdoc/>
-        public async Task<RefreshTokenResult> TryRefreshTokensAsync(string? refreshTokenPlain, string? ipAddress)
-        {
+            var ipAddress = _clientIpProvider.GetClientIp() ?? "unknown";
             if (string.IsNullOrWhiteSpace(refreshTokenPlain))
             {
-                return new RefreshTokenResult { Error = "No refresh token supplied" };
+                _logger.LogWarning(
+                    LoggingEvents.Auth.RefreshToken.NotSupplied,
+                    "Refresh token not supplied. IP={IP}",
+                    ipAddress);
+                return Errors.Auth.RefreshTokenNotSupplied();
             }
 
             var hash = HashToken(refreshTokenPlain);
 
-            var stored = await _context.RefreshTokens
-                                  .AsTracking()
-                                  .FirstOrDefaultAsync(r => r.TokenHash == hash);
-
+            var stored = await _tokenRepository.GetByHashAsync(hash);
             if (stored == null)
             {
-                return new RefreshTokenResult { Error = "Refresh token not found" };
+                _logger.LogWarning(
+                    LoggingEvents.Auth.RefreshToken.NotFound,
+                    "Refresh token not found. IP={IP}",
+                    ipAddress);
+                return Errors.Auth.RefreshTokenNotFound();
             }
 
-            if (stored.RevokedAt != null)
+            if (stored.IsRevoked)
             {
-                if (!string.IsNullOrEmpty(stored.ReplacedByToken))
-                {
-                    await RevokeDescendantTokensAsync(stored, ipAddress, "Attempted reuse of refresh token");
-                }
+                _logger.LogWarning(
+                    LoggingEvents.Auth.RefreshToken.ReuseAttempt,
+                    "Refresh token reuse detected.IP={IP}",
+                    ipAddress);
 
-                return new RefreshTokenResult { Error = "Refresh token already revoked" };
+                await _tokenRepository.RevokeAllRefreshTokensAsync(ipAddress, "Attempted reuse of refresh token");
+                return Errors.Auth.RefreshTokenAlreadyRevoked();
             }
 
-            if (stored.ExpiresAt <= DateTimeOffset.UtcNow)
+            if (stored.IsExpired)
             {
-                return new RefreshTokenResult { Error = "Refresh token expired" };
+                _logger.LogInformation(
+                    "Expired refresh token used");
+                return Errors.Auth.RefreshTokenExpired();
             }
 
-            var user = await _userManager.FindByIdAsync(stored.UserId);
-            if (user == null)
-            {
-                return new RefreshTokenResult { Error = "User not found" };
-            }
+            return stored;
+        }
 
-            var newAccessToken = await GenerateAccessTokenAsync(user);
-            var newPlainRefresh = GenerateRefreshToken();
-            var newRefreshEntity = GenerateRefreshTokenEntity(newPlainRefresh, user, ipAddress);
+        /// <inheritdoc/>
+        public async Task<ErrorOr<RefreshTokenDto>> RotateTokensAsync(AppUser user, RefreshToken stored)
+        {
+            var newRefreshToken = await CreateRefreshTokenAsync(user.Id);
 
-            stored.RevokedAt = DateTimeOffset.UtcNow;
+            var ipAddress = _clientIpProvider.GetClientIp();
+
+            stored.RevokedAt = _timeProvider.UtcNow;
             stored.RevokedByIp = ipAddress;
             stored.Reason = "Replaced by new token";
-            stored.ReplacedByToken = newRefreshEntity.TokenHash;
+            stored.ReplacedByToken = HashToken(newRefreshToken);
 
-            await SaveRefreshTokenAsync(newRefreshEntity);
+            await _tokenRepository.UpdateAsync(stored);
 
-            return new RefreshTokenResult
+            _logger.LogInformation(
+                "Refresh token successfully rotated");
+
+            var newAccessToken = await GenerateAccessTokenAsync(user);
+
+            var result = new RefreshTokenDto
             {
-                NewAccessToken = newAccessToken,
-                NewRefreshToken = newPlainRefresh,
-                ExpiresAt = newRefreshEntity.ExpiresAt,
+                AccessToken = newAccessToken,
+                RefreshToken = newRefreshToken,
             };
+
+            return result;
         }
 
         /// <inheritdoc/>
-        public async Task RevokeRefreshTokenAsync(string token, string? ipAddress, string reason)
+        public async Task RevokeRefreshTokenAsync(string token, string reason)
         {
             var tokenHash = HashToken(token);
-
-            var refreshToken = await _context.RefreshTokens
-                .FirstOrDefaultAsync(rt => rt.TokenHash == tokenHash && rt.RevokedAt == null);
-
-            if (refreshToken == null)
-            {
-                return;
-            }
-
-            refreshToken.RevokedAt = DateTimeOffset.UtcNow;
-            refreshToken.RevokedByIp = ipAddress;
-            refreshToken.Reason = reason;
-
-            await _context.SaveChangesAsync();
+            var ipAddress = _clientIpProvider.GetClientIp();
+            _logger.LogInformation(
+                "Revoking refresh token. IP={Ip}, Reason={Reason}",
+                ipAddress,
+                reason);
+            await _tokenRepository.RevokeByHashAsync(tokenHash, ipAddress, reason);
         }
 
-        /// <inheritdoc/>
-        public async Task RevokeAllRefreshTokensAsync(string userId, string? ipAddress, string reason)
-        {
-            await _context.RefreshTokens
-                .Where(rt => rt.UserId == userId && rt.RevokedAt == null)
-                .ExecuteUpdateAsync(setters => setters
-                    .SetProperty(rt => rt.RevokedAt, DateTimeOffset.UtcNow)
-                    .SetProperty(rt => rt.RevokedByIp, ipAddress)
-                    .SetProperty(rt => rt.Reason, reason));
-        }
-
-        /// <summary>
-        /// Computes a SHA-256 hash for a given token string.
-        /// </summary>
-        /// <param name="token">The plain token string.</param>
-        /// <returns>The lowercase hexadecimal hash string.</returns>
-        private string HashToken(string token)
+        private static string HashToken(string token)
         {
             using var sha = SHA256.Create();
             var hashBytes = sha.ComputeHash(Encoding.UTF8.GetBytes(token));
             return Convert.ToHexString(hashBytes).ToLowerInvariant();
-        }
-
-        /// <summary>
-        /// Recursively revokes all descendant refresh tokens that were issued as replacements for the specified token.
-        /// </summary>
-        /// <param name="token">The refresh token whose descendants should be revoked.</param>
-        /// <param name="ipAddress">The IP address of the request, or <see langword="null"/>.</param>
-        /// <param name="reason">The reason for revocation.</param>
-        private async Task RevokeDescendantTokensAsync(RefreshToken token, string? ipAddress, string reason)
-        {
-            var current = token;
-
-            while (!string.IsNullOrEmpty(current.ReplacedByToken))
-            {
-                var next = await _context.RefreshTokens
-                    .FirstOrDefaultAsync(r => r.TokenHash == current.ReplacedByToken);
-
-                if (next == null || next.RevokedAt != null)
-                {
-                    break;
-                }
-
-                next.RevokedAt = DateTimeOffset.UtcNow;
-                next.RevokedByIp = ipAddress;
-                next.Reason = reason;
-
-                current = next;
-            }
-
-            await _context.SaveChangesAsync();
         }
     }
 }

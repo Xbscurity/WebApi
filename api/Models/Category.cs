@@ -1,33 +1,31 @@
 namespace api.Models
 {
     /// <summary>
-    /// Defines a category used to classify <see cref="FinancialTransaction"/> in the application.
+    /// Represents a financial transaction category owned by a user.
     /// </summary>
-    public class Category
+    /// <remarks>
+    /// Categories are used to group financial transactions and support
+    /// user-specific organization of financial data.
+    /// </remarks>
+    public class Category : BaseEntity
     {
         /// <summary>
-        /// Gets or sets the unique identifier of the category.
+        /// Gets or sets the category name.
         /// </summary>
-        public int Id { get; set; }
+        required public string Name { get; set; }
 
         /// <summary>
-        /// Gets or sets the name of the category.
+        /// Gets or sets the identifier of the user who owns this category.
         /// </summary>
-        public string Name { get; set; } = string.Empty;
+        required public string AppUserId { get; set; }
 
         /// <summary>
-        /// Gets or sets the identifier of the user who owns this category, if applicable.
+        /// Gets or sets the navigation property to the owning user.
         /// </summary>
-        public string? AppUserId { get; set; }
-
-        /// <summary>
-        /// Gets or sets the user who owns this category, if applicable.
-        /// </summary>
-        public AppUser? AppUser { get; set; }
+        public AppUser AppUser { get; set; } = null!;
 
         /// <summary>
         /// Gets or sets a value indicating whether the category is active.
-        /// Defaults to <c>true</c>.
         /// </summary>
         public bool IsActive { get; set; } = true;
     }

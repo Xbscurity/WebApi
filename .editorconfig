@@ -25,6 +25,17 @@ dotnet_diagnostic.SA1208.severity = none
 # SA1402: File may only contain a single type.
 dotnet_diagnostic.SA1402.severity = none
 
+# SA1313: Record primary constructor parameters are PascalCase by design
+dotnet_diagnostic.SA1313.severity = none
+
+# SA1009: StyleCop incorrectly flags record syntax closing parenthesis
+dotnet_diagnostic.SA1009.severity = none
+
+# SA1413: Migrations are auto-generated, trailing comma not required
+[**/Migrations/*.cs]
+dotnet_diagnostic.SA1413.severity = none
+dotnet_diagnostic.SA1122.severity = none
+c
 File may only contain a single type
 csharp_indent_labels = one_less_than_current
 csharp_using_directive_placement = outside_namespace:silent

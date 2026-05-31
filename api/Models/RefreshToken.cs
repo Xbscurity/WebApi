@@ -1,61 +1,65 @@
 ﻿namespace api.Models
 {
     /// <summary>
-    /// Defines a refresh token entity stored in the database.
+    /// Represents a refresh token used for authentication session management.
     /// </summary>
-    /// <remarks>
-    /// This model is used to persist information about user refresh tokens,
-    /// including token hash, creation/expiration times, IP addresses, and revocation details.
-    /// </remarks>
-    public class RefreshToken
+    public class RefreshToken : BaseEntity
     {
         /// <summary>
-        /// Gets or sets primary key identifier of the refresh token record.
+        /// Gets or sets the hashed value of the refresh token.
         /// </summary>
-        public int Id { get; set; }
+        required public string TokenHash { get; set; }
 
         /// <summary>
-        /// Gets or sets cryptographic hash of the refresh token value.
+        /// Gets or sets the identifier of the user who owns this token.
         /// </summary>
-        public string TokenHash { get; set; }
+        required public string UserId { get; set; }
 
         /// <summary>
-        /// Gets or sets identifier of the user associated with this token.
+        /// Gets or sets the IP address from which the token was created.
         /// </summary>
-        public string UserId { get; set; }
+        public string? CreatedByIp { get; set; }
 
         /// <summary>
-        /// Gets or sets uTC timestamp when the token was created.
-        /// </summary>
-        public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.UtcNow;
-
-        /// <summary>
-        /// Gets or sets iP address from which the token was created.
-        /// </summary>
-        public string CreatedByIp { get; set; }
-
-        /// <summary>
-        /// Gets or sets uTC timestamp when the token will expire.
+        /// Gets or sets the expiration time of the refresh token.
         /// </summary>
         public DateTimeOffset ExpiresAt { get; set; }
 
         /// <summary>
-        /// Gets or sets uTC timestamp when the token was revoked, if applicable.
+        /// Gets a value indicating whether the token has expired.
+        /// </summary>
+        /// <value>
+        /// <see langword="true"/> if the current UTC time is greater than or equal
+        /// to <see cref="ExpiresAt"/>; otherwise, <see langword="false"/>.
+        /// </value>
+        public bool IsExpired => DateTimeOffset.UtcNow >= ExpiresAt;
+
+        /// <summary>
+        /// Gets or sets the date and time when the token was revoked.
         /// </summary>
         public DateTimeOffset? RevokedAt { get; set; }
 
         /// <summary>
-        /// Gets or sets iP address from which the token was revoked, if applicable.
+        /// Gets a value indicating whether the token has been revoked.
+        /// </summary>
+        /// <value>
+        /// <see langword="true"/> if <see cref="RevokedAt"/> has a value;
+        /// otherwise, <see langword="false"/>.
+        /// </value>
+        public bool IsRevoked => RevokedAt != null;
+
+        /// <summary>
+        /// Gets or sets the IP address from which the token was revoked.
         /// </summary>
         public string? RevokedByIp { get; set; }
 
         /// <summary>
-        /// Gets or sets hash (or identifier) of the new token that replaced this one.
+        /// Gets or sets the token that replaced this refresh token, if any.
         /// </summary>
         public string? ReplacedByToken { get; set; }
 
         /// <summary>
-        /// Gets or sets reason for token revocation (e.g., logout, compromise).
+        /// Gets or sets the reason for token revocation.
         /// </summary>
         public string? Reason { get; set; }
     }

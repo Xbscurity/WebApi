@@ -1,40 +1,50 @@
 services:
   postgres:
     image: postgres:15
-    container_name: postgres
-    restart: always
+    restart: unless-stopped
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
       - POSTGRES_DB=mydb
-    ports:
-      - "5435:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
-      interval: 5s
-      timeout: 3s
+      interval: 10s
+      timeout: 5s
       retries: 5
+      start_period: 30s
+    networks:
+      - backend
+    deploy:
+      resources:
+        limits:
+          memory: 512m
 
   api:
     build:
-      context: .              
-      dockerfile: api/Dockerfile  
-    container_name: my-api
+      context: .
+      dockerfile: api/Dockerfile
+    restart: unless-stopped
     ports:
-      - "5000:8080"              
+      - "5000:8080"
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ConnectionStrings__DefaultConnection=Host=postgres;Port=5432;Database=mydb;Username=postgres;Password=postgres
     depends_on:
       postgres:
         condition: service_healthy
+    networks:
+      - backend
+    deploy:
+      resources:
+        limits:
+          memory: 512m
+          cpus: "1.0"
 
   pgadmin:
-    image: dpage/pgadmin4
-    container_name: pgadmin
-    restart: always
+    image: dpage/pgadmin4:9.13
+    restart: unless-stopped
     environment:
       PGADMIN_DEFAULT_EMAIL: admin@admin.com
       PGADMIN_DEFAULT_PASSWORD: admin
@@ -43,10 +53,17 @@ services:
     depends_on:
       - postgres
     volumes:
-    - pgadmin_data:/var/lib/pgadmin
+      - pgadmin_data:/var/lib/pgadmin
+    networks:
+      - backend
+    deploy:
+      resources:
+        limits:
+          memory: 256m
 
   seq:
-    image: datalust/seq
+    image: datalust/seq:2025.2
+    restart: unless-stopped
     ports:
       - "5341:80"
     environment:
@@ -54,8 +71,18 @@ services:
       - SEQ_FIRSTRUN_ADMINPASSWORD=admin123
     volumes:
       - seq-data:/data
+    networks:
+      - backend
+    deploy:
+      resources:
+        limits:
+          memory: 256m
 
 volumes:
   pgdata:
   pgadmin_data:
-  seq-data:  
+  seq-data:
+
+networks:
+  backend:
+    driver: bridge

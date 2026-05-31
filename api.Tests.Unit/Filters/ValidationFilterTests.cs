@@ -1,7 +1,4 @@
-﻿using api.Constants;
-using api.Filters;
-using api.Responses;
-using api.Tests.Unit.Helpers;
+﻿using api.Tests.Unit.Helpers;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
@@ -64,7 +61,7 @@ namespace api.Tests.Unit.Filters
             Assert.Equal(ErrorCodes.ValidationError, response.Error?.Code);
             Assert.Equal("Validation failed", response.Error?.Message);
 
-            var errorData = Assert.IsType<Dictionary<string, List<string>>>(response.Error?.Data);
+            var errorData = Assert.IsType<Dictionary<string, List<string>>>(response.Error?.Details);
 
             Assert.Equal(2, errorData.Count);
             Assert.Contains("Name", errorData.Keys);

@@ -1,4 +1,5 @@
-﻿using api.Data;
+﻿using api.Constants;
+using api.Data;
 using Microsoft.EntityFrameworkCore;
 
 namespace api.Services.Background
@@ -42,18 +43,14 @@ namespace api.Services.Background
 
                     var deletedCount = await expired.ExecuteDeleteAsync();
 
-                    if (deletedCount > 0)
-                    {
-                        _logger.LogInformation("Removed {Count} expired refresh tokens", deletedCount);
-                    }
-                    else
-                    {
-                        _logger.LogDebug("No expired refresh tokens found to remove");
-                    }
+                    _logger.LogInformation("Removed expired refresh tokens: {Count}", deletedCount);
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "Error occurred while cleaning up expired refresh tokens");
+                    _logger.LogError(
+                        LoggingEvents.Auth.RefreshToken.CleanupError,
+                        ex,
+                        "Error occurred while cleaning up expired refresh tokens");
                 }
 
                 await Task.Delay(TimeSpan.FromHours(1), stoppingToken);

@@ -1,10 +1,7 @@
 ﻿using api.Dtos.FinancialTransaction;
 using api.Models;
-using api.Providers.Interfaces;
 using api.QueryObjects;
-using api.Repositories.Categories;
-using api.Repositories.Interfaces;
-using api.Services.Transaction;
+using api.Services.FinancialTransactions;
 using Microsoft.Extensions.Logging;
 using MockQueryable.Moq;
 using Moq;
@@ -71,16 +68,16 @@ namespace api.Tests.Unit.Services.FinancialTranasction
         {
             // Arrange
             var userId = "user-id";
-            var inputDto = new BaseFinancialTransactionInputDto
+            var inputDto = new FinancialTransactionUpdateInputDto
             {
-                CategoryId = 1,
+                RequestedCategoryId = 1,
                 Amount = 100,
                 Comment = "Test",
             };
 
             _transactionRepositoryMock.Setup(r => r.CreateAsync(
                 It.Is<FinancialTransaction>(t =>
-                    t.CategoryId == inputDto.CategoryId &&
+                    t.CategoryId == inputDto.RequestedCategoryId &&
                     t.Amount == inputDto.Amount &&
                     t.AppUserId == userId &&
                     t.Comment == inputDto.Comment)))
@@ -128,7 +125,7 @@ namespace api.Tests.Unit.Services.FinancialTranasction
         public async Task GetAllForAdminAsync_GivenUserId_ReturnsExpectedTransactions(int expectedCount, string userId)
         {
             // Arrange
-            var queryObject = new PaginationQueryObject
+            var queryObject = new EntityQuery
             {
                 Page = 1,
                 Size = 10,
@@ -163,7 +160,7 @@ namespace api.Tests.Unit.Services.FinancialTranasction
         public async Task GetAllForAdminAsync_EmptyResult_ReturnsEmptyPagedData()
         {
             // Arrange
-            var queryObject = new PaginationQueryObject
+            var queryObject = new EntityQuery
             {
                 Page = 1,
                 Size = 10,
@@ -190,7 +187,7 @@ namespace api.Tests.Unit.Services.FinancialTranasction
         public async Task GetAllForUserAsync_ValidInput_ReturnsCorrectPagedData()
         {
             // Arrange
-            var queryObject = new PaginationQueryObject
+            var queryObject = new EntityQuery
             {
                 Page = 1,
                 Size = 10,
@@ -225,7 +222,7 @@ namespace api.Tests.Unit.Services.FinancialTranasction
         public async Task GetAllForUserAsync_EmptyResult_ReturnsEmptyPagedData()
         {
             // Arrange
-            var queryObject = new PaginationQueryObject
+            var queryObject = new EntityQuery
             {
                 Page = 1,
                 Size = 10,
@@ -275,7 +272,7 @@ namespace api.Tests.Unit.Services.FinancialTranasction
             var result = await _transactionService.GetByIdAsync(returnedFinancialTransaction.Id);
 
             // Assert
-            var expectedDto = new BaseFinancialTransactionOutputDto
+            var expectedDto = new FinancialTransactionOutputDto
             {
                 Id = returnedFinancialTransaction.Id,
                 Amount = returnedFinancialTransaction.Amount,
@@ -307,10 +304,10 @@ namespace api.Tests.Unit.Services.FinancialTranasction
                     Name = "Test",
                 }
             };
-            var inputDto = new BaseFinancialTransactionInputDto()
+            var inputDto = new FinancialTransactionUpdateInputDto()
             {
                 Amount = 100,
-                CategoryId = 2,
+                RequestedCategoryId = 2,
                 Comment = "Updated"
             };
 
@@ -322,12 +319,12 @@ namespace api.Tests.Unit.Services.FinancialTranasction
             var result = await _transactionService.UpdateAsync(returnedFinancialTransaction.Id, inputDto);
 
             // Assert
-            var expectedDto = new BaseFinancialTransactionOutputDto
+            var expectedDto = new FinancialTransactionOutputDto
             {
                 Id = returnedFinancialTransaction.Id,
                 Amount = inputDto.Amount,
                 AppUserId = returnedFinancialTransaction.AppUserId,
-                CategoryId = inputDto.CategoryId,
+                CategoryId = inputDto.RequestedCategoryId,
                 CategoryName = returnedFinancialTransaction.Category.Name,
                 Comment = returnedFinancialTransaction.Comment,
                 CreatedAt = returnedFinancialTransaction.CreatedAt,
@@ -339,6 +336,6 @@ namespace api.Tests.Unit.Services.FinancialTranasction
 
             _transactionRepositoryMock.Verify(
                 r => r.UpdateAsync(returnedFinancialTransaction), Times.Once);
-        }       
+        }
     }
 }

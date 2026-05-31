@@ -1,72 +1,49 @@
-using api.Providers.Interfaces;
+using api.Enums;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace api.Models
 {
     /// <summary>
-    /// Defines a financial transaction made by a user in the application.
+    /// Represents a financial transaction recorded in the system.
     /// </summary>
-    public class FinancialTransaction
+    /// <remarks>
+    /// Each transaction belongs to a category and is associated with a user.
+    /// </remarks>
+    public class FinancialTransaction : BaseEntity
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="FinancialTransaction"/> class
-        /// using the specified time provider.
+        /// Gets or sets the category identifier associated with the transaction.
         /// </summary>
-        /// <param name="timeProvider">The provider used to obtain the current UTC time.</param>
-        public FinancialTransaction(ITimeProvider timeProvider)
-        {
-            CreatedAt = timeProvider.UtcNow;
-        }
+        required public Guid CategoryId { get; set; }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="FinancialTransaction"/> class.
-        /// Required by Entity Framework Core for object materialization. Must be parameterless.
+        /// Gets or sets the navigation property to the transaction category.
         /// </summary>
-        private FinancialTransaction()
-        {
-        }
+        public Category Category { get; set; } = null!;
 
         /// <summary>
-        /// Gets or sets the unique identifier of the transaction.
+        /// Gets or sets the type of the financial transaction.
         /// </summary>
-        public int Id { get; set; }
+        required public FinancialTransactionType Type { get; set; }
 
         /// <summary>
-        /// Gets or sets the identifier of the category associated with this transaction.
+        /// Gets or sets the monetary amount of the transaction.
         /// </summary>
-        public int CategoryId { get; set; }
+        required public decimal Amount { get; set; }
 
         /// <summary>
-        /// Gets or sets the category associated with this transaction.
-        /// </summary>
-        public Category Category { get; set; } = default!;
-
-        /// <summary>
-        /// Gets or sets the transaction amount.
-        /// </summary>
-        [Column(TypeName = "numeric(18,2)")]
-        public decimal Amount { get; set; }
-
-        /// <summary>
-        /// Gets or sets an optional comment or description for the transaction.
-        /// Defaults to an empty string.
+        /// Gets or sets an optional comment describing the transaction.
         /// </summary>
         public string Comment { get; set; } = string.Empty;
 
         /// <summary>
-        /// Gets or sets the timestamp when the transaction was created.
-        /// Initialized via <see cref="ITimeProvider"/> to ensure UTC consistency.
+        /// Gets or sets the identifier of the user who owns this transaction.
         /// </summary>
-        public DateTimeOffset CreatedAt { get; set; }
+        required public string AppUserId { get; set; }
 
         /// <summary>
-        /// Gets or sets the identifier of the user who made the transaction.
+        /// Gets or sets the navigation property to the owning user.
         /// </summary>
-        public string AppUserId { get; set; } = default!;
-
-        /// <summary>
-        /// Gets or sets the user who made the transaction.
-        /// </summary>
-        public AppUser AppUser { get; set; } = default!;
+        public AppUser AppUser { get; set; } = null!;
     }
 }

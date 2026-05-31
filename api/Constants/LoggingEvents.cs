@@ -1,221 +1,185 @@
 ﻿namespace api.Constants
 {
     /// <summary>
-    /// Contains centralized <see cref="EventId"/> definitions for logging throughout the application.
-    /// Each ID provides a unique identifier for a specific type of event,
-    /// making it easier to filter, search, and analyze logs.
+    /// Provides a centralized collection of structured <see cref="EventId"/> definitions used for application logging.
     /// </summary>
     public static class LoggingEvents
     {
         /// <summary>
-        /// EventIds related to user operations (1000–1499).
+        /// EventIds related to auth operations (1000–1499).
         /// </summary>
-        public static class Users
+        public static class Auth
         {
             /// <summary>
-            /// AccountController (1000–1099).
+            /// Event ID for when user registration fails.
             /// </summary>
-            public static class Common
-            {
-                /// <summary>
-                /// Event ID for user registration.
-                /// </summary>
-                public static readonly EventId Register = new(1001, nameof(Register));
-
-                /// <summary>
-                /// Event ID for user login.
-                /// </summary>
-                public static readonly EventId Login = new(1011, nameof(Login));
-
-                /// <summary>
-                /// Event ID for refresh token operations.
-                /// </summary>
-                public static readonly EventId RefreshToken = new(1021, nameof(RefreshToken));
-
-                /// <summary>
-                /// Event ID for password change operations.
-                /// </summary>
-                public static readonly EventId ChangePassword = new(1051, nameof(ChangePassword));
-            }
+            public static readonly EventId RegisterFailed = new(1001, nameof(RegisterFailed));
 
             /// <summary>
-            /// AdminUserManagementController (1100-1199).
+            /// Event ID for when assigning a role to a user fails.
             /// </summary>
-            public static class Admin
+            public static readonly EventId AssignRoleFailed = new(1002, nameof(AssignRoleFailed));
+
+            /// <summary>
+            /// Event ID for when a login attempt is made with invalid credentials.
+            /// </summary>
+            public static readonly EventId InvalidCredentials = new(1003, nameof(InvalidCredentials));
+
+            /// <summary>
+            /// Event ID for when a password update operation fails.
+            /// </summary>
+            public static readonly EventId UpdatePasswordFailed = new(1004, nameof(UpdatePasswordFailed));
+
+            /// <summary>
+            /// Event ID for when an authenticated user attempts an action they are not permitted to perform.
+            /// </summary>
+            public static readonly EventId Forbidden = new(1005, nameof(Forbidden));
+
+            /// <summary>
+            /// EventIds related to refresh token operations (1100–1199).
+            /// </summary>
+            public static class RefreshToken
             {
                 /// <summary>
-                /// Event ID for when a user is not found by the admin management controller.
+                /// Event ID for when an error occurs during expired refresh token cleanup.
                 /// </summary>
-                public static readonly EventId NotFound = new(1100, nameof(NotFound));
+                public static readonly EventId CleanupError = new(1100, nameof(CleanupError));
 
                 /// <summary>
-                /// Event ID for when an admin attempts to ban another administrator.
+                /// Event ID for when a refresh token references a user that no longer exists.
                 /// </summary>
-                public static readonly EventId AdminBanAttempt = new(1101, nameof(AdminBanAttempt));
+                public static readonly EventId UserMissing = new(1101, nameof(UserMissing));
 
                 /// <summary>
-                /// Event ID for user ban and unban operations.
+                /// Event ID for when a refresh token that has already been used is presented again,
+                /// indicating a possible token theft or replay attack.
                 /// </summary>
-                public static readonly EventId BanUser = new(1102, nameof(BanUser));
+                public static readonly EventId ReuseAttempt = new(1102, nameof(ReuseAttempt));
 
                 /// <summary>
-                /// Event ID for when an admin successfully retrieves all users.
+                /// Event ID for when the presented refresh token does not exist in the store.
                 /// </summary>
-                public static readonly EventId GetAll = new(1103, nameof(GetAll));
+                public static readonly EventId NotFound = new(1103, nameof(NotFound));
+
+                /// <summary>
+                /// Event ID for when no refresh token was supplied with the request.
+                /// </summary>
+                public static readonly EventId NotSupplied = new(1104, nameof(NotSupplied));
             }
         }
 
         /// <summary>
-        /// EventIds related to category operations (1500–1999).
+        /// EventIds related to user operations (1500–1999).
         /// </summary>
-        public static class Categories
+        public static class User
         {
             /// <summary>
-            /// BaseCategoryController (1500–1599).
+            /// Event ID for when an invalid sort parameter is provided.
             /// </summary>
-            public static class Common
-            {
-                /// <summary>
-                /// Event ID for when an invalid sort parameter is provided.
-                /// </summary>
-                public static readonly EventId SortInvalid = new(1500, nameof(SortInvalid));
-
-                /// <summary>
-                /// Event ID for when an unauthorized access attempt is made.
-                /// </summary>
-                public static readonly EventId NoAccess = new(1501, nameof(NoAccess));
-
-                /// <summary>
-                /// Event ID for when a category is retrieved.
-                /// </summary>
-                public static readonly EventId GetById = new(1502, nameof(GetById));
-
-                /// <summary>
-                /// Event ID for when a category is deleted.
-                /// </summary>
-                public static readonly EventId Deleted = new(1503, nameof(Deleted));
-
-                /// <summary>
-                /// Event ID for when a category is updated.
-                /// </summary>
-                public static readonly EventId Updated = new(1504, nameof(Updated));
-
-                /// <summary>
-                /// Event ID for when a category's active state is toggled.
-                /// </summary>
-                public static readonly EventId Toggled = new(1505, nameof(Toggled));
-            }
+            public static readonly EventId SortInvalid = new(1500, nameof(SortInvalid));
 
             /// <summary>
-            /// AdminCategoryController (1600–1699).
+            /// Event ID for when a user update operation fails.
             /// </summary>
-            public static class Admin
-            {
-                /// <summary>
-                /// Event ID for retrieving all categories by an admin.
-                /// </summary>
-                public static readonly EventId GetAll = new(1600, nameof(GetAll));
-
-                /// <summary>
-                /// Event ID for when an admin creates a category.
-                /// </summary>
-                public static readonly EventId Created = new(1601, nameof(Created));
-            }
+            public static readonly EventId UpdateFailed = new(1501, nameof(UpdateFailed));
 
             /// <summary>
-            /// UserCategoryController (1700–1799).
+            /// Event ID for when a requested user is not found.
             /// </summary>
-            public static class User
-            {
-                /// <summary>
-                /// Event ID for retrieving all category by a regular user.
-                /// </summary>
-                public static readonly EventId GetAll = new(1700, nameof(GetAll));
+            public static readonly EventId NotFound = new(1502, nameof(NotFound));
 
-                /// <summary>
-                /// Event ID for when a regular user creates a category.
-                /// </summary>
-                public static readonly EventId Created = new(1701, nameof(Created));
-            }
+            /// <summary>
+            /// Event ID for when an attempt is made to ban a user with the Admin role,
+            /// which is a restricted operation.
+            /// </summary>
+            public static readonly EventId AdminBanAttempt = new(1503, nameof(AdminBanAttempt));
         }
 
         /// <summary>
-        ///  EventIds related to finanсical transactions operations (2000-2499).
+        /// EventIds related to category operations (2000–2499).
         /// </summary>
-        public static class FinancialTransactions
+        public static class Category
         {
             /// <summary>
-            /// BaseTransactionController (2001–2099).
+            /// Event ID for when an invalid sort parameter is provided.
             /// </summary>
-            public static class Common
-            {
-                /// <summary>
-                /// Event ID for when an invalid sort parameter is provided.
-                /// </summary>
-                public static readonly EventId SortInvalid = new(2000, nameof(SortInvalid));
-
-                /// <summary>
-                /// Event ID for when an unauthorized access attempt is made.
-                /// </summary>
-                public static readonly EventId NoAccess = new(2001, nameof(NoAccess));
-
-                /// <summary>
-                /// Event ID for when a financial transaction is retrieved by ID.
-                /// </summary>
-                public static readonly EventId GetById = new(2002, nameof(GetById));
-
-                /// <summary>
-                /// Event ID for when a financial transaction is deleted.
-                /// </summary>
-                public static readonly EventId Deleted = new(2003, nameof(Deleted));
-
-                /// <summary>
-                /// Event ID for when a financial transaction is updated.
-                /// </summary>
-                public static readonly EventId Updated = new(2004, nameof(Updated));
-
-                /// <summary>
-                /// Event ID for when a financial transaction's active state is toggled.
-                /// </summary>
-                public static readonly EventId Toggled = new(2005, nameof(Toggled));
-            }
+            public static readonly EventId SortInvalid = new(2000, nameof(SortInvalid));
 
             /// <summary>
-            /// AdminTransactionController (2100–2199).
+            /// Event ID for when an unauthorized access attempt is made.
             /// </summary>
-            public static class Admin
-            {
-                /// <summary>
-                /// Event ID for retrieving all transactions by an admin.
-                /// </summary>
-                public static readonly EventId GetAll = new(2100, nameof(GetAll));
-
-                /// <summary>
-                /// Event ID for when an admin creates a transaction.
-                /// </summary>
-                public static readonly EventId Created = new(2101, nameof(Created));
-            }
+            public static readonly EventId AccessDenied = new(2001, nameof(AccessDenied));
 
             /// <summary>
-            /// UserTransactionController (2200–2299).
+            /// Event ID for when a category not found.
             /// </summary>
-            public static class User
-            {
-                /// <summary>
-                /// Event ID for retrieving all transactions by a regular user.
-                /// </summary>
-                public static readonly EventId GetAll = new(2200, nameof(GetAll));
+            public static readonly EventId NotFound = new(2002, nameof(NotFound));
 
-                /// <summary>
-                /// Event ID for when a regular user creates a transaction.
-                /// </summary>
-                public static readonly EventId Created = new(2201, nameof(Created));
+            /// <summary>
+            /// Event ID for when a category cannot be deleted because of existing related entities.
+            /// </summary>
+            public static readonly EventId DeleteRestricted = new(2003, nameof(DeleteRestricted));
 
-                /// <summary>
-                /// Event ID for when a user generates a financial report.
-                /// </summary>
-                public static readonly EventId Report = new(2202, nameof(Report));
-            }
+            /// <summary>
+            /// Event ID for when a category is created.
+            /// </summary>
+            public static readonly EventId Created = new(2004, nameof(Created));
+
+            /// <summary>
+            /// Event ID for when a category is updated.
+            /// </summary>
+            public static readonly EventId Updated = new(2005, nameof(Updated));
+
+            /// <summary>
+            /// Event ID for when a category's active state is toggled.
+            /// </summary>
+            public static readonly EventId Toggled = new(2006, nameof(Toggled));
+
+            /// <summary>
+            /// Event ID for when a category is deleted.
+            /// </summary>
+            public static readonly EventId Deleted = new(2007, nameof(Deleted));
+        }
+
+        /// <summary>
+        ///  EventIds related to finanсical transactions operations (2500-2999).
+        /// </summary>
+        public static class FinancialTransaction
+        {
+            /// <summary>
+            /// Event ID for when an invalid sort parameter is provided.
+            /// </summary>
+            public static readonly EventId SortInvalid = new(2500, nameof(SortInvalid));
+
+            /// <summary>
+            /// Event ID for when a financial transaction is not found.
+            /// </summary>
+            public static readonly EventId NotFound = new(2501, nameof(NotFound));
+
+            /// <summary>
+            /// Event ID for when an unauthorized access attempt is made.
+            /// </summary>
+            public static readonly EventId AccessDenied = new(2502, nameof(AccessDenied));
+
+            /// <summary>
+            /// Event ID for when a financial transaction is created.
+            /// </summary>
+            public static readonly EventId Created = new(2503, nameof(Created));
+
+            /// <summary>
+            /// Event ID for when a financial transaction is updated.
+            /// </summary>
+            public static readonly EventId Updated = new(2504, nameof(Updated));
+
+            /// <summary>
+            /// Event ID for when a financial transaction is deleted.
+            /// </summary>
+            public static readonly EventId Deleted = new(2505, nameof(Deleted));
+
+            /// <summary>
+            /// Event ID for when a grouping strategy that is not supported is requested.
+            /// </summary>
+            public static readonly EventId NotSupportedStrategyGrouping = new(2506, nameof(NotSupportedStrategyGrouping));
         }
     }
 }

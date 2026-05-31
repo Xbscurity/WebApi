@@ -1,9 +1,6 @@
 ﻿using api.Constants;
 using api.Dtos.FinancialTransaction;
-using api.Filters;
 using api.Models;
-using api.Repositories.Categories;
-using api.Responses;
 using api.Tests.Unit.Helpers;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -224,9 +221,9 @@ namespace api.Tests.Unit.Filters
             // Arrange
             var existingCategory = new Category { Id = 1, Name = "Test Category" };
 
-            var dto = new BaseFinancialTransactionInputDto
+            var dto = new FinancialTransactionUpdateInputDto
             {
-                CategoryId = 1,
+                RequestedCategoryId = 1,
                 Amount = 100,
                 Comment = "Test"
             };
@@ -324,7 +321,7 @@ namespace api.Tests.Unit.Filters
 
         [Theory]
         [InlineData("custom_id")]
-        [InlineData("id")]  
+        [InlineData("id")]
         public async Task OnActionExecutionAsync_AuthorizationSucceeded_CallsNext(string argumentName)
         {
             // Arrange
@@ -379,6 +376,6 @@ namespace api.Tests.Unit.Filters
                     existingCategory,
                     Policies.CategoryAccess),
                 Times.Once);
-        }   
+        }
     }
 }

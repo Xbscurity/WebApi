@@ -1,9 +1,6 @@
 ﻿using api.Models;
-using api.Providers.Interfaces;
-using api.Services.Transaction;
 using MockQueryable;
 using Moq;
-using System.Runtime.CompilerServices;
 
 namespace api.Tests.Unit.Services.FinancialTranasction
 {
@@ -135,4 +132,4 @@ namespace api.Tests.Unit.Services.FinancialTranasction
 
         }
     }
-    }
+}

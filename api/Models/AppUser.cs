@@ -3,19 +3,19 @@
 namespace api.Models
 {
     /// <summary>
-    /// Defines an application user in the system, extending <see cref="IdentityUser"/>.
+    /// Represents an application user entity extending ASP.NET Core Identity.
     /// </summary>
-    public class AppUser : IdentityUser
+    public class AppUser : IdentityUser, ITrackedEntity
     {
         /// <summary>
         /// Gets or sets a value indicating whether the user is banned.
         /// </summary>
         public bool IsBanned { get; set; }
 
-        /// <summary>
-        /// Gets or sets the timestamp when the user was created.
-        /// Defaults to the current UTC time.
-        /// </summary>
-        public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.UtcNow;
+        /// <inheritdoc/>
+        public DateTimeOffset CreatedAt { get; set; }
+
+        /// <inheritdoc/>
+        public DateTimeOffset UpdatedAt { get; set; }
     }
 }
