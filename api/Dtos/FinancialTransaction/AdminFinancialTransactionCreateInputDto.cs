@@ -1,12 +1,12 @@
-using api.Enums;
+﻿using api.Enums;
 using System.ComponentModel.DataAnnotations;
 
 namespace api.Dtos.FinancialTransaction
 {
     /// <summary>
-    /// Represents the data required to create a new financial transaction.
+    /// Represents the data required to create a new financial transaction as an administrator.
     /// </summary>
-    public record FinancialTransactionCreateInputDto
+    public record AdminFinancialTransactionCreateInputDto
     {
         /// <summary>
         /// Gets the transaction amount.
@@ -31,5 +31,14 @@ namespace api.Dtos.FinancialTransaction
         /// Gets the identifier of the category assigned to the transaction.
         /// </summary>
         required public Guid CategoryId { get; init; }
+
+        /// <summary>
+        /// Gets the identifier of the target user for the transaction.
+        /// </summary>
+        /// <remarks>
+        /// This field is optional and is typically used only by administrators
+        /// to create transactions on behalf of another user.
+        /// </remarks>
+        required public string AppUserId { get; init; }
     }
 }

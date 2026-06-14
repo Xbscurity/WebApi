@@ -9,26 +9,26 @@ using Microsoft.AspNetCore.Mvc;
 namespace api.Controllers
 {
     /// <summary>
-    /// Provides API endpoints for managing financial transactions and generating financial transaction reports.
+    /// Provides administrative API endpoints for managing categories.
     /// </summary>
     /// <remarks>
-    /// All endpoints require authentication and are accessible only to users
-    /// who satisfy the <c>NotBanned</c> authorization policy.
+    /// All endpoints require administrator role.
     /// </remarks>
-    [Authorize(Policy = Policies.NotBanned)]
+    [Authorize(Roles = Roles.Admin)]
     [ApiController]
-    [Route("api/financial-transactions")]
-    public class FinancialTransactionController : ControllerBase
+    [Route("api/admin/financial-transactions")]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public class AdminFinancialTransactionController : ControllerBase
     {
         private readonly IFinancialTransactionService _financialTransactionService;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="FinancialTransactionController"/> class.
+        /// Initializes a new instance of the <see cref="AdminFinancialTransactionController"/> class.
         /// </summary>
         /// <param name="transactionService">
         /// The service responsible for financial transaction operations.
         /// </param>
-        public FinancialTransactionController(IFinancialTransactionService transactionService)
+        public AdminFinancialTransactionController(IFinancialTransactionService transactionService)
         {
             _financialTransactionService = transactionService;
         }
@@ -48,10 +48,10 @@ namespace api.Controllers
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
-        public async Task<ActionResult<PagedItems<FinancialTransactionOutputDto>>> GetAll(
-            [FromQuery] EntityQuery query)
+        public async Task<ActionResult<PagedItems<AdminFinancialTransactionOutputDto>>> GetAll(
+            [FromQuery] AdminEntityQuery query)
         {
-            var transactions = await _financialTransactionService.GetAllAsync(query);
+            var transactions = await _financialTransactionService.GetAllForAdminAsync(query);
 
             return transactions.ToActionResult(this);
         }
@@ -70,9 +70,9 @@ namespace api.Controllers
         /// The financial transaction was not found.
         /// </response>
         [HttpGet("{id:guid}")]
-        public async Task<ActionResult<FinancialTransactionOutputDto>> GetById([FromRoute] Guid id)
+        public async Task<ActionResult<AdminFinancialTransactionOutputDto>> GetById([FromRoute] Guid id)
         {
-            var result = await _financialTransactionService.GetByIdAsync(id);
+            var result = await _financialTransactionService.GetByIdForAdminAsync(id);
 
             return result.ToActionResult(this);
         }
@@ -93,10 +93,10 @@ namespace api.Controllers
         /// The specified category was not found.
         /// </response>
         [HttpPost]
-        public async Task<ActionResult<FinancialTransactionOutputDto>> Create(
-            [FromBody] FinancialTransactionCreateInputDto transactionDto)
+        public async Task<ActionResult<AdminFinancialTransactionOutputDto>> Create(
+            [FromBody] AdminFinancialTransactionCreateInputDto transactionDto)
         {
-            var result = await _financialTransactionService.CreateAsync(transactionDto);
+            var result = await _financialTransactionService.CreateForAdminAsync(transactionDto);
 
             if (result.IsError)
             {
@@ -126,7 +126,7 @@ namespace api.Controllers
         [HttpPut("{id:guid}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<FinancialTransactionOutputDto>> Update(
+        public async Task<ActionResult<AdminFinancialTransactionOutputDto>> Update(
             [FromRoute] Guid id, [FromBody] FinancialTransactionUpdateInputDto dto)
         {
             var result = await _financialTransactionService.UpdateAsync(id, dto);
@@ -155,30 +155,6 @@ namespace api.Controllers
             var result = await _financialTransactionService.DeleteAsync(id);
 
             return result.ToNoContentResult(this);
-        }
-
-        /// <summary>
-        /// Generates a grouped financial transaction report.
-        /// </summary>
-        /// <param name="query">
-        /// The report query parameters including grouping strategy,
-        /// pagination, and optional date filters.
-        /// </param>
-        /// <returns>
-        /// A paginated grouped financial transaction report.
-        /// </returns>
-        /// <response code="200">
-        /// Returns the generated financial transaction report.
-        /// </response>
-        [HttpGet("report")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
-        public async Task<ActionResult<PagedItems<GroupedReportOutputDto>>> GetReport(
-            [FromQuery] ReportQuery query)
-        {
-            var report = await _financialTransactionService.GetReportAsync(query);
-
-            return report.ToActionResult(this);
         }
     }
 }

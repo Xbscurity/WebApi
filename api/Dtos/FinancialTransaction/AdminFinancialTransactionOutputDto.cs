@@ -3,9 +3,9 @@
 namespace api.Dtos.FinancialTransaction
 {
     /// <summary>
-    /// Represents a financial transaction returned by the application.
+    /// Represents a financial transaction returned by the application as an administrator.
     /// </summary>
-    public record FinancialTransactionOutputDto
+    public record AdminFinancialTransactionOutputDto
     {
         /// <summary>
         /// Gets the unique identifier of the financial transaction.
@@ -45,5 +45,10 @@ namespace api.Dtos.FinancialTransaction
         /// Gets the date and time when the transaction was updated.
         /// </summary>
         required public DateTimeOffset UpdatedAt { get; init; }
+
+        /// <summary>
+        /// Gets the identifier of the user who owns the transaction.
+        /// </summary>
+        required public string AppUserId { get; init; }
     }
 }

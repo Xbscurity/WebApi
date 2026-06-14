@@ -1,6 +1,6 @@
 ﻿using api.Dtos.FinancialTransaction;
 using api.Models;
-using api.QueryObjects;
+using api.Queries;
 using Ardalis.Specification;
 
 namespace api.Interfaces
@@ -26,7 +26,8 @@ namespace api.Interfaces
         /// <returns>
         /// A collection of grouped report results aggregated by category.
         /// </returns>
-        Task<List<GroupedReportOutputDto>> GetGroupedListByCategory(ISpecification<FinancialTransaction> spec, ReportQuery query);
+        Task<List<GroupedReportOutputDto>> GetGroupedListByCategory(
+            ISpecification<FinancialTransaction> spec, ReportQuery query);
 
         /// <summary>
         /// Retrieves grouped financial transaction data aggregated by date.
@@ -40,7 +41,8 @@ namespace api.Interfaces
         /// <returns>
         /// A collection of grouped report results aggregated by date.
         /// </returns>
-        Task<List<GroupedReportOutputDto>> GetGroupedListByDate(ISpecification<FinancialTransaction> spec, ReportQuery query);
+        Task<List<GroupedReportOutputDto>> GetGroupedListByDate(
+            ISpecification<FinancialTransaction> spec, ReportQuery query);
 
         /// <summary>
         /// Retrieves grouped financial transaction data aggregated
@@ -56,6 +58,7 @@ namespace api.Interfaces
         /// A collection of grouped report results aggregated
         /// by category and date.
         /// </returns>
-        Task<List<GroupedReportOutputDto>> GetGroupedListByCategoryAndDate(ISpecification<FinancialTransaction> spec, ReportQuery query);
+        Task<List<GroupedReportOutputDto>> GetGroupedListByCategoryAndDate(
+            ISpecification<FinancialTransaction> spec, ReportQuery query);
     }
 }

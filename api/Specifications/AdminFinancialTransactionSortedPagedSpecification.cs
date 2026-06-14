@@ -1,25 +1,26 @@
 ﻿using api.Dtos.FinancialTransaction;
 using api.Models;
-using api.Providers.CurrentUser;
 using api.Queries;
 using Ardalis.Specification;
 
 namespace api.Specifications
 {
     /// <summary>
-    /// Filters, sorts, and paginates <see cref="FinancialTransaction"/> entities for a specific user,
-    /// projecting results to <see cref="FinancialTransactionOutputDto"/>.
+    /// Filters, sorts, and paginates <see cref="FinancialTransaction"/> entities across all users,
+    /// projecting results to <see cref="AdminFinancialTransactionOutputDto"/>.
     /// </summary>
-    public class FinancialTransactionSortedPagedSpecification : Specification<FinancialTransaction, FinancialTransactionOutputDto>
+    public class AdminFinancialTransactionSortedPagedSpecification : Specification<FinancialTransaction, AdminFinancialTransactionOutputDto>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="FinancialTransactionSortedPagedSpecification"/> class.
+        /// Initializes a new instance of the <see cref="AdminFinancialTransactionSortedPagedSpecification"/> class.
         /// </summary>
-        /// <param name="query">Query parameters for filtering, sorting, and pagination.</param>
-        /// <param name="currentUser">The current user context.</param>
-        public FinancialTransactionSortedPagedSpecification(EntityQuery query, ICurrentUser currentUser)
+        /// <param name="query">Admin query parameters for filtering, sorting, and pagination.</param>
+        public AdminFinancialTransactionSortedPagedSpecification(AdminEntityQuery query)
         {
-            Query.Where(c => c.AppUserId == currentUser.UserId);
+            if (query.UserId != null)
+            {
+                Query.Where(c => c.AppUserId == query.UserId);
+            }
 
             Query.Include(ft => ft.Category);
 
@@ -94,7 +95,7 @@ namespace api.Specifications
             .Skip((query.Page - 1) * query.Size)
             .Take(query.Size);
 
-            Query.Select(ft => new FinancialTransactionOutputDto
+            Query.Select(ft => new AdminFinancialTransactionOutputDto
             {
                 Id = ft.Id,
                 CategoryId = ft.CategoryId,
@@ -103,6 +104,7 @@ namespace api.Specifications
                 Comment = ft.Comment,
                 CreatedAt = ft.CreatedAt,
                 UpdatedAt = ft.UpdatedAt,
+                AppUserId = ft.AppUserId,
             });
         }
     }

@@ -1,6 +1,5 @@
-﻿using api.Data;
-using api.Dtos.Category;
-using api.QueryObjects;
+﻿using api.Dtos.Category;
+using api.Queries;
 using api.Services.Shared;
 using ErrorOr;
 
@@ -24,6 +23,19 @@ namespace api.Services.Categories
         Task<ErrorOr<PagedItems<CategoryOutputDto>>> GetAllAsync(EntityQuery query);
 
         /// <summary>
+        /// Retrieves a paginated list of categories for administrative purposes.
+        /// </summary>
+        /// <param name="query">
+        /// The query parameters used for paging, sorting, and filtering.
+        /// </param>
+        /// <returns>
+        /// An instance of <see cref="ErrorOr{T}"/> containing a
+        /// <see cref="PagedItems{T}"/> of <see cref="AdminCategoryOutputDto"/>
+        /// if successful; otherwise, an error.
+        /// </returns>
+        Task<ErrorOr<PagedItems<AdminCategoryOutputDto>>> GetAllForAdminAsync(AdminEntityQuery query);
+
+        /// <summary>
         /// Retrieves a category by its identifier.
         /// </summary>
         /// <param name="id">
@@ -36,16 +48,42 @@ namespace api.Services.Categories
         Task<ErrorOr<CategoryOutputDto>> GetByIdAsync(Guid id);
 
         /// <summary>
+        /// Retrieves a category by its identifier for administrative purposes.
+        /// </summary>
+        /// <param name="id">
+        /// The identifier of the category.
+        /// </param>
+        /// <returns>
+        /// An instance of <see cref="ErrorOr{T}"/> containing an
+        /// <see cref="AdminCategoryOutputDto"/> if successful;
+        /// otherwise, an error.
+        /// </returns>
+        Task<ErrorOr<AdminCategoryOutputDto>> GetByIdForAdminAsync(Guid id);
+
+        /// <summary>
         /// Creates a new category.
         /// </summary>
-        /// <param name="categoryDto">
+        /// <param name="input">
         /// The data required to create the category.
         /// </param>
         /// <returns>
         /// An instance of <see cref="ErrorOr{T}"/> containing a <see cref="CategoryOutputDto"/>
         /// if successful; otherwise, an error.
         /// </returns>
-        Task<ErrorOr<CategoryOutputDto>> CreateAsync(CategoryCreateInputDto categoryDto);
+        Task<ErrorOr<CategoryOutputDto>> CreateAsync(CategoryCreateInputDto input);
+
+        /// <summary>
+        /// Creates a new category with administrative settings.
+        /// </summary>
+        /// <param name="input">
+        /// The data required to create the category.
+        /// </param>
+        /// <returns>
+        /// An instance of <see cref="ErrorOr{T}"/> containing an
+        /// <see cref="AdminCategoryOutputDto"/> if successful;
+        /// otherwise, an error.
+        /// </returns>
+        Task<ErrorOr<AdminCategoryOutputDto>> CreateForAdminAsync(AdminCategoryCreateInputDto input);
 
         /// <summary>
         /// Updates an existing category.
@@ -53,14 +91,30 @@ namespace api.Services.Categories
         /// <param name="id">
         /// The identifier of the category to update.
         /// </param>
-        /// <param name="categoryDto">
+        /// <param name="input">
         /// The updated category data.
         /// </param>
         /// <returns>
         /// An instance of <see cref="ErrorOr{T}"/> containing a <see cref="CategoryOutputDto"/>
         /// if successful; otherwise, an error.
         /// </returns>
-        Task<ErrorOr<CategoryOutputDto>> UpdateAsync(Guid id, CategoryUpdateInputDto categoryDto);
+        Task<ErrorOr<CategoryOutputDto>> UpdateAsync(Guid id, CategoryUpdateInputDto input);
+
+        /// <summary>
+        /// Updates an existing category for administrative purposes.
+        /// </summary>
+        /// <param name="id">
+        /// The identifier of the category to update.
+        /// </param>
+        /// <param name="input">
+        /// The updated category data.
+        /// </param>
+        /// <returns>
+        /// An instance of <see cref="ErrorOr{T}"/> containing an
+        /// <see cref="AdminCategoryOutputDto"/> if successful;
+        /// otherwise, an error.
+        /// </returns>
+        Task<ErrorOr<AdminCategoryOutputDto>> UpdateForAdminAsync(Guid id, CategoryUpdateInputDto input);
 
         /// <summary>
         /// Sets the active status of a category.

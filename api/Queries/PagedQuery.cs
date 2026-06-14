@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace api.QueryObjects
+namespace api.Queries
 {
     /// <summary>
     /// Represents common pagination query parameters.

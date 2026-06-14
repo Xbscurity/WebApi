@@ -1,7 +1,8 @@
 ﻿using api.Dtos.FinancialTransaction;
 using api.Interfaces;
-using api.QueryObjects;
-using api.Specifications;
+using api.Models;
+using api.Queries;
+using Ardalis.Specification;
 
 namespace api.Services.FinancialTransactions
 {
@@ -25,7 +26,7 @@ namespace api.Services.FinancialTransactions
         public GroupingReportStrategyKey Key => GroupingReportStrategyKey.ByDate;
 
         /// <inheritdoc/>
-        public Task<List<GroupedReportOutputDto>> GetGroupedAsync(FinancialTransactionReportSpecification spec, ReportQuery query)
+        public Task<List<GroupedReportOutputDto>> GetGroupedAsync(Specification<FinancialTransaction> spec, ReportQuery query)
             => _repository.GetGroupedListByDate(spec, query);
     }
 }

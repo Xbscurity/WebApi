@@ -1,5 +1,4 @@
-﻿using api.Constants;
-using api.Extensions;
+﻿using api.Extensions;
 
 namespace api.Providers.CurrentUser
 {
@@ -28,9 +27,6 @@ namespace api.Providers.CurrentUser
         /// <inheritdoc />
         public string UserId => _httpContextAccessor.HttpContext?.User?.GetUserId()
             ?? throw new InvalidOperationException(
-                "Attempted to access UserId outside of a valid authenticated request context.");
-
-        /// <inheritdoc />
-        public bool IsAdmin => _httpContextAccessor.HttpContext?.User?.IsInRole(Roles.Admin) ?? false;
+                "Attempted to access property outside of a valid authenticated request context.");
     }
 }

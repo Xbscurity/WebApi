@@ -1,9 +1,9 @@
 ﻿namespace api.Dtos.Category
 {
     /// <summary>
-    /// Represents a category returned by the application.
+    /// Represents a category returned by the application as an administrator.
     /// </summary>
-    public record CategoryOutputDto
+    public record AdminCategoryOutputDto
     {
         /// <summary>
         /// Gets the unique identifier of the category.
@@ -29,5 +29,10 @@
         /// Gets the date and time when the transaction was updated.
         /// </summary>
         required public DateTimeOffset UpdatedAt { get; init; }
+
+        /// <summary>
+        /// Gets the identifier of the user who owns the category.
+        /// </summary>
+        required public string AppUserId { get; init; }
     }
 }

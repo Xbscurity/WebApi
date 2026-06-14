@@ -98,7 +98,7 @@ namespace api.Services.Auth
 
                 return result;
             });
-            }
+        }
 
         /// <inheritdoc/>
         public async Task<ErrorOr<AuthResult>> LoginAsync(LoginInputDto dto)

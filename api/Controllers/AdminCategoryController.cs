@@ -9,26 +9,26 @@ using Microsoft.AspNetCore.Mvc;
 namespace api.Controllers
 {
     /// <summary>
-    /// Provides API endpoints for managing categories used to group financial transactions.
+    /// Provides administrative API endpoints for managing categories.
     /// </summary>
     /// <remarks>
-    /// All endpoints require authentication and are accessible only to users
-    /// who satisfy the <c>NotBanned</c> authorization policy.
+    /// All endpoints require administrator role.
     /// </remarks>
-    [Authorize(Policy = Policies.NotBanned)]
+    [Authorize(Roles = Roles.Admin)]
     [ApiController]
-    [Route("api/categories")]
-    public class CategoryController : ControllerBase
+    [Route("api/admin/categories")]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public class AdminCategoryController : ControllerBase
     {
         private readonly ICategoryService _categoryService;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="CategoryController"/> class.
+        /// Initializes a new instance of the <see cref="AdminCategoryController"/> class.
         /// </summary>
         /// <param name="categoryService">
         /// The service responsible for category operations.
         /// </param>
-        public CategoryController(
+        public AdminCategoryController(
             ICategoryService categoryService)
         {
             _categoryService = categoryService;
@@ -49,10 +49,10 @@ namespace api.Controllers
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
-        public async Task<ActionResult<PagedItems<CategoryOutputDto>>> GetAll(
-            [FromQuery] EntityQuery query)
+        public async Task<ActionResult<PagedItems<AdminCategoryOutputDto>>> GetAll(
+            [FromQuery] AdminEntityQuery query)
         {
-            var categories = await _categoryService.GetAllAsync(query);
+            var categories = await _categoryService.GetAllForAdminAsync(query);
 
             return categories.ToActionResult(this);
         }
@@ -69,9 +69,9 @@ namespace api.Controllers
         /// The specified category was not found.
         /// </response>
         [HttpGet("{id:guid}")]
-        public async Task<ActionResult<CategoryOutputDto>> GetById([FromRoute] Guid id)
+        public async Task<ActionResult<AdminCategoryOutputDto>> GetById([FromRoute] Guid id)
         {
-            var result = await _categoryService.GetByIdAsync(id);
+            var result = await _categoryService.GetByIdForAdminAsync(id);
 
             return result.ToActionResult(this);
         }
@@ -85,10 +85,10 @@ namespace api.Controllers
         /// The category was successfully created.
         /// </response>
         [HttpPost]
-        public async Task<ActionResult<CategoryOutputDto>> Create(
-            [FromBody] CategoryCreateInputDto categoryDto)
+        public async Task<ActionResult<AdminCategoryOutputDto>> Create(
+            [FromBody] AdminCategoryCreateInputDto categoryDto)
         {
-            var result = await _categoryService.CreateAsync(categoryDto);
+            var result = await _categoryService.CreateForAdminAsync(categoryDto);
 
             if (result.IsError)
             {
@@ -116,10 +116,10 @@ namespace api.Controllers
         [HttpPut("{id:guid}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<CategoryOutputDto>> Update(
+        public async Task<ActionResult<AdminCategoryOutputDto>> Update(
             [FromRoute] Guid id, [FromBody] CategoryUpdateInputDto categoryDto)
         {
-            var result = await _categoryService.UpdateAsync(id, categoryDto);
+            var result = await _categoryService.UpdateForAdminAsync(id, categoryDto);
 
             return result.ToActionResult(this);
         }

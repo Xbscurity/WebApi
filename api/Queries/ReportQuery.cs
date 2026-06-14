@@ -1,7 +1,6 @@
 using api.Services.FinancialTransactions;
-using System.ComponentModel.DataAnnotations;
 
-namespace api.QueryObjects
+namespace api.Queries
 {
     /// <summary>
     /// Represents query parameters for generating grouped financial reports.
@@ -49,14 +48,5 @@ namespace api.QueryObjects
         /// Defaults to <see langword="false"/>.
         /// </value>
         public bool IncludeInactive { get; init; } = false;
-
-        /// <summary>
-        /// Gets the identifier of the user whose report data should be queried.
-        /// </summary>
-        /// <value>
-        /// The user identifier, or <see langword="null"/>
-        /// when the current authenticated user should be used.
-        /// </value>
-        public string? UserId { get; init; }
     }
 }

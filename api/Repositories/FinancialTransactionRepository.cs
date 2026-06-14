@@ -2,7 +2,7 @@
 using api.Dtos.FinancialTransaction;
 using api.Enums;
 using api.Models;
-using api.QueryObjects;
+using api.Queries;
 using Ardalis.Specification;
 using Ardalis.Specification.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
@@ -126,7 +126,6 @@ namespace api.Interfaces
                 Comment = t.Comment,
                 CreatedAt = t.CreatedAt,
                 UpdatedAt = t.UpdatedAt,
-                AppUserId = t.AppUserId,
                 CategoryId = t.CategoryId,
             })
             .ToList(),

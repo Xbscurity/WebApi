@@ -1,5 +1,4 @@
 ﻿using api.Models;
-using api.Options;
 using ErrorOr;
 
 namespace api.Services.Token

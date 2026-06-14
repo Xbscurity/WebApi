@@ -16,10 +16,6 @@ services:
       start_period: 30s
     networks:
       - backend
-    deploy:
-      resources:
-        limits:
-          memory: 512m
 
   api:
     build:
@@ -36,11 +32,6 @@ services:
         condition: service_healthy
     networks:
       - backend
-    deploy:
-      resources:
-        limits:
-          memory: 512m
-          cpus: "1.0"
 
   pgadmin:
     image: dpage/pgadmin4:9.13
@@ -56,10 +47,6 @@ services:
       - pgadmin_data:/var/lib/pgadmin
     networks:
       - backend
-    deploy:
-      resources:
-        limits:
-          memory: 256m
 
   seq:
     image: datalust/seq:2025.2
@@ -73,10 +60,6 @@ services:
       - seq-data:/data
     networks:
       - backend
-    deploy:
-      resources:
-        limits:
-          memory: 256m
 
 volumes:
   pgdata:

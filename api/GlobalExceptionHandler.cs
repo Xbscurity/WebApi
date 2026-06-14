@@ -41,7 +41,7 @@ namespace api
         {
             _logger.LogError(exception, "Unhandled exception");
 
-            Dictionary<string, object?>? extensions = new Dictionary<string, object?>
+            Dictionary<string, object?>? extensions = new()
             {
                 ["errorCode"] = "INTERNAL_ERROR",
             };

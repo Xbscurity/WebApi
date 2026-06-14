@@ -1,6 +1,7 @@
 ﻿using api.Dtos.FinancialTransaction;
-using api.QueryObjects;
-using api.Specifications;
+using api.Models;
+using api.Queries;
+using Ardalis.Specification;
 
 namespace api.Services.FinancialTransactions
 {
@@ -26,6 +27,6 @@ namespace api.Services.FinancialTransactions
         /// <returns>
         /// A collection of grouped report items.
         /// </returns>
-        Task<List<GroupedReportOutputDto>> GetGroupedAsync(FinancialTransactionReportSpecification spec, ReportQuery query);
+        Task<List<GroupedReportOutputDto>> GetGroupedAsync(Specification<FinancialTransaction> spec, ReportQuery query);
     }
 }

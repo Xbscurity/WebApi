@@ -5,7 +5,6 @@ using api.Services.Account;
 using api.Services.RefreshTokenCookie;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Npgsql;
 
 namespace api.Controllers.User
 {

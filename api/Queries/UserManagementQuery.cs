@@ -1,4 +1,4 @@
-﻿namespace api.QueryObjects
+﻿namespace api.Queries
 {
     /// <summary>
     /// Represents query parameters for retrieving paginated users collection.

@@ -3,9 +3,9 @@
 namespace api.Dtos.Category
 {
     /// <summary>
-    /// Represents the data required to create a new category.
+    /// Represents the data required to create a new category as an administrator.
     /// </summary>
-    public record CategoryCreateInputDto
+    public record AdminCategoryCreateInputDto
     {
         /// <summary>
         /// Gets the name of the category.
@@ -17,5 +17,10 @@ namespace api.Dtos.Category
         [MinLength(3, ErrorMessage = "Name must be at least 3 characters")]
         [MaxLength(20, ErrorMessage = "Name can not be over 20 characters")]
         required public string Name { get; init; }
+
+        /// <summary>
+        /// Gets the identifier of the target user for the category to create.
+        /// </summary>
+        required public string AppUserId { get; init; }
     }
 }

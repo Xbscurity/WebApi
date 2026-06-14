@@ -1,7 +1,6 @@
 ﻿using api.Constants;
-using api.Dtos.Category;
 using api.Dtos.User;
-using api.QueryObjects;
+using api.Queries;
 using api.Services.Shared;
 using api.Services.UserManagement;
 using Microsoft.AspNetCore.Authorization;

@@ -35,6 +35,36 @@ namespace api.Extensions
                 Comment = financialTransaction.Comment,
                 CreatedAt = financialTransaction.CreatedAt,
                 UpdatedAt = financialTransaction.UpdatedAt,
+            };
+        }
+
+        /// <summary>
+        /// Converts a <see cref="FinancialTransaction"/> entity
+        /// into a <see cref="AdminFinancialTransactionOutputDto"/>.
+        /// </summary>
+        /// <param name="financialTransaction">
+        /// The financial transaction entity to convert.
+        /// </param>
+        /// <returns>
+        /// A DTO representation of the financial transaction.
+        /// </returns>
+        /// <exception cref="ArgumentNullException">
+        /// Thrown when <paramref name="financialTransaction"/> is <see langword="null"/>.
+        /// </exception>
+        public static AdminFinancialTransactionOutputDto ToAdminOutputDto(
+                this FinancialTransaction financialTransaction)
+        {
+            ArgumentNullException.ThrowIfNull(financialTransaction);
+
+            return new AdminFinancialTransactionOutputDto()
+            {
+                Id = financialTransaction.Id,
+                CategoryId = financialTransaction.CategoryId,
+                Amount = financialTransaction.Amount,
+                Type = financialTransaction.Type,
+                Comment = financialTransaction.Comment,
+                CreatedAt = financialTransaction.CreatedAt,
+                UpdatedAt = financialTransaction.UpdatedAt,
                 AppUserId = financialTransaction.AppUserId,
             };
         }

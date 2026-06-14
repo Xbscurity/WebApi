@@ -15,12 +15,6 @@
         /// <exception cref="InvalidOperationException">
         /// Thrown when accessed outside of a valid authenticated request context.
         /// </exception>
-        public string UserId { get; }
-
-        /// <summary>
-        /// Gets a value indicating whether the current user
-        /// belongs to the administrator role.
-        /// </summary>
-        public bool IsAdmin { get; }
+        string UserId { get; }
     }
 }

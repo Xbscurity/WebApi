@@ -1,29 +1,21 @@
 ﻿using api.Models;
 using api.Providers.CurrentUser;
-using api.QueryObjects;
+using api.Queries;
 using Ardalis.Specification;
 
 namespace api.Specifications
 {
     /// <summary>
-    /// Specification for generating financial transaction reports with filtering and related data inclusion.
+    /// Filters <see cref="FinancialTransaction"/> entities for report generation,
+    /// including related <see cref="Category"/> data.
     /// </summary>
     public class FinancialTransactionReportSpecification : Specification<FinancialTransaction>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="FinancialTransactionReportSpecification"/> class.
         /// </summary>
-        /// <param name="query">Report query parameters for filtering.</param>
+        /// <param name="query">Report query parameters for date range and activity filtering.</param>
         /// <param name="currentUser">The current user context.</param>
-        /// <remarks>
-        /// Applies:
-        /// <list type="bullet">
-        /// <item><description>Date range filtering (start and end dates)</description></item>
-        /// <item><description>User-based filtering (admin can query by user, others limited to their own data)</description></item>
-        /// <item><description>Includes related category data</description></item>
-        /// <item><description>Optional filtering of inactive categories</description></item>
-        /// </list>
-        /// </remarks>
         public FinancialTransactionReportSpecification(ReportQuery query, ICurrentUser currentUser)
         {
             if (query.StartDate != null)
@@ -36,14 +28,7 @@ namespace api.Specifications
                 Query.Where(t => t.CreatedAt <= query.EndDate.Value);
             }
 
-            if (!currentUser.IsAdmin)
-            {
-                Query.Where(c => c.AppUserId == currentUser.UserId);
-            }
-            else if (!string.IsNullOrWhiteSpace(query.UserId))
-            {
-                Query.Where(c => c.AppUserId == query.UserId);
-            }
+            Query.Where(c => c.AppUserId == currentUser.UserId);
 
             Query.Include(ft => ft.Category);
 

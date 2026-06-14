@@ -77,10 +77,6 @@ namespace api
                 operation.Responses.TryAdd(
                     StatusCodes.Status401Unauthorized.ToString(),
                     CreateProblemDetailsResponse("Valid JWT token is missing or expired.", schema));
-
-                operation.Responses.TryAdd(
-                    StatusCodes.Status403Forbidden.ToString(),
-                    CreateProblemDetailsResponse("The user is banned or does not have access to the requested data.", schema));
             }
         }
 

@@ -1,5 +1,5 @@
 ﻿using api.Dtos.User;
-using api.QueryObjects;
+using api.Queries;
 using api.Services.Shared;
 using ErrorOr;
 

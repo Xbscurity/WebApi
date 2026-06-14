@@ -1,6 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
-
-namespace api.QueryObjects
+﻿namespace api.Queries
 {
     /// <summary>
     /// Represents query parameters for retrieving paginated entity collections.
@@ -42,12 +40,13 @@ namespace api.QueryObjects
         public bool IncludeInactive { get; init; } = false;
 
         /// <summary>
-        /// Gets the identifier of the user whose entities should be queried.
+        /// Gets the start date used to filter entities.
         /// </summary>
-        /// <value>
-        /// The user identifier, or <see langword="null"/>
-        /// when the current authenticated user should be used.
-        /// </value>
-        public string? UserId { get; init; }
+        public DateTimeOffset? StartDate { get; init; }
+
+        /// <summary>
+        /// Gets the end date used to filter entities.
+        /// </summary>
+        public DateTimeOffset? EndDate { get; init; }
     }
 }

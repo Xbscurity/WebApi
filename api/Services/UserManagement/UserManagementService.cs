@@ -1,13 +1,12 @@
 ﻿using api.Constants;
 using api.Dtos.User;
-using api.QueryObjects;
+using api.Queries;
 using api.Services.Shared;
 using api.Services.User;
 using api.Specifications;
 using ErrorOr;
 using Microsoft.Extensions.Caching.Memory;
 using System.Collections.Frozen;
-using System.Runtime.CompilerServices;
 
 namespace api.Services.UserManagement
 {

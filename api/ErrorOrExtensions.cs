@@ -1,5 +1,4 @@
 ﻿using api.Constants;
-using api.Extensions;
 using ErrorOr;
 using Microsoft.AspNetCore.Mvc;
 
@@ -84,25 +83,25 @@ namespace api
         }
 
         /// <summary>
-    /// Creates a standardized HTTP error response
-    /// from a collection of <see cref="Error"/> instances.
-    /// </summary>
-    /// <param name="controller">
-    /// The controller used to create the response.
-    /// </param>
-    /// <param name="errors">
-    /// The collection of errors to include in the response.
-    /// </param>
-    /// <returns>
-    /// An <see cref="ObjectResult"/> containing RFC 9110 compliant
-    /// <see cref="ProblemDetails"/> data.
-    /// </returns>
-    /// <remarks>
-    /// Validation errors are grouped by field name and returned
-    /// with HTTP status code 422 (Unprocessable Entity).
-    /// Other errors are mapped to status codes based on their
-    /// <see cref="ErrorType"/>.
-    /// </remarks>
+        /// Creates a standardized HTTP error response
+        /// from a collection of <see cref="Error"/> instances.
+        /// </summary>
+        /// <param name="controller">
+        /// The controller used to create the response.
+        /// </param>
+        /// <param name="errors">
+        /// The collection of errors to include in the response.
+        /// </param>
+        /// <returns>
+        /// An <see cref="ObjectResult"/> containing RFC 9110 compliant
+        /// <see cref="ProblemDetails"/> data.
+        /// </returns>
+        /// <remarks>
+        /// Validation errors are grouped by field name and returned
+        /// with HTTP status code 422 (Unprocessable Entity).
+        /// Other errors are mapped to status codes based on their
+        /// <see cref="ErrorType"/>.
+        /// </remarks>
         private static ActionResult CreateErrorResult(ControllerBase controller, List<Error> errors)
         {
             if (errors.All(e => e.Type == ErrorType.Validation))

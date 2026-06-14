@@ -5,7 +5,7 @@ using api.Extensions;
 using api.Interfaces;
 using api.Models;
 using api.Providers.CurrentUser;
-using api.QueryObjects;
+using api.Queries;
 using api.Services.Authorization;
 using api.Services.Shared;
 using api.Services.User;
@@ -110,54 +110,77 @@ namespace api.Services.Categories
             return pagedData;
         }
 
+        /// <inheritdoc/>
+        public async Task<ErrorOr<PagedItems<AdminCategoryOutputDto>>> GetAllForAdminAsync(
+            AdminEntityQuery query)
+        {
+            if (!ValidFields.Contains(query.SortBy))
+            {
+                var allowed = string.Join(", ", ValidFields);
+
+                _logger.LogWarning(
+                    LoggingEvents.Category.SortInvalid,
+                    "SortBy '{Field}' is invalid. Allowed fields: {AllowedFields}",
+                    query.SortBy,
+                    allowed);
+
+                return Errors.Category.InvalidSortBy(query.SortBy, ValidFields);
+            }
+
+            var spec = new AdminCategorySortedPagedSpecification(query);
+            var categories = await _categoryRepository.ListAsync(spec);
+            var count = await _categoryRepository.CountAsync(spec);
+
+            var pagination = new Pagination(query.Page, query.Size, count);
+            var pagedData = new PagedItems<AdminCategoryOutputDto>
+            {
+                Items = categories,
+                Pagination = pagination,
+            };
+
+            _logger.LogInformation(
+                "Returning {Count} categories. Page={PageNumber}, Size={PageSize}, SortBy={SortBy}, UserId = {UserId}",
+                pagedData.Items.Count,
+                pagedData.Pagination.PageNumber,
+                pagedData.Pagination.PageSize,
+                query.SortBy,
+                query.UserId);
+
+            return pagedData;
+        }
+
         /// <inheritdoc />
         public async Task<ErrorOr<CategoryOutputDto>> GetByIdAsync(Guid id)
         {
-            var category = await _categoryRepository.GetByIdAsync(id);
-            if (category == null)
+            var categoryResult = await GetAccessibleCategoryAsync(id);
+            if (categoryResult.IsError)
             {
-                _logger.LogWarning(LoggingEvents.Category.NotFound, "Category {CategoryId} not found", id);
-                return Errors.Category.NotFound(id);
+                return categoryResult.Errors;
             }
 
-            var categoryAccess = await _categoryAccessService.CanAccessCheckAsync(category);
-            if (categoryAccess.IsError)
+            return categoryResult.Value.ToOutputDto();
+        }
+
+        /// <inheritdoc/>
+        public async Task<ErrorOr<AdminCategoryOutputDto>> GetByIdForAdminAsync(Guid id)
+        {
+            var categoryResult = await GetAccessibleCategoryAsync(id);
+            if (categoryResult.IsError)
             {
-                return categoryAccess.Errors;
+                return categoryResult.Errors;
             }
 
-            _logger.LogDebug(
-                "Category {CategoryId} retrieved.",
-                id);
-
-            return category.ToOutputDto();
+            return categoryResult.Value.ToAdminOutputDto();
         }
 
         /// <inheritdoc />
         public async Task<ErrorOr<CategoryOutputDto>> CreateAsync(
-            CategoryCreateInputDto categoryDto)
+            CategoryCreateInputDto input)
         {
-            string finalUserId;
-            if (_currentUser.IsAdmin && !string.IsNullOrWhiteSpace(categoryDto.TargetUserId))
+            var category = new Category
             {
-                var isExistingUser = await _userService.AnyAsync(categoryDto.TargetUserId);
-                if (!isExistingUser)
-                {
-                    _logger.LogWarning(LoggingEvents.User.NotFound, "Requested User id not found");
-                    return Errors.User.NotFound(categoryDto.TargetUserId);
-                }
-
-                finalUserId = categoryDto.TargetUserId;
-            }
-            else
-            {
-                finalUserId = _currentUser.UserId;
-            }
-
-            Category category = new Category
-            {
-                Name = categoryDto.Name.Trim(),
-                AppUserId = finalUserId,
+                Name = input.Name.Trim(),
+                AppUserId = _currentUser.UserId,
             };
 
             await _categoryRepository.AddAsync(category);
@@ -170,50 +193,71 @@ namespace api.Services.Categories
             return category.ToOutputDto();
         }
 
-        /// <inheritdoc />
-        public async Task<ErrorOr<CategoryOutputDto>> UpdateAsync(
-            Guid id, CategoryUpdateInputDto categoryDto)
+        /// <inheritdoc/>
+        public async Task<ErrorOr<AdminCategoryOutputDto>> CreateForAdminAsync(
+            AdminCategoryCreateInputDto input)
         {
-            var category = await _categoryRepository.GetByIdAsync(id);
-            if (category == null)
+            var targetUserId = input.AppUserId;
+            if (!await _userService.AnyAsync(targetUserId))
             {
-                _logger.LogWarning(LoggingEvents.Category.NotFound, "Category {CategoryId} not found", id);
-                return Errors.Category.NotFound(id);
+                _logger.LogWarning(LoggingEvents.User.NotFound, "Requested User id not found");
+                return Errors.User.NotFound(targetUserId);
             }
 
-            var categoryAccess = await _categoryAccessService.CanAccessCheckAsync(category);
-            if (categoryAccess.IsError)
+            var category = new Category
             {
-                return categoryAccess.Errors;
-            }
+                Name = input.Name.Trim(),
+                AppUserId = targetUserId,
+            };
 
-            category!.Name = categoryDto.Name!.Trim();
-
-            await _categoryRepository.UpdateAsync(category);
+            await _categoryRepository.AddAsync(category);
 
             _logger.LogInformation(
-                LoggingEvents.Category.Updated,
-                "Category {CategoryId} updated.",
-                category.Id);
+                LoggingEvents.Category.Created,
+                "Created new category {categoryId} for {AppUserId}",
+                category.Id,
+                input.AppUserId);
 
-            return category.ToOutputDto();
+            return category.ToAdminOutputDto();
+        }
+
+        /// <inheritdoc />
+        public async Task<ErrorOr<CategoryOutputDto>> UpdateAsync(
+            Guid id, CategoryUpdateInputDto input)
+        {
+            var result = await UpdateCoreAsync(id, input);
+            if (result.IsError)
+            {
+                return result.Errors;
+            }
+
+            return result.Value.ToOutputDto();
+        }
+
+        /// <inheritdoc />
+        public async Task<ErrorOr<AdminCategoryOutputDto>> UpdateForAdminAsync(
+            Guid id, CategoryUpdateInputDto input)
+        {
+            var result = await UpdateCoreAsync(id, input);
+            if (result.IsError)
+            {
+                return result.Errors;
+            }
+
+            return result.Value.ToAdminOutputDto();
         }
 
         /// <inheritdoc />
         public async Task<ErrorOr<ToggleActiveOutputDto>> SetActiveAsync(Guid id, bool isActive)
         {
-            var category = await _categoryRepository.GetByIdAsync(id);
-            if (category == null)
+            var categoryResult = await GetAccessibleCategoryAsync(id);
+
+            if (categoryResult.IsError)
             {
-                _logger.LogWarning(LoggingEvents.Category.NotFound, "Category {CategoryId} not found", id);
-                return Errors.Category.NotFound(id);
+                return categoryResult.Errors;
             }
 
-            var categoryAccess = await _categoryAccessService.CanAccessCheckAsync(category);
-            if (categoryAccess.IsError)
-            {
-                return categoryAccess.Errors;
-            }
+            var category = categoryResult.Value;
 
             category.IsActive = isActive;
 
@@ -233,18 +277,14 @@ namespace api.Services.Categories
         /// <inheritdoc />
         public async Task<ErrorOr<Deleted>> DeleteAsync(Guid id)
         {
-            var category = await _categoryRepository.GetByIdAsync(id);
-            if (category == null)
+            var categoryResult = await GetAccessibleCategoryAsync(id);
+
+            if (categoryResult.IsError)
             {
-                _logger.LogWarning(LoggingEvents.Category.NotFound, "Category {CategoryId} not found", id);
-                return Errors.Category.NotFound(id);
+                return categoryResult.Errors;
             }
 
-            var categoryAccess = await _categoryAccessService.CanAccessCheckAsync(category);
-            if (categoryAccess.IsError)
-            {
-                return categoryAccess.Errors;
-            }
+            var category = categoryResult.Value;
 
             var spec = new FinancialTransactionByCategoryIdSpecification(id);
             if (await _financialTransactionRepository.AnyAsync(spec))
@@ -282,6 +322,46 @@ namespace api.Services.Categories
             await _categoryRepository.AddRangeAsync(userCategories);
 
             return Result.Success;
+        }
+
+        private async Task<ErrorOr<Category>> GetAccessibleCategoryAsync(Guid id)
+        {
+            var category = await _categoryRepository.GetByIdAsync(id);
+            if (category == null)
+            {
+                _logger.LogWarning(LoggingEvents.Category.NotFound, "Category {CategoryId} not found", id);
+                return Errors.Category.NotFound(id);
+            }
+
+            var categoryAccess = await _categoryAccessService.CanAccessCheckAsync(category);
+            if (categoryAccess.IsError)
+            {
+                return categoryAccess.Errors;
+            }
+
+            return category;
+        }
+
+        private async Task<ErrorOr<Category>> UpdateCoreAsync(
+    Guid id, CategoryUpdateInputDto input)
+        {
+            var categoryResult = await GetAccessibleCategoryAsync(id);
+            if (categoryResult.IsError)
+            {
+                return categoryResult.Errors;
+            }
+
+            var category = categoryResult.Value;
+            category.Name = input.Name.Trim();
+
+            await _categoryRepository.UpdateAsync(category);
+
+            _logger.LogInformation(
+                LoggingEvents.Category.Updated,
+                "Category {CategoryId} updated.",
+                category.Id);
+
+            return category;
         }
     }
 }
