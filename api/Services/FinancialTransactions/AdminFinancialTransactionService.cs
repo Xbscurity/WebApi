@@ -4,7 +4,6 @@ using api.Extensions;
 using api.Interfaces;
 using api.Models;
 using api.Queries;
-using api.Services.Authorization;
 using api.Services.Shared;
 using api.Services.User;
 using api.Specifications;

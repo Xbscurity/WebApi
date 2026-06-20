@@ -8,7 +8,6 @@ using api.Options;
 using api.Providers.ClientIpProvider;
 using api.Providers.CurrentUser;
 using api.Repositories;
-using api.Services.Authorization;
 using api.Services.Background;
 using api.Services.RefreshTokenCookie;
 using api.Services.User;
@@ -54,9 +53,6 @@ namespace api
             services.AddScoped<IFinancialTransactionRepository, FinancialTransactionRepository>();
             services.AddScoped<ITokenRepository, TokenRepository>();
 
-            services.AddScoped<IFinancialTransactionAccessService, FinancialTransactionAccessService>();
-            services.AddScoped<ICategoryAccessService, CategoryAccessService>();
-
             services.AddScoped<IRefreshTokenCookieService, RefreshTokenCookieService>();
 
             services.AddHttpContextAccessor();
@@ -75,27 +71,14 @@ namespace api
             services.AddHealthChecks();
             services.AddExceptionHandler<GlobalExceptionHandler>();
 
-            services.AddScoped<IAuthorizationHandler, CategoryAccessHandler>();
-            services.AddScoped<IAuthorizationHandler, FinancialTransactionAccessHandler>();
             services.AddScoped<IAuthorizationHandler, NotBannedHandler>();
 
             services.AddAuthorizationBuilder()
-        .AddPolicy(Policies.CategoryAccess, policy =>
-        {
-            policy.RequireAuthenticatedUser();
-            policy.Requirements.Add(new CategoryAccessRequirement());
-        })
-
-        .AddPolicy(Policies.FinancialTransactionAccess, policy =>
-        {
-            policy.RequireAuthenticatedUser();
-            policy.Requirements.Add(new FinancialTransactionAccessRequirement());
-        })
-        .AddPolicy(Policies.NotBanned, policy =>
-        {
-            policy.RequireAuthenticatedUser();
-            policy.Requirements.Add(new NotBannedRequirement());
-        });
+                .AddPolicy(Policies.NotBanned, policy =>
+                {
+                    policy.RequireAuthenticatedUser();
+                    policy.Requirements.Add(new NotBannedRequirement());
+                });
 
             var jwt = configuration.GetRequiredSection(JwtOptions.SectionName).Get<JwtOptions>()
                 ?? throw new InvalidOperationException($"Missing configuration section: {JwtOptions.SectionName}");

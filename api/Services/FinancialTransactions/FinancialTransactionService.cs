@@ -5,9 +5,7 @@ using api.Interfaces;
 using api.Models;
 using api.Providers.CurrentUser;
 using api.Queries;
-using api.Services.Authorization;
 using api.Services.Shared;
-using api.Services.User;
 using api.Specifications;
 using ErrorOr;
 using System.Collections.Frozen;
@@ -29,9 +27,7 @@ namespace api.Services.FinancialTransactions
 
         private readonly ILogger<FinancialTransactionService> _logger;
         private readonly ICurrentUser _currentUser;
-        private readonly ICategoryAccessService _categoryAccessService;
         private readonly IRepository<Category> _categoryRepository;
-        private readonly IFinancialTransactionAccessService _financialTransactionAccessService;
         private readonly IFinancialTransactionRepository _financialTransactionRepository;
         private readonly Dictionary<GroupingReportStrategyKey, IGroupingReportStrategy> _strategies;
 
@@ -44,17 +40,8 @@ namespace api.Services.FinancialTransactions
         /// <param name="currentUser">
         /// The current authenticated user context.
         /// </param>
-        /// <param name="userService">
-        /// The service used for user-related operations.
-        /// </param>
-        /// <param name="сategoryAccessService">
-        /// The service used to validate category access permissions.
-        /// </param>
         /// <param name="categoryRepository">
         /// The repository used to access category data.
-        /// </param>
-        /// <param name="financialTransactionAccessService">
-        /// The service used to validate financial transaction access permissions.
         /// </param>
         /// <param name="financialTransactionsRepository">
         /// The repository used to manage financial transaction persistence.
@@ -65,17 +52,13 @@ namespace api.Services.FinancialTransactions
         public FinancialTransactionService(
             ILogger<FinancialTransactionService> logger,
             ICurrentUser currentUser,
-            ICategoryAccessService сategoryAccessService,
             IRepository<Category> categoryRepository,
-            IFinancialTransactionAccessService financialTransactionAccessService,
             IFinancialTransactionRepository financialTransactionsRepository,
             IEnumerable<IGroupingReportStrategy> strategies)
         {
             _logger = logger;
             _currentUser = currentUser;
-            _categoryAccessService = сategoryAccessService;
             _categoryRepository = categoryRepository;
-            _financialTransactionAccessService = financialTransactionAccessService;
             _financialTransactionRepository = financialTransactionsRepository;
             _strategies = strategies.ToDictionary(s => s.Key);
         }
@@ -150,13 +133,12 @@ namespace api.Services.FinancialTransactions
                 return Errors.Category.NotFound(input.CategoryId);
             }
 
-            var categoryAccess = await _categoryAccessService.CanAccessCheckAsync(category);
-            if (categoryAccess.IsError)
+            if (category.AppUserId != _currentUser.UserId)
             {
-                return categoryAccess.Errors;
+                return Errors.Category.AccessDenied(category.Id);
             }
 
-            var transaction = new FinancialTransaction
+            var financialTransaction = new FinancialTransaction
             {
                 Comment = input.Comment.Trim(),
                 Amount = input.Amount,
@@ -165,28 +147,28 @@ namespace api.Services.FinancialTransactions
                 AppUserId = _currentUser.UserId,
             };
 
-            await _financialTransactionRepository.AddAsync(transaction);
+            await _financialTransactionRepository.AddAsync(financialTransaction);
 
             _logger.LogInformation(
                 LoggingEvents.Category.Created,
                 "Created new financial transaction {transactionId} for user {UserId}",
-                transaction.Id,
-                transaction.AppUserId);
+                financialTransaction.Id,
+                financialTransaction.AppUserId);
 
-            return transaction.ToOutputDto();
+            return financialTransaction.ToOutputDto();
         }
 
         /// <inheritdoc/>
         public async Task<ErrorOr<FinancialTransactionOutputDto>> UpdateAsync(
             Guid id, FinancialTransactionUpdateInputDto input)
         {
-            var transactionResult = await GetAccessibleFinancialTransactionAsync(id);
-            if (transactionResult.IsError)
+            var financialTransactionResult = await GetAccessibleFinancialTransactionAsync(id);
+            if (financialTransactionResult.IsError)
             {
-                return transactionResult.Errors;
+                return financialTransactionResult.Errors;
             }
 
-            var transaction = transactionResult.Value;
+            var financialTransaction = financialTransactionResult.Value;
 
             var category = await _categoryRepository.GetByIdAsync(input.CategoryId);
             if (category == null)
@@ -199,44 +181,37 @@ namespace api.Services.FinancialTransactions
                 return Errors.Category.NotFound(input.CategoryId);
             }
 
-            var categoryAccess = await _categoryAccessService.CanAccessCheckAsync(category);
-            if (categoryAccess.IsError)
+            if (category.AppUserId != _currentUser.UserId)
             {
-                return categoryAccess.Errors;
+                return Errors.Category.AccessDenied(category.Id);
             }
 
-            transaction.CategoryId = input.CategoryId;
-            transaction.Amount = input.Amount;
-            transaction.Type = input.Type;
-            transaction.Comment = input.Comment.Trim();
+            financialTransaction.CategoryId = input.CategoryId;
+            financialTransaction.Amount = input.Amount;
+            financialTransaction.Type = input.Type;
+            financialTransaction.Comment = input.Comment.Trim();
 
-            await _financialTransactionRepository.UpdateAsync(transaction);
+            await _financialTransactionRepository.UpdateAsync(financialTransaction);
 
             _logger.LogInformation(
                 LoggingEvents.FinancialTransaction.Updated,
                 "Financial transaction with ID {FinancialTransactionId} updated.",
                 id);
 
-            return transaction.ToOutputDto();
+            return financialTransaction.ToOutputDto();
         }
 
         /// <inheritdoc/>
         public async Task<ErrorOr<Deleted>> DeleteAsync(Guid id)
         {
-            var financialTransaction = await _financialTransactionRepository.GetByIdAsync(id);
-            if (financialTransaction == null)
-            {
-                _logger.LogWarning(
-                    LoggingEvents.FinancialTransaction.NotFound, "Financial transaction {FinancialTransactionId} not found", id);
+            var financialTransactionResult = await GetAccessibleFinancialTransactionAsync(id);
 
-                return Errors.FT.NotFound(id);
+            if (financialTransactionResult.IsError)
+            {
+                return financialTransactionResult.Errors;
             }
 
-            var financialTransactionAccessCheck = await _financialTransactionAccessService.CanAccessCheckAsync(financialTransaction);
-            if (financialTransactionAccessCheck.IsError)
-            {
-                return financialTransactionAccessCheck.Errors;
-            }
+            var financialTransaction = financialTransactionResult.Value;
 
             await _financialTransactionRepository.DeleteAsync(financialTransaction);
 
@@ -287,14 +262,16 @@ namespace api.Services.FinancialTransactions
             var financialTransaction = await _financialTransactionRepository.GetByIdAsync(id);
             if (financialTransaction == null)
             {
-                _logger.LogWarning(LoggingEvents.FinancialTransaction.NotFound, "Financial transaction {FinancialTransactionId} not found", id);
+                _logger.LogWarning(
+                    LoggingEvents.FinancialTransaction.NotFound,
+                    "Financial transaction {FinancialTransactionId} not found",
+                    id);
                 return Errors.FT.NotFound(id);
             }
 
-            var financialTransactionAccess = await _financialTransactionAccessService.CanAccessCheckAsync(financialTransaction);
-            if (financialTransactionAccess.IsError)
+            if (financialTransaction.AppUserId != _currentUser.UserId)
             {
-                return financialTransactionAccess.Errors;
+                return Errors.FT.AccessDenied(financialTransaction.Id);
             }
 
             return financialTransaction;

@@ -6,7 +6,6 @@ using api.Interfaces;
 using api.Models;
 using api.Providers.CurrentUser;
 using api.Queries;
-using api.Services.Authorization;
 using api.Services.Shared;
 using api.Services.User;
 using api.Specifications;
@@ -31,7 +30,6 @@ namespace api.Services.Categories
         private readonly ILogger<CategoryService> _logger;
         private readonly ICurrentUser _currentUser;
         private readonly IUserService _userService;
-        private readonly ICategoryAccessService _categoryAccessService;
         private readonly IRepository<Category> _categoryRepository;
         private readonly IRepository<FinancialTransaction> _financialTransactionRepository;
 
@@ -47,9 +45,6 @@ namespace api.Services.Categories
         /// <param name="userService">
         /// The service used for user-related operations.
         /// </param>
-        /// <param name="categoryAccessService">
-        /// The service used to validate category access permissions.
-        /// </param>
         /// <param name="categoriesRepository">
         /// The repository used to manage category persistence and retrieval.
         /// </param>
@@ -60,14 +55,12 @@ namespace api.Services.Categories
             ILogger<CategoryService> logger,
             ICurrentUser currentUser,
             IUserService userService,
-            ICategoryAccessService categoryAccessService,
             IRepository<Category> categoriesRepository,
             IRepository<FinancialTransaction> financialTransactionRepository)
         {
             _logger = logger;
             _currentUser = currentUser;
             _userService = userService;
-            _categoryAccessService = categoryAccessService;
             _categoryRepository = categoriesRepository;
             _financialTransactionRepository = financialTransactionRepository;
         }
@@ -250,10 +243,9 @@ namespace api.Services.Categories
                 return Errors.Category.NotFound(id);
             }
 
-            var categoryAccess = await _categoryAccessService.CanAccessCheckAsync(category);
-            if (categoryAccess.IsError)
+            if (category.AppUserId != _currentUser.UserId)
             {
-                return categoryAccess.Errors;
+                return Errors.Category.AccessDenied(category.Id);
             }
 
             return category;
