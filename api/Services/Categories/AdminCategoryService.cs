@@ -1,5 +1,4 @@
 ﻿using api.Constants;
-using api.Data;
 using api.Dtos.Category;
 using api.Extensions;
 using api.Interfaces;
@@ -10,16 +9,15 @@ using api.Services.Authorization;
 using api.Services.Shared;
 using api.Services.User;
 using api.Specifications;
-using Ardalis.Specification;
 using ErrorOr;
 using System.Collections.Frozen;
 
 namespace api.Services.Categories
 {
     /// <summary>
-    /// Default implementation of <see cref="ICategoryService"/>.
+    /// Default implementation of <see cref="IAdminCategoryService"/>.
     /// </summary>
-    public class CategoryService : ICategoryService
+    public class AdminCategoryService : IAdminCategoryService
     {
         private static readonly FrozenSet<string> ValidFields = new[]
         {
@@ -29,26 +27,18 @@ namespace api.Services.Categories
         }.ToFrozenSet(StringComparer.OrdinalIgnoreCase);
 
         private readonly ILogger<CategoryService> _logger;
-        private readonly ICurrentUser _currentUser;
         private readonly IUserService _userService;
-        private readonly ICategoryAccessService _categoryAccessService;
         private readonly IRepository<Category> _categoryRepository;
         private readonly IRepository<FinancialTransaction> _financialTransactionRepository;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="CategoryService"/> class.
+        /// Initializes a new instance of the <see cref="AdminCategoryService"/> class.
         /// </summary>
         /// <param name="logger">
         /// The logger used for diagnostic and audit logging.
         /// </param>
-        /// <param name="currentUser">
-        /// The current authenticated user context.
-        /// </param>
         /// <param name="userService">
         /// The service used for user-related operations.
-        /// </param>
-        /// <param name="categoryAccessService">
-        /// The service used to validate category access permissions.
         /// </param>
         /// <param name="categoriesRepository">
         /// The repository used to manage category persistence and retrieval.
@@ -56,25 +46,21 @@ namespace api.Services.Categories
         /// <param name="financialTransactionRepository">
         /// The repository used to access financial transaction data.
         /// </param>
-        public CategoryService(
+        public AdminCategoryService(
             ILogger<CategoryService> logger,
-            ICurrentUser currentUser,
             IUserService userService,
-            ICategoryAccessService categoryAccessService,
             IRepository<Category> categoriesRepository,
             IRepository<FinancialTransaction> financialTransactionRepository)
         {
             _logger = logger;
-            _currentUser = currentUser;
             _userService = userService;
-            _categoryAccessService = categoryAccessService;
             _categoryRepository = categoriesRepository;
             _financialTransactionRepository = financialTransactionRepository;
         }
 
-        /// <inheritdoc />
-        public async Task<ErrorOr<PagedItems<CategoryOutputDto>>> GetAllAsync(
-            EntityQuery query)
+        /// <inheritdoc/>
+        public async Task<ErrorOr<PagedItems<AdminCategoryOutputDto>>> GetAllAsync(
+                    AdminEntityQuery query)
         {
             if (!ValidFields.Contains(query.SortBy))
             {
@@ -89,70 +75,80 @@ namespace api.Services.Categories
                 return Errors.Category.InvalidSortBy(query.SortBy, ValidFields);
             }
 
-            var spec = new CategorySortedPagedSpecification(query, _currentUser);
+            var spec = new AdminCategorySortedPagedSpecification(query);
             var categories = await _categoryRepository.ListAsync(spec);
             var count = await _categoryRepository.CountAsync(spec);
 
             var pagination = new Pagination(query.Page, query.Size, count);
-            var pagedData = new PagedItems<CategoryOutputDto>
+            var pagedData = new PagedItems<AdminCategoryOutputDto>
             {
                 Items = categories,
                 Pagination = pagination,
             };
 
             _logger.LogInformation(
-                "Returning {Count} categories. Page={PageNumber}, Size={PageSize}, SortBy={SortBy}",
+                "Returning {Count} categories. Page={PageNumber}, Size={PageSize}, SortBy={SortBy}, UserId = {UserId}",
                 pagedData.Items.Count,
                 pagedData.Pagination.PageNumber,
                 pagedData.Pagination.PageSize,
-                query.SortBy);
+                query.SortBy,
+                query.UserId);
 
             return pagedData;
         }
 
-        /// <inheritdoc />
-        public async Task<ErrorOr<CategoryOutputDto>> GetByIdAsync(Guid id)
+        /// <inheritdoc/>
+        public async Task<ErrorOr<AdminCategoryOutputDto>> GetByIdAsync(Guid id)
         {
-            var categoryResult = await GetAccessibleCategoryAsync(id);
-            if (categoryResult.IsError)
+            var category = await _categoryRepository.GetByIdAsync(id);
+            if (category == null)
             {
-                return categoryResult.Errors;
+                _logger.LogWarning(LoggingEvents.Category.NotFound, "Category {CategoryId} not found", id);
+                return Errors.Category.NotFound(id);
             }
 
-            return categoryResult.Value.ToOutputDto();
+            return category.ToAdminOutputDto();
         }
 
-        /// <inheritdoc />
-        public async Task<ErrorOr<CategoryOutputDto>> CreateAsync(
-            CategoryCreateInputDto input)
+        /// <inheritdoc/>
+        public async Task<ErrorOr<AdminCategoryOutputDto>> CreateAsync(
+            AdminCategoryCreateInputDto input)
         {
+            var targetUserId = input.AppUserId;
+            if (!await _userService.AnyAsync(targetUserId))
+            {
+                _logger.LogWarning(LoggingEvents.User.NotFound, "Requested User id not found");
+                return Errors.User.NotFound(targetUserId);
+            }
+
             var category = new Category
             {
                 Name = input.Name.Trim(),
-                AppUserId = _currentUser.UserId,
+                AppUserId = targetUserId,
             };
 
             await _categoryRepository.AddAsync(category);
 
             _logger.LogInformation(
                 LoggingEvents.Category.Created,
-                "Created new category {categoryId}",
-                category.Id);
+                "Created new category {categoryId} for {AppUserId}",
+                category.Id,
+                input.AppUserId);
 
-            return category.ToOutputDto();
+            return category.ToAdminOutputDto();
         }
 
         /// <inheritdoc />
-        public async Task<ErrorOr<CategoryOutputDto>> UpdateAsync(
+        public async Task<ErrorOr<AdminCategoryOutputDto>> UpdateAsync(
             Guid id, CategoryUpdateInputDto input)
         {
-            var categoryResult = await GetAccessibleCategoryAsync(id);
-            if (categoryResult.IsError)
+            var category = await _categoryRepository.GetByIdAsync(id);
+            if (category == null)
             {
-                return categoryResult.Errors;
+                _logger.LogWarning(LoggingEvents.Category.NotFound, "Category {CategoryId} not found", id);
+                return Errors.Category.NotFound(id);
             }
 
-            var category = categoryResult.Value;
             category.Name = input.Name.Trim();
 
             await _categoryRepository.UpdateAsync(category);
@@ -161,47 +157,19 @@ namespace api.Services.Categories
                 LoggingEvents.Category.Updated,
                 "Category {CategoryId} updated.",
                 category.Id);
-            return category.ToOutputDto();
+
+            return category.ToAdminOutputDto();
         }
 
-        /// <inheritdoc/>
-        public async Task<ErrorOr<ToggleActiveOutputDto>> SetActiveAsync(Guid id, bool isActive)
-        {
-            var categoryResult = await GetAccessibleCategoryAsync(id);
-
-            if (categoryResult.IsError)
-            {
-                return categoryResult.Errors;
-            }
-
-            var category = categoryResult.Value;
-
-            category.IsActive = isActive;
-
-            await _categoryRepository.UpdateAsync(category);
-
-            _logger.LogInformation(
-                LoggingEvents.Category.Toggled,
-                "Category {CategoryId} active status successfully toggled.",
-                category.Id);
-            var outputDto = new ToggleActiveOutputDto
-            {
-                ToggleActive = category.IsActive,
-            };
-            return outputDto;
-        }
-
-        /// <inheritdoc/>
+        /// <inheritdoc />
         public async Task<ErrorOr<Deleted>> DeleteAsync(Guid id)
         {
-            var categoryResult = await GetAccessibleCategoryAsync(id);
-
-            if (categoryResult.IsError)
+            var category = await _categoryRepository.GetByIdAsync(id);
+            if (category == null)
             {
-                return categoryResult.Errors;
+                _logger.LogWarning(LoggingEvents.Category.NotFound, "Category {CategoryId} not found", id);
+                return Errors.Category.NotFound(id);
             }
-
-            var category = categoryResult.Value;
 
             var spec = new FinancialTransactionByCategoryIdSpecification(id);
             if (await _financialTransactionRepository.AnyAsync(spec))
@@ -225,23 +193,7 @@ namespace api.Services.Categories
         }
 
         /// <inheritdoc />
-        public async Task<ErrorOr<Success>> CreateInitialCategoriesForUserAsync(string userId)
-        {
-            var templates = DataSeeder.DefaultCategoryTemplates;
-
-            var userCategories = templates.Select(template => new Category
-            {
-                Name = template.Name,
-                AppUserId = userId,
-                IsActive = true,
-            }).ToList();
-
-            await _categoryRepository.AddRangeAsync(userCategories);
-
-            return Result.Success;
-        }
-
-        private async Task<ErrorOr<Category>> GetAccessibleCategoryAsync(Guid id)
+        public async Task<ErrorOr<ToggleActiveOutputDto>> SetActiveAsync(Guid id, bool isActive)
         {
             var category = await _categoryRepository.GetByIdAsync(id);
             if (category == null)
@@ -250,13 +202,19 @@ namespace api.Services.Categories
                 return Errors.Category.NotFound(id);
             }
 
-            var categoryAccess = await _categoryAccessService.CanAccessCheckAsync(category);
-            if (categoryAccess.IsError)
-            {
-                return categoryAccess.Errors;
-            }
+            category.IsActive = isActive;
 
-            return category;
+            await _categoryRepository.UpdateAsync(category);
+
+            _logger.LogInformation(
+                LoggingEvents.Category.Toggled,
+                "Category {CategoryId} active status successfully toggled.",
+                category.Id);
+            var outputDto = new ToggleActiveOutputDto
+            {
+                ToggleActive = category.IsActive,
+            };
+            return outputDto;
         }
     }
 }

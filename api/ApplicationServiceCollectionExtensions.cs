@@ -28,8 +28,13 @@ namespace api
                 .ValidateDataAnnotations()
                 .ValidateOnStart();
             services.AddScoped<IUnitOfWorkService, UnitOfWorkService>();
+
             services.AddScoped<ICategoryService, CategoryService>();
+            services.AddScoped<IAdminCategoryService, AdminCategoryService>();
+
             services.AddScoped<IFinancialTransactionService, FinancialTransactionService>();
+            services.AddScoped<IAdminFinancialTransactionService, AdminFinancialTransactionService>();
+
             services.AddScoped<IUserManagementService, UserManagementService>();
             services.AddScoped<IAccountService, AccountService>();
             services.AddScoped<IAuthService, AuthService>();

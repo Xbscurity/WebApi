@@ -15,8 +15,7 @@ using System.Collections.Frozen;
 namespace api.Services.FinancialTransactions
 {
     /// <summary>
-    /// Provides application services for managing financial transactions
-    /// and generating transaction reports.
+    /// Default implementation of <see cref="IFinancialTransactionService"/>.
     /// </summary>
     public class FinancialTransactionService : IFinancialTransactionService
     {
@@ -30,7 +29,6 @@ namespace api.Services.FinancialTransactions
 
         private readonly ILogger<FinancialTransactionService> _logger;
         private readonly ICurrentUser _currentUser;
-        private readonly IUserService _userService;
         private readonly ICategoryAccessService _categoryAccessService;
         private readonly IRepository<Category> _categoryRepository;
         private readonly IFinancialTransactionAccessService _financialTransactionAccessService;
@@ -67,7 +65,6 @@ namespace api.Services.FinancialTransactions
         public FinancialTransactionService(
             ILogger<FinancialTransactionService> logger,
             ICurrentUser currentUser,
-            IUserService userService,
             ICategoryAccessService сategoryAccessService,
             IRepository<Category> categoryRepository,
             IFinancialTransactionAccessService financialTransactionAccessService,
@@ -76,7 +73,6 @@ namespace api.Services.FinancialTransactions
         {
             _logger = logger;
             _currentUser = currentUser;
-            _userService = userService;
             _categoryAccessService = сategoryAccessService;
             _categoryRepository = categoryRepository;
             _financialTransactionAccessService = financialTransactionAccessService;
@@ -125,46 +121,6 @@ namespace api.Services.FinancialTransactions
         }
 
         /// <inheritdoc/>
-        public async Task<ErrorOr<PagedItems<AdminFinancialTransactionOutputDto>>> GetAllForAdminAsync(
-           AdminEntityQuery query)
-        {
-            if (!ValidFields.Contains(query.SortBy))
-            {
-                var allowed = string.Join(", ", ValidFields);
-
-                _logger.LogWarning(
-                    LoggingEvents.FinancialTransaction.SortInvalid,
-                    "SortBy '{Field}' is invalid. Allowed fields: {AllowedFields}",
-                    query.SortBy,
-                    allowed);
-
-                return Errors.FT.InvalidSortBy(query.SortBy, ValidFields);
-            }
-
-            var spec = new AdminFinancialTransactionSortedPagedSpecification(query);
-            var financialTransactions = await _financialTransactionRepository.ListAsync(spec);
-
-            var count = await _financialTransactionRepository.CountAsync(spec);
-
-            var pagination = new Pagination(query.Page, query.Size, count);
-
-            var pagedData = new PagedItems<AdminFinancialTransactionOutputDto>
-            {
-                Items = financialTransactions,
-                Pagination = pagination,
-            };
-
-            _logger.LogInformation(
-               "Returning {Count} financial transactions. Page={PageNumber}, Size={PageSize}, SortBy={SortBy}",
-               pagedData.Items.Count,
-               pagedData.Pagination.PageNumber,
-               pagedData.Pagination.PageSize,
-               query.SortBy);
-
-            return pagedData;
-        }
-
-        /// <inheritdoc/>
         public async Task<ErrorOr<FinancialTransactionOutputDto>> GetByIdAsync(Guid id)
         {
             var financialTransactionResult = await GetAccessibleFinancialTransactionAsync(id);
@@ -181,25 +137,6 @@ namespace api.Services.FinancialTransactions
                 id);
 
             return financialTransaction.ToOutputDto();
-        }
-
-        /// <inheritdoc/>
-        public async Task<ErrorOr<AdminFinancialTransactionOutputDto>> GetByIdForAdminAsync(Guid id)
-        {
-            var financialTransactionResult = await GetAccessibleFinancialTransactionAsync(id);
-
-            if (financialTransactionResult.IsError)
-            {
-                return financialTransactionResult.Errors;
-            }
-
-            var financialTransaction = financialTransactionResult.Value;
-
-            _logger.LogInformation(
-                "Financial transaction with ID {FinancialTransactionId} retrieved.",
-                id);
-
-            return financialTransaction.ToAdminOutputDto();
         }
 
         /// <inheritdoc/>
@@ -240,13 +177,25 @@ namespace api.Services.FinancialTransactions
         }
 
         /// <inheritdoc/>
-        public async Task<ErrorOr<AdminFinancialTransactionOutputDto>> CreateForAdminAsync(
-            AdminFinancialTransactionCreateInputDto input)
+        public async Task<ErrorOr<FinancialTransactionOutputDto>> UpdateAsync(
+            Guid id, FinancialTransactionUpdateInputDto input)
         {
+            var transactionResult = await GetAccessibleFinancialTransactionAsync(id);
+            if (transactionResult.IsError)
+            {
+                return transactionResult.Errors;
+            }
+
+            var transaction = transactionResult.Value;
+
             var category = await _categoryRepository.GetByIdAsync(input.CategoryId);
             if (category == null)
             {
-                _logger.LogWarning(LoggingEvents.Category.NotFound, "Category {CategoryId} not found", input.CategoryId);
+                _logger.LogWarning(
+                    LoggingEvents.Category.NotFound,
+                    "Category {CategoryId} not found",
+                    input.CategoryId);
+
                 return Errors.Category.NotFound(input.CategoryId);
             }
 
@@ -256,58 +205,19 @@ namespace api.Services.FinancialTransactions
                 return categoryAccess.Errors;
             }
 
-            var targetUserId = input.AppUserId;
+            transaction.CategoryId = input.CategoryId;
+            transaction.Amount = input.Amount;
+            transaction.Type = input.Type;
+            transaction.Comment = input.Comment.Trim();
 
-            if (!await _userService.AnyAsync(targetUserId))
-            {
-                _logger.LogWarning(LoggingEvents.User.NotFound, "Requested User id not found");
-                return Errors.User.NotFound(targetUserId);
-            }
-
-            var transaction = new FinancialTransaction
-            {
-                Comment = input.Comment.Trim(),
-                Amount = input.Amount,
-                Type = input.Type,
-                CategoryId = input.CategoryId,
-                AppUserId = targetUserId,
-            };
-
-            await _financialTransactionRepository.AddAsync(transaction);
+            await _financialTransactionRepository.UpdateAsync(transaction);
 
             _logger.LogInformation(
-                LoggingEvents.Category.Created,
-                "Created new financial transaction {transactionId} for user {UserId}",
-                transaction.Id,
-                transaction.AppUserId);
+                LoggingEvents.FinancialTransaction.Updated,
+                "Financial transaction with ID {FinancialTransactionId} updated.",
+                id);
 
-            return transaction.ToAdminOutputDto();
-        }
-
-        /// <inheritdoc/>
-        public async Task<ErrorOr<FinancialTransactionOutputDto>> UpdateAsync(
-            Guid id, FinancialTransactionUpdateInputDto input)
-        {
-            var result = await UpdateCoreAsync(id, input);
-            if (result.IsError)
-            {
-                return result.Errors;
-            }
-
-            return result.Value.ToOutputDto();
-        }
-
-        /// <inheritdoc/>
-        public async Task<ErrorOr<AdminFinancialTransactionOutputDto>> UpdateForAdminAsync(
-            Guid id, FinancialTransactionUpdateInputDto input)
-        {
-            var result = await UpdateCoreAsync(id, input);
-            if (result.IsError)
-            {
-                return result.Errors;
-            }
-
-            return result.Value.ToAdminOutputDto();
+            return transaction.ToOutputDto();
         }
 
         /// <inheritdoc/>
@@ -377,7 +287,7 @@ namespace api.Services.FinancialTransactions
             var financialTransaction = await _financialTransactionRepository.GetByIdAsync(id);
             if (financialTransaction == null)
             {
-                _logger.LogWarning(LoggingEvents.FinancialTransaction.NotFound, "Category {CategoryId} not found", id);
+                _logger.LogWarning(LoggingEvents.FinancialTransaction.NotFound, "Financial transaction {FinancialTransactionId} not found", id);
                 return Errors.FT.NotFound(id);
             }
 
@@ -388,49 +298,6 @@ namespace api.Services.FinancialTransactions
             }
 
             return financialTransaction;
-        }
-
-        private async Task<ErrorOr<FinancialTransaction>> UpdateCoreAsync(
-    Guid id, FinancialTransactionUpdateInputDto input)
-        {
-            var transactionResult = await GetAccessibleFinancialTransactionAsync(id);
-            if (transactionResult.IsError)
-            {
-                return transactionResult.Errors;
-            }
-
-            var transaction = transactionResult.Value;
-
-            var category = await _categoryRepository.GetByIdAsync(input.CategoryId);
-            if (category == null)
-            {
-                _logger.LogWarning(
-                    LoggingEvents.Category.NotFound,
-                    "Category {CategoryId} not found",
-                    input.CategoryId);
-
-                return Errors.Category.NotFound(input.CategoryId);
-            }
-
-            var categoryAccess = await _categoryAccessService.CanAccessCheckAsync(category);
-            if (categoryAccess.IsError)
-            {
-                return categoryAccess.Errors;
-            }
-
-            transaction.CategoryId = input.CategoryId;
-            transaction.Amount = input.Amount;
-            transaction.Type = input.Type;
-            transaction.Comment = input.Comment.Trim();
-
-            await _financialTransactionRepository.UpdateAsync(transaction);
-
-            _logger.LogInformation(
-                LoggingEvents.FinancialTransaction.Updated,
-                "Financial transaction with ID {FinancialTransactionId} updated.",
-                id);
-
-            return transaction;
         }
     }
 }

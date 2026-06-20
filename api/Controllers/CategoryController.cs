@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace api.Controllers
 {
     /// <summary>
-    /// Provides API endpoints for managing categories used to group financial transactions.
+    /// Provides API endpoints for managing the current user's categories used to group financial transactions.
     /// </summary>
     /// <remarks>
     /// All endpoints require authentication and are accessible only to users

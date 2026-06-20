@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace api.Controllers
 {
     /// <summary>
-    /// Provides API endpoints for managing financial transactions and generating financial transaction reports.
+    /// Provides API endpoints for managing the current user's financial transactions and generating financial transaction reports.
     /// </summary>
     /// <remarks>
     /// All endpoints require authentication and are accessible only to users

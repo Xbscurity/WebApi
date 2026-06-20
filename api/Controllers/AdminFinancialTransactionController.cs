@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace api.Controllers
 {
     /// <summary>
-    /// Provides administrative API endpoints for managing categories.
+    /// Provides administrative API endpoints for managing categories across all users.
     /// </summary>
     /// <remarks>
     /// All endpoints require administrator role.
@@ -20,17 +20,18 @@ namespace api.Controllers
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public class AdminFinancialTransactionController : ControllerBase
     {
-        private readonly IFinancialTransactionService _financialTransactionService;
+        private readonly IAdminFinancialTransactionService _adminFinancialTransactionService;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AdminFinancialTransactionController"/> class.
         /// </summary>
-        /// <param name="transactionService">
-        /// The service responsible for financial transaction operations.
+        /// <param name="adminFinancialTransactionService">
+        /// The service responsible for administrative financial transaction operations.
         /// </param>
-        public AdminFinancialTransactionController(IFinancialTransactionService transactionService)
+        public AdminFinancialTransactionController(
+            IAdminFinancialTransactionService adminFinancialTransactionService)
         {
-            _financialTransactionService = transactionService;
+            _adminFinancialTransactionService = adminFinancialTransactionService;
         }
 
         /// <summary>
@@ -51,7 +52,7 @@ namespace api.Controllers
         public async Task<ActionResult<PagedItems<AdminFinancialTransactionOutputDto>>> GetAll(
             [FromQuery] AdminEntityQuery query)
         {
-            var transactions = await _financialTransactionService.GetAllForAdminAsync(query);
+            var transactions = await _adminFinancialTransactionService.GetAllAsync(query);
 
             return transactions.ToActionResult(this);
         }
@@ -72,7 +73,7 @@ namespace api.Controllers
         [HttpGet("{id:guid}")]
         public async Task<ActionResult<AdminFinancialTransactionOutputDto>> GetById([FromRoute] Guid id)
         {
-            var result = await _financialTransactionService.GetByIdForAdminAsync(id);
+            var result = await _adminFinancialTransactionService.GetByIdAsync(id);
 
             return result.ToActionResult(this);
         }
@@ -96,7 +97,7 @@ namespace api.Controllers
         public async Task<ActionResult<AdminFinancialTransactionOutputDto>> Create(
             [FromBody] AdminFinancialTransactionCreateInputDto transactionDto)
         {
-            var result = await _financialTransactionService.CreateForAdminAsync(transactionDto);
+            var result = await _adminFinancialTransactionService.CreateAsync(transactionDto);
 
             if (result.IsError)
             {
@@ -129,7 +130,7 @@ namespace api.Controllers
         public async Task<ActionResult<AdminFinancialTransactionOutputDto>> Update(
             [FromRoute] Guid id, [FromBody] FinancialTransactionUpdateInputDto dto)
         {
-            var result = await _financialTransactionService.UpdateAsync(id, dto);
+            var result = await _adminFinancialTransactionService.UpdateAsync(id, dto);
 
             return result.ToActionResult(this);
         }
@@ -152,7 +153,7 @@ namespace api.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> Delete([FromRoute] Guid id)
         {
-            var result = await _financialTransactionService.DeleteAsync(id);
+            var result = await _adminFinancialTransactionService.DeleteAsync(id);
 
             return result.ToNoContentResult(this);
         }

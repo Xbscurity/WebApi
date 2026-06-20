@@ -34,19 +34,17 @@ namespace api.Authorization
             FinancialTransaction transaction)
         {
             var userId = context.User.GetUserId();
-            var isAdmin = context.User.IsInRole(Roles.Admin);
 
             bool isOwner = transaction.AppUserId == userId;
 
             _logger.LogDebug(
                 "Transaction authorization check: UserId={UserId}, TransactionId={TransactionId}, " +
-                "IsAdmin={IsAdmin}, IsOwner={IsOwner}",
+                "IsOwner={IsOwner}",
                 userId,
                 transaction.Id,
-                isAdmin,
                 isOwner);
 
-            if (isAdmin || isOwner)
+            if (isOwner)
             {
                 context.Succeed(requirement);
             }

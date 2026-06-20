@@ -35,17 +35,15 @@ namespace api.Authorization
             Category category)
         {
             var userId = context.User.GetUserId();
-            var isAdmin = context.User.IsInRole(Roles.Admin);
             bool isOwner = category.AppUserId == userId;
 
             _logger.LogDebug(
                 "Category access check: UserId={UserId}, CategoryId={CategoryId}," +
-                " IsAdmin={IsAdmin}, IsOwner={IsOwner}",
+                "IsOwner={IsOwner}",
                 userId,
                 category.Id,
-                isAdmin,
                 isOwner);
-            if (isAdmin || isOwner)
+            if (category.AppUserId == userId)
             {
                 context.Succeed(requirement);
             }
