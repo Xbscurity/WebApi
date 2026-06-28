@@ -1,7 +1,7 @@
 ﻿using api.Dtos.User;
 using api.Models;
 using Ardalis.Specification;
-using Microsoft.AspNetCore.Identity;
+using ErrorOr;
 
 namespace api.Services.User
 {
@@ -67,18 +67,20 @@ namespace api.Services.User
         /// <param name="user">The user to create.</param>
         /// <param name="password">The password for the user to hash and store.</param>
         /// <returns>
-        /// The <see cref="IdentityResult"/> of the operation.
+        /// A <see cref="Created"/> result if successful;
+        /// otherwise, an error.
         /// </returns>
-        Task<IdentityResult> CreateAsync(AppUser user, string password);
+        Task<ErrorOr<Created>> CreateAsync(AppUser user, string password);
 
         /// <summary>
         /// Updates the specified <paramref name="user"/> in the backing store.
         /// </summary>
         /// <param name="user">The user to update.</param>
         /// <returns>
-        /// The <see cref="IdentityResult"/> of the operation.
+        /// A <see cref="Updated"/> result if successful;
+        /// otherwise, an error.
         /// </returns>
-        Task<IdentityResult> UpdateAsync(AppUser user);
+        Task<ErrorOr<Updated>> UpdateAsync(AppUser user);
 
         /// <summary>
         /// Add the specified <paramref name="user"/> to the named role.
@@ -86,9 +88,10 @@ namespace api.Services.User
         /// <param name="user">The user to add to the named role.</param>
         /// <param name="role">The name of the role to add the user to.</param>
         /// <returns>
-        /// The <see cref="IdentityResult"/> of the operation.
+        /// A <see cref="Success"/> result if successful;
+        /// otherwise, an error.
         /// </returns>
-        Task<IdentityResult> AddToRoleAsync(AppUser user, string role);
+        Task<ErrorOr<Success>> AddToRoleAsync(AppUser user, string role);
 
         /// <summary>
         /// Returns a flag indicating whether the given <paramref name="password"/> is valid for the
@@ -108,8 +111,9 @@ namespace api.Services.User
         /// <param name="currentPassword">The current password to validate before changing.</param>
         /// <param name="newPassword">The new password to set for the specified <paramref name="user"/>.</param>
         /// <returns>
-        /// The <see cref="IdentityResult"/> of the operation.
+        /// A <see cref="Success"/> result if successful;
+        /// otherwise, an error.
         /// </returns>
-        Task<IdentityResult> ChangePasswordAsync(AppUser user, string currentPassword, string newPassword);
+        Task<ErrorOr<Success>> ChangePasswordAsync(AppUser user, string currentPassword, string newPassword);
     }
 }

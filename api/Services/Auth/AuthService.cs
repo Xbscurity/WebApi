@@ -1,7 +1,6 @@
 ﻿using api.Constants;
 using api.Dtos.Account;
 using api.Dtos.User;
-using api.Extensions;
 using api.Models;
 using api.Repositories;
 using api.Services.Categories;
@@ -73,23 +72,15 @@ namespace api.Services.Auth
                 };
 
                 var created = await _userService.CreateAsync(user, dto.Password);
-                if (!created.Succeeded)
+                if (created.IsError)
                 {
-                    var errors = created.ToErrorDictionary();
-
-                    _logger.LogWarning(LoggingEvents.Auth.RegisterFailed, "Failed to create user: {@Errors}", errors);
-
-                    return created.MapToErrors();
+                    return created.Errors;
                 }
 
                 var roleResult = await _userService.AddToRoleAsync(user, Roles.User);
-                if (!roleResult.Succeeded)
+                if (roleResult.IsError)
                 {
-                    var errors = roleResult.ToErrorDictionary();
-
-                    _logger.LogError(LoggingEvents.Auth.AssignRoleFailed, "Failed to assign role to user: {@Errors}", errors);
-
-                    return roleResult.MapToErrors();
+                    return roleResult.Errors;
                 }
 
                 await _categoryService.CreateInitialCategoriesForUserAsync(user.Id);

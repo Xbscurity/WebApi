@@ -115,14 +115,9 @@ namespace api.Services.UserManagement
             user.IsBanned = inputDto.IsBanned;
 
             var updateResult = await _userService.UpdateAsync(user);
-            if (!updateResult.Succeeded)
+            if (updateResult.IsError)
             {
-                var errors = updateResult.Errors.Select(e => new { e.Code, e.Description });
-                _logger.LogWarning(LoggingEvents.User.UpdateFailed, "Update user failed, {@Errors}", errors);
-                return updateResult
-                    .Errors
-                    .Select(e => Error.Conflict(code: e.Code, description: e.Description))
-                    .ToList();
+                return updateResult.Errors;
             }
 
             _cache.Remove(UserCacheKeys.BanStatus(userId));

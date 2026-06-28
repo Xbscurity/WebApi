@@ -1,9 +1,12 @@
-﻿using api.Dtos.User;
+﻿using api.Constants;
+using api.Dtos.User;
+using api.Extensions;
 using api.Models;
 using api.Options;
 using api.Providers.CurrentUser;
 using Ardalis.Specification;
 using Ardalis.Specification.EntityFrameworkCore;
+using ErrorOr;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
@@ -112,21 +115,53 @@ namespace api.Services.User
         }
 
         /// <inheritdoc />
-        public async Task<IdentityResult> CreateAsync(AppUser user, string password)
+        public async Task<ErrorOr<Created>> CreateAsync(AppUser user, string password)
         {
-            return await _userManager.CreateAsync(user, password);
+            var identityResult = await _userManager.CreateAsync(user, password);
+            if (!identityResult.Succeeded)
+            {
+                var errors = identityResult.ToErrorDictionary();
+
+                _logger.LogWarning(LoggingEvents.Auth.RegisterFailed, "Failed to create user: {@Errors}", errors);
+
+                return identityResult.MapToErrors();
+            }
+
+            return Result.Created;
         }
 
         /// <inheritdoc />
-        public async Task<IdentityResult> UpdateAsync(AppUser user)
+        public async Task<ErrorOr<Updated>> UpdateAsync(AppUser user)
         {
-            return await _userManager.UpdateAsync(user);
+            var identityResult = await _userManager.UpdateAsync(user);
+
+            if (!identityResult.Succeeded)
+            {
+                var errors = identityResult.ToErrorDictionary();
+
+                _logger.LogWarning(LoggingEvents.User.UpdateFailed, "User update failed: {@Errors}", errors);
+
+                return identityResult.MapToErrors();
+            }
+
+            return Result.Updated;
         }
 
         /// <inheritdoc />
-        public async Task<IdentityResult> AddToRoleAsync(AppUser user, string role)
+        public async Task<ErrorOr<Success>> AddToRoleAsync(AppUser user, string role)
         {
-            return await _userManager.AddToRoleAsync(user, role);
+            var identityResult = await _userManager.AddToRoleAsync(user, role);
+
+            if (!identityResult.Succeeded)
+            {
+                var errors = identityResult.ToErrorDictionary();
+
+                _logger.LogError(LoggingEvents.Auth.AssignRoleFailed, "Failed to assign role to user: {@Errors}", errors);
+
+                return identityResult.MapToErrors();
+            }
+
+            return Result.Success;
         }
 
         /// <inheritdoc />
@@ -136,9 +171,20 @@ namespace api.Services.User
         }
 
         /// <inheritdoc />
-        public async Task<IdentityResult> ChangePasswordAsync(AppUser user, string currentPassword, string newPassword)
+        public async Task<ErrorOr<Success>> ChangePasswordAsync(AppUser user, string currentPassword, string newPassword)
         {
-            return await _userManager.ChangePasswordAsync(user, currentPassword, newPassword);
+            var identityResult = await _userManager.ChangePasswordAsync(user, currentPassword, newPassword);
+
+            if (!identityResult.Succeeded)
+            {
+                var errors = identityResult.ToErrorDictionary();
+
+                _logger.LogError(LoggingEvents.Auth.UpdatePasswordFailed, "Failed to assign role to user: {@Errors}", errors);
+
+                return identityResult.MapToErrors();
+            }
+
+            return Result.Success;
         }
     }
 }

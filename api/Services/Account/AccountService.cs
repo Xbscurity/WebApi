@@ -1,7 +1,6 @@
 ﻿using api.Constants;
 using api.Dtos.Account;
 using api.Dtos.User;
-using api.Extensions;
 using api.Providers.ClientIpProvider;
 using api.Providers.CurrentUser;
 using api.Repositories;
@@ -103,14 +102,10 @@ namespace api.Services.Account
 
             return await _unitOfWork.ExecuteInTransactionAsync<string>(async () =>
             {
-                var update = await _userService.ChangePasswordAsync(user, dto.CurrentPassword, dto.NewPassword);
-
-                if (!update.Succeeded)
+                var updateResult = await _userService.ChangePasswordAsync(user, dto.CurrentPassword, dto.NewPassword);
+                if (updateResult.IsError)
                 {
-                    var errors = update.ToErrorDictionary();
-
-                    _logger.LogWarning(LoggingEvents.Auth.UpdatePasswordFailed, "Password update failed: {@Errors}", errors);
-                    return update.MapToErrors();
+                    return updateResult.Errors;
                 }
 
                 var ip = _clientIpProvider.GetClientIp();
