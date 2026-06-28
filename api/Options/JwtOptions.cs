@@ -5,9 +5,6 @@ namespace api.Options
     /// <summary>
     /// Represents configuration settings for JWT authentication.
     /// </summary>
-    /// <remarks>
-    /// These settings are used for generating and validating JWT access tokens.
-    /// </remarks>
     public record JwtOptions
     {
         /// <summary>

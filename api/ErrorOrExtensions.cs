@@ -8,11 +8,6 @@ namespace api
     /// Provides extension methods for converting <c>ErrorOr</c> results
     /// into ASP.NET Core <see cref="ActionResult"/> responses.
     /// </summary>
-    /// <remarks>
-    /// This class centralizes API response formatting for successful results,
-    /// validation failures, authorization errors, conflicts, and unexpected errors
-    /// using RFC 9110 compliant <see cref="ProblemDetails"/> responses.
-    /// </remarks>
     public static class ErrorOrExtensions
     {
         /// <summary>
@@ -96,12 +91,6 @@ namespace api
         /// An <see cref="ObjectResult"/> containing RFC 9110 compliant
         /// <see cref="ProblemDetails"/> data.
         /// </returns>
-        /// <remarks>
-        /// Validation errors are grouped by field name and returned
-        /// with HTTP status code 422 (Unprocessable Entity).
-        /// Other errors are mapped to status codes based on their
-        /// <see cref="ErrorType"/>.
-        /// </remarks>
         private static ActionResult CreateErrorResult(ControllerBase controller, List<Error> errors)
         {
             if (errors.All(e => e.Type == ErrorType.Validation))

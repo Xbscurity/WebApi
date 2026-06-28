@@ -5,9 +5,6 @@ namespace api.Models
     /// <summary>
     /// Represents a financial transaction recorded in the system.
     /// </summary>
-    /// <remarks>
-    /// Each transaction belongs to a category and is associated with a user.
-    /// </remarks>
     public class FinancialTransaction : BaseEntity
     {
         /// <summary>

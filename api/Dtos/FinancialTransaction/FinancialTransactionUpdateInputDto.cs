@@ -11,10 +11,6 @@ namespace api.Dtos.FinancialTransaction
         /// <summary>
         /// Gets the transaction amount.
         /// </summary>
-        /// <remarks>
-        /// Positive values typically represent income,
-        /// while negative values represent expenses.
-        /// </remarks>
         [Range(0.01, double.MaxValue, ErrorMessage = "Amount must be positive")]
         required public decimal Amount { get; init; }
 

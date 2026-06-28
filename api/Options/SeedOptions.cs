@@ -3,12 +3,8 @@
 namespace api.Options
 {
     /// <summary>
-    /// Represents configuration settings used for application data seeding.
+    /// Represents configuration settings used for admin data seeding.
     /// </summary>
-    /// <remarks>
-    /// This configuration section contains credentials for the initial
-    /// administrator account created during application startup.
-    /// </remarks>
     public record SeedOptions
     {
         /// <summary>

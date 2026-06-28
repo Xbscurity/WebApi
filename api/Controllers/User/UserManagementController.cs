@@ -88,10 +88,6 @@ namespace api.Controllers.User
         /// <returns>
         /// The updated user ban status.
         /// </returns>
-        /// <remarks>
-        /// When a user is banned, all active refresh tokens associated with the user
-        /// may be revoked depending on the configured application behavior.
-        /// </remarks>
         /// <response code="200">
         /// The user ban status was successfully updated.
         /// </response>

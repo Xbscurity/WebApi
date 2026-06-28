@@ -1,14 +1,8 @@
-﻿using Microsoft.AspNetCore.Authorization;
-
-namespace api.Constants
+﻿namespace api.Constants
 {
     /// <summary>
     /// Defines application role constants used for authorization.
     /// </summary>
-    /// <remarks>
-    /// These roles are used in <see cref="AuthorizeAttribute"/> and policy configuration
-    /// to control access to protected endpoints.
-    /// </remarks>
     public static class Roles
     {
         /// <summary>

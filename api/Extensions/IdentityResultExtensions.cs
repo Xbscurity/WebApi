@@ -9,11 +9,6 @@ namespace api.Extensions
     /// <see cref="IdentityResult"/> instances into application-specific
     /// error representations.
     /// </summary>
-    /// <remarks>
-    /// These extensions standardize ASP.NET Core Identity errors
-    /// into structured application errors and dictionaries suitable
-    /// for validation and API responses.
-    /// </remarks>
     public static class IdentityResultExtensions
     {
         /// <summary>
@@ -26,11 +21,6 @@ namespace api.Extensions
         /// <returns>
         /// A collection of mapped application errors.
         /// </returns>
-        /// <remarks>
-        /// Known ASP.NET Core Identity error codes are mapped
-        /// to normalized application error codes and categorized
-        /// by related input fields.
-        /// </remarks>
         public static List<Error> MapToErrors(this IdentityResult result)
         {
             const string Password = "password";

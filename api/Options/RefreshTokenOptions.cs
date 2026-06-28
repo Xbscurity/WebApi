@@ -5,10 +5,6 @@ namespace api.Options
     /// <summary>
     /// Represents configuration settings for refresh token generation and expiration.
     /// </summary>
-    /// <remarks>
-    /// These settings control the lifetime and generated length
-    /// of authentication refresh tokens.
-    /// </remarks>
     public record RefreshTokenOptions
     {
         /// <summary>

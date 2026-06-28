@@ -6,12 +6,8 @@ using Ardalis.Specification;
 namespace api.Interfaces
 {
     /// <summary>
-    /// Defines specialized repository operations for financial transaction reporting.
+    /// Defines  repository for managing financial transactions.
     /// </summary>
-    /// <remarks>
-    /// Provides grouped reporting queries for financial transactions
-    /// using specification-based filtering.
-    /// </remarks>
     public interface IFinancialTransactionRepository : IRepositoryBase<FinancialTransaction>
     {
         /// <summary>

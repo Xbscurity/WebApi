@@ -30,10 +30,6 @@ namespace api
         /// <returns>
         /// <c>true</c> if the exception was handled and a response was written; otherwise <c>false</c>.
         /// </returns>
-        /// <remarks>
-        /// Returns a <c>500 Internal Server Error</c> response using <c>ProblemDetails</c>.
-        /// In development, includes exception details and stack trace in the response.
-        /// </remarks>
         public async ValueTask<bool> TryHandleAsync(
             HttpContext context,
             Exception exception,

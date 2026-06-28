@@ -9,10 +9,6 @@ namespace api.Interfaces
     /// <typeparam name="T">
     /// The entity type managed by the repository.
     /// </typeparam>
-    /// <remarks>
-    /// This repository extends <see cref="RepositoryBase{T}"/>
-    /// and provides common CRUD and specification-based query operations.
-    /// </remarks>
     public class EfRepository<T> : RepositoryBase<T>, IRepository<T>
         where T : class
     {

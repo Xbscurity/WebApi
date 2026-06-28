@@ -11,10 +11,6 @@ namespace api.Controllers.User
     /// <summary>
     /// Provides authentication endpoints for user registration, login, token refresh, and logout.
     /// </summary>
-    /// <remarks>
-    /// This controller handles issuing JWT access tokens and managing refresh tokens
-    /// via secure HTTP-only cookies.
-    /// </remarks>
     [Route("api/auth")]
     [ApiController]
     public class AuthController : ControllerBase
@@ -145,9 +141,6 @@ namespace api.Controllers.User
         /// <summary>
         /// Logs out the current user and revokes the refresh token.
         /// </summary>
-        /// <remarks>
-        /// This action removes the refresh token cookie and revokes the token on the server.
-        /// </remarks>
         /// <returns>A <see cref="NoContentResult"/> when logout is successful.</returns>
         /// <response code="204">The user was successfully logged out.</response>
         [HttpPost("logout")]

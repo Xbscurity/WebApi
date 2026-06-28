@@ -5,10 +5,6 @@ namespace api.Options
     /// <summary>
     /// Represents configuration settings for application caching.
     /// </summary>
-    /// <remarks>
-    /// These settings define cache-related expiration policies
-    /// used throughout the application.
-    /// </remarks>
     public record CacheOptions
     {
         /// <summary>

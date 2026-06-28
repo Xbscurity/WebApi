@@ -125,26 +125,13 @@ namespace api.Services.FinancialTransactions
                 return Errors.Category.NotFound(input.CategoryId);
             }
 
-            var targetUserId = input.AppUserId;
-
-            if (!await _userService.AnyAsync(targetUserId))
-            {
-                _logger.LogWarning(LoggingEvents.User.NotFound, "Requested User id not found");
-                return Errors.User.NotFound(targetUserId);
-            }
-
-            if (category.AppUserId != targetUserId)
-            {
-                return Errors.Category.AccessDenied(input.CategoryId);
-            }
-
             var transaction = new FinancialTransaction
             {
                 Comment = input.Comment.Trim(),
                 Amount = input.Amount,
                 Type = input.Type,
                 CategoryId = input.CategoryId,
-                AppUserId = targetUserId,
+                AppUserId = category.AppUserId,
             };
 
             await _financialTransactionRepository.AddAsync(transaction);

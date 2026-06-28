@@ -5,10 +5,6 @@ namespace api.Dtos.FinancialTransaction
     /// <summary>
     /// Represents a grouping key used in financial transaction reports.
     /// </summary>
-    /// <remarks>
-    /// This abstract record serves as a base type for all supported
-    /// report grouping key variants.
-    /// </remarks>
     [JsonPolymorphic(TypeDiscriminatorPropertyName = "type")]
     [JsonDerivedType(typeof(CategoryKey), typeDiscriminator: "category")]
     [JsonDerivedType(typeof(DateKey), typeDiscriminator: "date")]

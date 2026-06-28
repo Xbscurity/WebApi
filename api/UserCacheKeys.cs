@@ -3,10 +3,6 @@
     /// <summary>
     /// Provides cache key factories for user-related cache entries.
     /// </summary>
-    /// <remarks>
-    /// This class centralizes cache key generation to ensure
-    /// consistent cache naming conventions across the application.
-    /// </remarks>
     public static class UserCacheKeys
     {
         /// <summary>

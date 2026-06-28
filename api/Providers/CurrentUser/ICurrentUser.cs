@@ -3,10 +3,6 @@
     /// <summary>
     /// Provides information about the current authenticated user.
     /// </summary>
-    /// <remarks>
-    /// This abstraction exposes commonly used user-related data
-    /// from the current request context.
-    /// </remarks>
     public interface ICurrentUser
     {
         /// <summary>

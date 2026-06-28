@@ -177,7 +177,7 @@ namespace api.Services.Categories
                 "Delete blocked: Category {CategoryId} has existing related entities.",
                 category.Id);
 
-                return Errors.Category.DeleteRestricted();
+                return Errors.Category.DeleteRestricted(id);
             }
 
             await _categoryRepository.DeleteAsync(category);

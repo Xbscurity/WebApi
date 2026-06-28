@@ -3,10 +3,6 @@ namespace api.Models
     /// <summary>
     /// Represents a financial transaction category owned by a user.
     /// </summary>
-    /// <remarks>
-    /// Categories are used to group financial transactions and support
-    /// user-specific organization of financial data.
-    /// </remarks>
     public class Category : BaseEntity
     {
         /// <summary>

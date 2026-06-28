@@ -20,10 +20,6 @@ namespace api.Dtos.FinancialTransaction
         /// <summary>
         /// Gets the transaction amount.
         /// </summary>
-        /// <remarks>
-        /// Positive values typically represent income,
-        /// while negative values represent expenses.
-        /// </remarks>
         required public decimal Amount { get; init; }
 
         /// <summary>

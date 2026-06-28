@@ -3,11 +3,6 @@
     /// <summary>
     /// Default implementation of <see cref="IClientIpProvider"/>.
     /// </summary>
-    /// <remarks>
-    /// This implementation retrieves the remote IP address
-    /// from <see cref="HttpContext.Connection"/> and normalizes
-    /// IPv4-mapped IPv6 addresses when applicable.
-    /// </remarks>
     public class ClientIpProvider : IClientIpProvider
     {
         private readonly IHttpContextAccessor _httpContextAccessor;

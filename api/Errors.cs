@@ -72,11 +72,12 @@ namespace api
             /// <summary>
             /// Creates an error indicating that a category cannot be deleted due to existing dependencies.
             /// </summary>
+            /// <param name="id">The category identifier.</param>
             /// <returns>A <see cref="Error"/> of type <see cref="ErrorType.Conflict"/>.</returns>
-            public static Error DeleteRestricted() =>
+            public static Error DeleteRestricted(Guid id) =>
                 Error.Conflict(
                     code: $"{Prefix}DELETE_RESTRICTED",
-                    description: $"Category has existing related entities.");
+                    description: $"Category {id} has existing related entities.");
         }
 
         /// <summary>

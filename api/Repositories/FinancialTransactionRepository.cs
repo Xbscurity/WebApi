@@ -68,22 +68,6 @@ namespace api.Interfaces
         /// <returns>
         /// A collection of grouped financial transaction report results.
         /// </returns>
-        /// <remarks>
-        /// Each group includes:
-        /// <list type="bullet">
-        /// <item>
-        /// <description>Total transaction amount.</description>
-        /// </item>
-        /// <item>
-        /// <description>Total transaction count.</description>
-        /// </item>
-        /// <item>
-        /// <description>
-        /// Up to 10 transactions ordered by descending amount.
-        /// </description>
-        /// </item>
-        /// </list>
-        /// </remarks>
         private async Task<List<GroupedReportOutputDto>> GetGroupedListAsync<TKey>(
             ISpecification<FinancialTransaction> spec,
             ReportQuery query,
