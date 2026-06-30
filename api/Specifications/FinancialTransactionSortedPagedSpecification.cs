@@ -64,8 +64,8 @@ namespace api.Specifications
                     }
 
                     break;
+                default:
 
-                case "date":
                     if (query.IsDescending)
                     {
                         Query.OrderByDescending(ft => ft.CreatedAt);
@@ -73,18 +73,6 @@ namespace api.Specifications
                     else
                     {
                         Query.OrderBy(ft => ft.CreatedAt);
-                    }
-
-                    break;
-                default:
-
-                    if (query.IsDescending)
-                    {
-                        Query.OrderByDescending(ft => ft.Id);
-                    }
-                    else
-                    {
-                        Query.OrderBy(ft => ft.Id);
                     }
 
                     break;

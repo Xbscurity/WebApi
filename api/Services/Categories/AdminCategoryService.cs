@@ -19,9 +19,9 @@ namespace api.Services.Categories
     {
         private static readonly FrozenSet<string> ValidFields = new[]
         {
-            "id",
             "name",
             "isactive",
+            "createdAt",
         }.ToFrozenSet(StringComparer.OrdinalIgnoreCase);
 
         private readonly ILogger<CategoryService> _logger;

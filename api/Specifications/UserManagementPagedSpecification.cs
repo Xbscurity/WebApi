@@ -20,6 +20,29 @@ namespace api.Specifications
             var sortBy = query.SortBy.Trim().ToLowerInvariant();
             switch (sortBy)
             {
+                case "username":
+                    if (query.IsDescending)
+                    {
+                        Query.OrderByDescending(u => u.UserName);
+                    }
+                    else
+                    {
+                        Query.OrderBy(u => u.UserName);
+                    }
+
+                    break;
+
+                case "email":
+                    if (query.IsDescending)
+                    {
+                        Query.OrderByDescending(u => u.Email);
+                    }
+                    else
+                    {
+                        Query.OrderBy(u => u.Email);
+                    }
+
+                    break;
                 case "isbanned":
                     if (query.IsDescending)
                     {
@@ -28,17 +51,6 @@ namespace api.Specifications
                     else
                     {
                         Query.OrderBy(u => u.IsBanned);
-                    }
-
-                    break;
-                case "createdat":
-                    if (query.IsDescending)
-                    {
-                        Query.OrderByDescending(u => u.CreatedAt);
-                    }
-                    else
-                    {
-                        Query.OrderBy(u => u.CreatedAt);
                     }
 
                     break;

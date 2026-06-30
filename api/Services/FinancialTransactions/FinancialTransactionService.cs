@@ -19,10 +19,9 @@ namespace api.Services.FinancialTransactions
     {
         private static readonly FrozenSet<string> ValidFields = new[]
         {
-            "id",
             "category",
             "amount",
-            "date",
+            "createdAt",
         }.ToFrozenSet(StringComparer.OrdinalIgnoreCase);
 
         private readonly ILogger<FinancialTransactionService> _logger;

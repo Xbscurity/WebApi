@@ -54,6 +54,7 @@ namespace api.Specifications
                     }
 
                     break;
+
                 case "amount":
                     if (query.IsDescending)
                     {
@@ -66,7 +67,8 @@ namespace api.Specifications
 
                     break;
 
-                case "date":
+                default:
+
                     if (query.IsDescending)
                     {
                         Query.OrderByDescending(ft => ft.CreatedAt);
@@ -74,18 +76,6 @@ namespace api.Specifications
                     else
                     {
                         Query.OrderBy(ft => ft.CreatedAt);
-                    }
-
-                    break;
-                default:
-
-                    if (query.IsDescending)
-                    {
-                        Query.OrderByDescending(ft => ft.Id);
-                    }
-                    else
-                    {
-                        Query.OrderBy(ft => ft.Id);
                     }
 
                     break;

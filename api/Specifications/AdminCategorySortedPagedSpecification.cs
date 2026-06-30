@@ -51,15 +51,27 @@ namespace api.Specifications
                     }
 
                     break;
+
+                case "isactive":
+                    if (query.IsDescending)
+                    {
+                        Query.OrderByDescending(o => o.Name);
+                    }
+                    else
+                    {
+                        Query.OrderBy(o => o.Name);
+                    }
+
+                    break;
                 default:
 
                     if (query.IsDescending)
                     {
-                        Query.OrderByDescending(o => o.Id);
+                        Query.OrderByDescending(o => o.CreatedAt);
                     }
                     else
                     {
-                        Query.OrderBy(o => o.Id);
+                        Query.OrderBy(o => o.CreatedAt);
                     }
 
                     break;

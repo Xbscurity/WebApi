@@ -5,7 +5,6 @@ using api.Interfaces;
 using api.Models;
 using api.Queries;
 using api.Services.Shared;
-using api.Services.User;
 using api.Specifications;
 using ErrorOr;
 using System.Collections.Frozen;
@@ -19,14 +18,12 @@ namespace api.Services.FinancialTransactions
     {
         private static readonly FrozenSet<string> ValidFields = new[]
         {
-            "id",
             "category",
             "amount",
-            "date",
+            "createdAt",
         }.ToFrozenSet(StringComparer.OrdinalIgnoreCase);
 
         private readonly ILogger<FinancialTransactionService> _logger;
-        private readonly IUserService _userService;
         private readonly IRepository<Category> _categoryRepository;
         private readonly IFinancialTransactionRepository _financialTransactionRepository;
 
@@ -36,9 +33,6 @@ namespace api.Services.FinancialTransactions
         /// <param name="logger">
         /// The logger used for diagnostic and audit logging.
         /// </param>
-        /// <param name="userService">
-        /// The service used for user-related operations.
-        /// </param>
         /// <param name="categoryRepository">
         /// The repository used to access category data.
         /// </param>
@@ -47,12 +41,10 @@ namespace api.Services.FinancialTransactions
         /// </param>
         public AdminFinancialTransactionService(
             ILogger<FinancialTransactionService> logger,
-            IUserService userService,
             IRepository<Category> categoryRepository,
             IFinancialTransactionRepository financialTransactionsRepository)
         {
             _logger = logger;
-            _userService = userService;
             _categoryRepository = categoryRepository;
             _financialTransactionRepository = financialTransactionsRepository;
         }

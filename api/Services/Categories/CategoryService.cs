@@ -7,7 +7,6 @@ using api.Models;
 using api.Providers.CurrentUser;
 using api.Queries;
 using api.Services.Shared;
-using api.Services.User;
 using api.Specifications;
 using Ardalis.Specification;
 using ErrorOr;
@@ -22,14 +21,13 @@ namespace api.Services.Categories
     {
         private static readonly FrozenSet<string> ValidFields = new[]
         {
-            "id",
             "name",
             "isactive",
+            "createdAt",
         }.ToFrozenSet(StringComparer.OrdinalIgnoreCase);
 
         private readonly ILogger<CategoryService> _logger;
         private readonly ICurrentUser _currentUser;
-        private readonly IUserService _userService;
         private readonly IRepository<Category> _categoryRepository;
         private readonly IRepository<FinancialTransaction> _financialTransactionRepository;
 
@@ -42,9 +40,6 @@ namespace api.Services.Categories
         /// <param name="currentUser">
         /// The current authenticated user context.
         /// </param>
-        /// <param name="userService">
-        /// The service used for user-related operations.
-        /// </param>
         /// <param name="categoriesRepository">
         /// The repository used to manage category persistence and retrieval.
         /// </param>
@@ -54,13 +49,11 @@ namespace api.Services.Categories
         public CategoryService(
             ILogger<CategoryService> logger,
             ICurrentUser currentUser,
-            IUserService userService,
             IRepository<Category> categoriesRepository,
             IRepository<FinancialTransaction> financialTransactionRepository)
         {
             _logger = logger;
             _currentUser = currentUser;
-            _userService = userService;
             _categoryRepository = categoriesRepository;
             _financialTransactionRepository = financialTransactionRepository;
         }

@@ -20,10 +20,10 @@ namespace api.Services.UserManagement
         /// </summary>
         private static readonly FrozenSet<string> ValidFields = new[]
         {
-            "id",
             "username",
             "email",
-            "isbanned",
+            "isBanned",
+            "createdat",
         }
         .ToFrozenSet(StringComparer.OrdinalIgnoreCase);
 
@@ -60,7 +60,7 @@ namespace api.Services.UserManagement
                 return Errors.User.InvalidSortBy(query.SortBy, ValidFields);
             }
 
-            UserManagementPagedSpecification spec = new UserManagementPagedSpecification(query);
+            var spec = new UserManagementPagedSpecification(query);
             var users = await _userService.GetAllAsync(spec);
             var count = await _userService.CountAsync();
 
