@@ -5,8 +5,8 @@ using api.Services.Shared;
 using api.Services.User;
 using api.Specifications;
 using ErrorOr;
-using Microsoft.Extensions.Caching.Memory;
 using System.Collections.Frozen;
+using ZiggyCreatures.Caching.Fusion;
 
 namespace api.Services.UserManagement
 {
@@ -29,7 +29,7 @@ namespace api.Services.UserManagement
 
         private readonly IUserService _userService;
         private readonly ILogger<UserManagementService> _logger;
-        private readonly IMemoryCache _cache;
+        private readonly IFusionCache _cache;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="UserManagementService"/> class.
@@ -37,7 +37,10 @@ namespace api.Services.UserManagement
         /// <param name="userService">User service abstraction.</param>
         /// <param name="logger">Logger instance.</param>
         /// <param name="cache">Memory cache for user-related data.</param>
-        public UserManagementService(IUserService userService, ILogger<UserManagementService> logger, IMemoryCache cache)
+        public UserManagementService(
+            IUserService userService,
+            ILogger<UserManagementService> logger,
+            IFusionCache cache)
         {
             _userService = userService;
             _logger = logger;
@@ -45,7 +48,8 @@ namespace api.Services.UserManagement
         }
 
         /// <inheritdoc/>
-        public async Task<ErrorOr<PagedItems<UserManagementUserOutputDto>>> GetAllUsersAsync(UserManagementQuery query)
+        public async Task<ErrorOr<PagedItems<UserManagementUserOutputDto>>> GetAllUsersAsync(
+            UserManagementQuery query)
         {
             if (!ValidFields.Contains(query.SortBy))
             {
@@ -96,7 +100,8 @@ namespace api.Services.UserManagement
         }
 
         /// <inheritdoc/>
-        public async Task<ErrorOr<BanStatusOutputDto>> SetBanAsync(string userId, BanStatusInputDto inputDto)
+        public async Task<ErrorOr<BanStatusOutputDto>> SetBanAsync(
+            string userId, BanStatusInputDto inputDto)
         {
             var user = await _userService.FindByIdAsync(userId);
             if (user == null)
@@ -112,6 +117,14 @@ namespace api.Services.UserManagement
                 return Errors.User.AdminBanAttempt(userId);
             }
 
+            if (user.IsBanned == inputDto.IsBanned)
+            {
+                return new BanStatusOutputDto
+                {
+                    BanStatus = user.IsBanned,
+                };
+            }
+
             user.IsBanned = inputDto.IsBanned;
 
             var updateResult = await _userService.UpdateAsync(user);
@@ -120,7 +133,7 @@ namespace api.Services.UserManagement
                 return updateResult.Errors;
             }
 
-            _cache.Remove(UserCacheKeys.BanStatus(userId));
+            await _cache.RemoveAsync(UserCacheKeys.BanStatus(userId));
 
             return new BanStatusOutputDto
             {

@@ -2,6 +2,7 @@
 using api.Dtos.Account;
 using api.Dtos.User;
 using api.Models;
+using api.Providers.ClientIpProvider;
 using api.Repositories;
 using api.Services.Categories;
 using api.Services.Token;
@@ -22,6 +23,7 @@ namespace api.Services.Auth
         private readonly ICategoryService _categoryService;
         private readonly ILogger<AuthService> _logger;
         private readonly IUnitOfWorkService _unitOfWork;
+        private readonly IClientIpProvider _clientIpProvider;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AuthService"/> class.
@@ -44,13 +46,17 @@ namespace api.Services.Auth
         /// <param name="unitOfWork">
         /// The unit of work used to execute transactional operations.
         /// </param>
+        /// <param name="clientIpProvider">
+        /// The provider used to retrieve the client's IP address.
+        /// </param>
         public AuthService(
             IUserService userService,
             ITokenService tokenService,
             ITokenRepository tokenRepository,
             ICategoryService categoryService,
             ILogger<AuthService> logger,
-            IUnitOfWorkService unitOfWork)
+            IUnitOfWorkService unitOfWork,
+            IClientIpProvider clientIpProvider)
         {
             _userService = userService;
             _tokenService = tokenService;
@@ -58,6 +64,7 @@ namespace api.Services.Auth
             _categoryService = categoryService;
             _logger = logger;
             _unitOfWork = unitOfWork;
+            _clientIpProvider = clientIpProvider;
         }
 
         /// <inheritdoc/>
@@ -102,17 +109,17 @@ namespace api.Services.Auth
                 return Errors.Auth.InvalidCredentials();
             }
 
-            if (user.IsBanned)
-            {
-                _logger.LogInformation("Banned user with id {userId} attempted to authenticate", user.Id);
-                return Errors.User.Banned();
-            }
-
             var valid = await _userService.CheckPasswordAsync(user, dto.Password);
             if (!valid)
             {
                 _logger.LogWarning(LoggingEvents.Auth.InvalidCredentials, "Wrong password");
                 return Errors.Auth.InvalidCredentials();
+            }
+
+            if (user.IsBanned)
+            {
+                _logger.LogInformation("Banned user with id {userId} attempted to authenticate", user.Id);
+                return Errors.User.Banned();
             }
 
             var result = await GenerateAuthResultAsync(user);
@@ -138,20 +145,18 @@ namespace api.Services.Auth
 
             if (user.IsBanned)
             {
-                await _tokenRepository.RevokeAllRefreshTokensAsync(user.Id, "User banned");
+                await _tokenRepository
+                    .RevokeAllRefreshTokensAsync(user.Id, _clientIpProvider.GetClientIp(), "User banned");
                 return Errors.User.Banned();
             }
 
-            return await _unitOfWork.ExecuteInTransactionAsync<RefreshTokenDto>(async () =>
+            var rotationResult = await _tokenService.RotateTokensAsync(user, storedToken);
+            if (rotationResult.IsError)
             {
-                var rotationResult = await _tokenService.RotateTokensAsync(user, storedToken);
-                if (rotationResult.IsError)
-                {
-                    return rotationResult.Errors;
-                }
+                return rotationResult.Errors;
+            }
 
-                return rotationResult.Value;
-            });
+            return rotationResult.Value;
         }
 
         /// <summary>

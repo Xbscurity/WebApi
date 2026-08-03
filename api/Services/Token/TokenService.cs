@@ -4,6 +4,7 @@ using api.Options;
 using api.Providers.ClientIpProvider;
 using api.Providers.Time;
 using api.Repositories;
+using api.Services.UnitOfWork;
 using api.Services.User;
 using ErrorOr;
 using Microsoft.Extensions.Options;
@@ -27,6 +28,7 @@ namespace api.Services.Token
         private readonly RefreshTokenOptions _refreshTokenOptions;
         private readonly ILogger<TokenService> _logger;
         private readonly IClientIpProvider _clientIpProvider;
+        private readonly IUnitOfWorkService _unitOfWork;
         private readonly SymmetricSecurityKey _key;
 
         /// <summary>
@@ -39,6 +41,7 @@ namespace api.Services.Token
         /// <param name="refreshTokenOptions">Refresh token configuration options.</param>
         /// <param name="logger">The logger instance.</param>
         /// <param name="clientIpProvider">Provides the client IP address.</param>
+        /// <param name="unitOfWork">Provides transactional persistence for repository operations.</param>
         public TokenService(
             IOptions<JwtOptions> jwtOptions,
             ITokenRepository tokenRepository,
@@ -46,7 +49,8 @@ namespace api.Services.Token
             IUserService userService,
             IOptions<RefreshTokenOptions> refreshTokenOptions,
             ILogger<TokenService> logger,
-            IClientIpProvider clientIpProvider)
+            IClientIpProvider clientIpProvider,
+            IUnitOfWorkService unitOfWork)
         {
             _jwtOptions = jwtOptions.Value;
             _tokenRepository = tokenRepository;
@@ -55,6 +59,7 @@ namespace api.Services.Token
             _refreshTokenOptions = refreshTokenOptions.Value;
             _logger = logger;
             _clientIpProvider = clientIpProvider;
+            _unitOfWork = unitOfWork;
             _key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtOptions.SigningKey));
         }
 
@@ -76,6 +81,8 @@ namespace api.Services.Token
             var tokenDescriptor = new SecurityTokenDescriptor
             {
                 Subject = new ClaimsIdentity(claims),
+                NotBefore = _timeProvider.UtcNow.UtcDateTime,
+                IssuedAt = _timeProvider.UtcNow.UtcDateTime,
                 Expires = _timeProvider.UtcNow.AddMinutes(_jwtOptions.ExpirationMinutes).UtcDateTime,
                 SigningCredentials = creds,
                 Issuer = _jwtOptions.Issuer,
@@ -93,7 +100,10 @@ namespace api.Services.Token
         /// <inheritdoc/>
         public async Task<string> CreateRefreshTokenAsync(string userId)
         {
-            var plainToken = Convert.ToHexString(RandomNumberGenerator.GetBytes(_refreshTokenOptions.Length)).ToLowerInvariant();
+            var plainToken = Convert
+                .ToHexString(RandomNumberGenerator
+                .GetBytes(_refreshTokenOptions.Length))
+                .ToLowerInvariant();
             var tokenHash = HashToken(plainToken);
             var ipAddress = _clientIpProvider.GetClientIp() ?? "unknown";
 
@@ -145,11 +155,12 @@ namespace api.Services.Token
                     "Refresh token reuse detected.IP={IP}",
                     ipAddress);
 
-                await _tokenRepository.RevokeAllRefreshTokensAsync(ipAddress, "Attempted reuse of refresh token");
+                await _tokenRepository
+                    .RevokeAllRefreshTokensAsync(stored.UserId, ipAddress, "Attempted reuse of refresh token");
                 return Errors.Auth.RefreshTokenAlreadyRevoked();
             }
 
-            if (stored.IsExpired)
+            if (stored.ExpiresAt <= _timeProvider.UtcNow)
             {
                 _logger.LogInformation(
                     "Expired refresh token used");
@@ -162,36 +173,44 @@ namespace api.Services.Token
         /// <inheritdoc/>
         public async Task<ErrorOr<RefreshTokenDto>> RotateTokensAsync(AppUser user, RefreshToken stored)
         {
-            var newRefreshToken = await CreateRefreshTokenAsync(user.Id);
-
-            var ipAddress = _clientIpProvider.GetClientIp();
-
-            stored.RevokedAt = _timeProvider.UtcNow;
-            stored.RevokedByIp = ipAddress;
-            stored.Reason = "Replaced by new token";
-            stored.ReplacedByToken = HashToken(newRefreshToken);
-
-            await _tokenRepository.UpdateAsync(stored);
-
-            _logger.LogInformation(
-                "Refresh token successfully rotated");
-
-            var newAccessToken = await GenerateAccessTokenAsync(user);
-
-            var result = new RefreshTokenDto
+            if (stored.UserId != user.Id)
             {
-                AccessToken = newAccessToken,
-                RefreshToken = newRefreshToken,
-            };
+                throw new InvalidOperationException(
+                    $"Refresh token rotation was attempted with mismatched user and token ownership. " +
+                    $"User.Id={user.Id}, RefreshToken.UserId={stored.UserId}.");
+            }
 
-            return result;
+            return await _unitOfWork.ExecuteInTransactionAsync<RefreshTokenDto>(async () =>
+            {
+                var newRefreshToken = await CreateRefreshTokenAsync(user.Id);
+
+                var ipAddress = _clientIpProvider.GetClientIp() ?? "unknown";
+
+                stored.RevokedAt = _timeProvider.UtcNow;
+                stored.RevokedByIp = ipAddress;
+                stored.Reason = "Replaced by new token";
+                stored.ReplacedByToken = HashToken(newRefreshToken);
+
+                await _tokenRepository.SaveChangesAsync();
+
+                _logger.LogInformation(
+                    "Refresh token successfully rotated");
+
+                var newAccessToken = await GenerateAccessTokenAsync(user);
+
+                return new RefreshTokenDto
+                {
+                    AccessToken = newAccessToken,
+                    RefreshToken = newRefreshToken,
+                };
+            });
         }
 
         /// <inheritdoc/>
         public async Task RevokeRefreshTokenAsync(string token, string reason)
         {
             var tokenHash = HashToken(token);
-            var ipAddress = _clientIpProvider.GetClientIp();
+            var ipAddress = _clientIpProvider.GetClientIp() ?? "unknown";
             _logger.LogInformation(
                 "Revoking refresh token. IP={Ip}, Reason={Reason}",
                 ipAddress,

@@ -18,6 +18,11 @@ namespace api.Dtos.FinancialTransaction
         required public Guid CategoryId { get; init; }
 
         /// <summary>
+        /// Gets the name of the category assigned to the transaction.
+        /// </summary>
+        required public string CategoryName { get; init; }
+
+        /// <summary>
         /// Gets the transaction amount.
         /// </summary>
         required public decimal Amount { get; init; }

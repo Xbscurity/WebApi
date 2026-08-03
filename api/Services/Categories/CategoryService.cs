@@ -23,7 +23,7 @@ namespace api.Services.Categories
         {
             "name",
             "isactive",
-            "createdAt",
+            "createdat",
         }.ToFrozenSet(StringComparer.OrdinalIgnoreCase);
 
         private readonly ILogger<CategoryService> _logger;
@@ -75,7 +75,7 @@ namespace api.Services.Categories
                 return Errors.Category.InvalidSortBy(query.SortBy, ValidFields);
             }
 
-            var spec = new CategorySortedPagedSpecification(query, _currentUser);
+            var spec = new CategorySortedPagedSpecification(query, _currentUser.UserId);
             var categories = await _categoryRepository.ListAsync(spec);
             var count = await _categoryRepository.CountAsync(spec);
 
@@ -99,13 +99,16 @@ namespace api.Services.Categories
         /// <inheritdoc />
         public async Task<ErrorOr<CategoryOutputDto>> GetByIdAsync(Guid id)
         {
-            var categoryResult = await GetAccessibleCategoryAsync(id);
-            if (categoryResult.IsError)
+            var category = await _categoryRepository
+                .FirstOrDefaultAsync(new CategoryByIdSpecification(id, _currentUser.UserId));
+
+            if (category == null)
             {
-                return categoryResult.Errors;
+                _logger.LogWarning(LoggingEvents.Category.NotFound, "Category {CategoryId} not found", id);
+                return Errors.Category.NotFound(id);
             }
 
-            return categoryResult.Value.ToOutputDto();
+            return category;
         }
 
         /// <inheritdoc />
@@ -141,7 +144,7 @@ namespace api.Services.Categories
             var category = categoryResult.Value;
             category.Name = input.Name.Trim();
 
-            await _categoryRepository.UpdateAsync(category);
+            await _categoryRepository.SaveChangesAsync();
 
             _logger.LogInformation(
                 LoggingEvents.Category.Updated,
@@ -164,7 +167,7 @@ namespace api.Services.Categories
 
             category.IsActive = isActive;
 
-            await _categoryRepository.UpdateAsync(category);
+            await _categoryRepository.SaveChangesAsync();
 
             _logger.LogInformation(
                 LoggingEvents.Category.Toggled,
@@ -189,7 +192,7 @@ namespace api.Services.Categories
 
             var category = categoryResult.Value;
 
-            var spec = new FinancialTransactionByCategoryIdSpecification(id);
+            var spec = new HasFinancialTransactionsByCategoryIdSpecification(id);
             if (await _financialTransactionRepository.AnyAsync(spec))
             {
                 _logger.LogWarning(
@@ -211,7 +214,7 @@ namespace api.Services.Categories
         }
 
         /// <inheritdoc />
-        public async Task<ErrorOr<Success>> CreateInitialCategoriesForUserAsync(string userId)
+        public async Task CreateInitialCategoriesForUserAsync(string userId)
         {
             var templates = DataSeeder.DefaultCategoryTemplates;
 
@@ -223,8 +226,6 @@ namespace api.Services.Categories
             }).ToList();
 
             await _categoryRepository.AddRangeAsync(userCategories);
-
-            return Result.Success;
         }
 
         private async Task<ErrorOr<Category>> GetAccessibleCategoryAsync(Guid id)
@@ -238,7 +239,8 @@ namespace api.Services.Categories
 
             if (category.AppUserId != _currentUser.UserId)
             {
-                return Errors.Category.AccessDenied(category.Id);
+                _logger.LogWarning(LoggingEvents.Category.AccessDenied, "Access denied to Category {CategoryId}", id);
+                return Errors.Category.NotFound(category.Id);
             }
 
             return category;

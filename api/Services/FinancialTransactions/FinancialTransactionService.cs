@@ -21,7 +21,7 @@ namespace api.Services.FinancialTransactions
         {
             "category",
             "amount",
-            "createdAt",
+            "createdat",
         }.ToFrozenSet(StringComparer.OrdinalIgnoreCase);
 
         private readonly ILogger<FinancialTransactionService> _logger;
@@ -79,7 +79,7 @@ namespace api.Services.FinancialTransactions
                 return Errors.FT.InvalidSortBy(query.SortBy, ValidFields);
             }
 
-            var spec = new FinancialTransactionSortedPagedSpecification(query, _currentUser);
+            var spec = new FinancialTransactionSortedPagedSpecification(query, _currentUser.UserId);
             var financialTransactions = await _financialTransactionRepository.ListAsync(spec);
 
             var count = await _financialTransactionRepository.CountAsync(spec);
@@ -105,20 +105,23 @@ namespace api.Services.FinancialTransactions
         /// <inheritdoc/>
         public async Task<ErrorOr<FinancialTransactionOutputDto>> GetByIdAsync(Guid id)
         {
-            var financialTransactionResult = await GetAccessibleFinancialTransactionAsync(id);
+            var dto = await _financialTransactionRepository
+                .FirstOrDefaultAsync(new FinancialTransactionByIdWithCategorySpecification(id, _currentUser.UserId));
 
-            if (financialTransactionResult.IsError)
+            if (dto == null)
             {
-                return financialTransactionResult.Errors;
+                _logger.LogWarning(
+                    LoggingEvents.FinancialTransaction.NotFound,
+                    "Financial transaction {FinancialTransactionId} not found",
+                    id);
+                return Errors.FT.NotFound(id);
             }
-
-            var financialTransaction = financialTransactionResult.Value;
 
             _logger.LogInformation(
                 "Financial transaction with ID {FinancialTransactionId} retrieved.",
                 id);
 
-            return financialTransaction.ToOutputDto();
+            return dto;
         }
 
         /// <inheritdoc/>
@@ -134,7 +137,7 @@ namespace api.Services.FinancialTransactions
 
             if (category.AppUserId != _currentUser.UserId)
             {
-                return Errors.Category.AccessDenied(category.Id);
+                return Errors.Category.NotFound(category.Id);
             }
 
             var financialTransaction = new FinancialTransaction
@@ -149,12 +152,12 @@ namespace api.Services.FinancialTransactions
             await _financialTransactionRepository.AddAsync(financialTransaction);
 
             _logger.LogInformation(
-                LoggingEvents.Category.Created,
+                LoggingEvents.FinancialTransaction.Created,
                 "Created new financial transaction {transactionId} for user {UserId}",
                 financialTransaction.Id,
                 financialTransaction.AppUserId);
 
-            return financialTransaction.ToOutputDto();
+            return financialTransaction.ToOutputDto(category.Name);
         }
 
         /// <inheritdoc/>
@@ -182,7 +185,7 @@ namespace api.Services.FinancialTransactions
 
             if (category.AppUserId != _currentUser.UserId)
             {
-                return Errors.Category.AccessDenied(category.Id);
+                return Errors.Category.NotFound(category.Id);
             }
 
             financialTransaction.CategoryId = input.CategoryId;
@@ -190,14 +193,14 @@ namespace api.Services.FinancialTransactions
             financialTransaction.Type = input.Type;
             financialTransaction.Comment = input.Comment.Trim();
 
-            await _financialTransactionRepository.UpdateAsync(financialTransaction);
+            await _financialTransactionRepository.SaveChangesAsync();
 
             _logger.LogInformation(
                 LoggingEvents.FinancialTransaction.Updated,
                 "Financial transaction with ID {FinancialTransactionId} updated.",
                 id);
 
-            return financialTransaction.ToOutputDto();
+            return financialTransaction.ToOutputDto(category.Name);
         }
 
         /// <inheritdoc/>
@@ -234,7 +237,7 @@ namespace api.Services.FinancialTransactions
                 return Errors.FT.UnsupportedStrategy(query.Key);
             }
 
-            var spec = new FinancialTransactionReportSpecification(query, _currentUser);
+            var spec = new FinancialTransactionReportSpecification(query, _currentUser.UserId);
             var grouped = await strategy.GetGroupedAsync(spec, query);
 
             var count = await _financialTransactionRepository.CountAsync(spec);
@@ -270,7 +273,12 @@ namespace api.Services.FinancialTransactions
 
             if (financialTransaction.AppUserId != _currentUser.UserId)
             {
-                return Errors.FT.AccessDenied(financialTransaction.Id);
+                _logger.LogWarning(
+                    LoggingEvents.FinancialTransaction.AccessDenied,
+                    "Access denied to financial transaction {FinancialTransactionId}",
+                    id);
+
+                return Errors.FT.NotFound(financialTransaction.Id);
             }
 
             return financialTransaction;

@@ -79,11 +79,11 @@ namespace api.Repositories
         }
 
         /// <inheritdoc/>
-        public async Task RevokeAllRefreshTokensAsync(string? ipAddress, string reason)
+        public async Task RevokeAllRefreshTokensAsync(string userId, string? ipAddress, string reason)
         {
             var effectiveIp = ipAddress ?? "unknown";
             await _context.RefreshTokens
-                .Where(rt => rt.UserId == _currentUser.UserId && rt.RevokedAt == null)
+                .Where(rt => rt.UserId == userId && rt.RevokedAt == null)
                 .ExecuteUpdateAsync(
                     setters => setters
                     .SetProperty(rt => rt.RevokedAt, _timeProvider.UtcNow)

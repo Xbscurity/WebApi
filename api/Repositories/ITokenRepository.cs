@@ -62,6 +62,9 @@ namespace api.Repositories
         /// <summary>
         /// Revokes all active refresh tokens for the specified user.
         /// </summary>
+        /// <param name="userId">
+        /// The identifier of the user whose active refresh tokens will be revoked.
+        /// </param>
         /// <param name="ipAddress">
         /// The IP address from which the revocation was performed, if available.
         /// </param>
@@ -69,6 +72,6 @@ namespace api.Repositories
         /// The reason for revocation.
         /// </param>
         /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
-        Task RevokeAllRefreshTokensAsync(string? ipAddress, string reason);
+        Task RevokeAllRefreshTokensAsync(string userId, string? ipAddress, string reason);
     }
 }

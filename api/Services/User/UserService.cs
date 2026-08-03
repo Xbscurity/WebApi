@@ -9,8 +9,8 @@ using Ardalis.Specification.EntityFrameworkCore;
 using ErrorOr;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
+using ZiggyCreatures.Caching.Fusion;
 
 namespace api.Services.User
 {
@@ -20,7 +20,7 @@ namespace api.Services.User
     public class UserService : IUserService
     {
         private readonly UserManager<AppUser> _userManager;
-        private readonly IMemoryCache _memoryCache;
+        private readonly IFusionCache _cache;
         private readonly CacheOptions _cacheOptions;
         private readonly ICurrentUser _currentUser;
         private readonly ILogger<UserService> _logger;
@@ -29,19 +29,19 @@ namespace api.Services.User
         /// Initializes a new instance of the <see cref="UserService"/> class.
         /// </summary>
         /// <param name="userManager">The ASP.NET Core Identity user manager.</param>
-        /// <param name="memoryCache">The memory cache service for ban status.</param>
+        /// <param name="cache">The memory cache service for ban status.</param>
         /// <param name="currentUser">Service providing information about the currently logged-in user.</param>
         /// <param name="cacheOptions">Configuration options for caching behavior.</param>
         /// <param name="logger">Logger for diagnostic information (e.g., cache hits/misses).</param>
         public UserService(
             UserManager<AppUser> userManager,
-            IMemoryCache memoryCache,
+            IFusionCache cache,
             ICurrentUser currentUser,
             IOptions<CacheOptions> cacheOptions,
             ILogger<UserService> logger)
         {
             _userManager = userManager;
-            _memoryCache = memoryCache;
+            _cache = cache;
             _currentUser = currentUser;
             _cacheOptions = cacheOptions.Value;
             _logger = logger;
@@ -86,32 +86,22 @@ namespace api.Services.User
         }
 
         /// <inheritdoc />
-        public ValueTask<bool> IsBannedAsync()
+        public async ValueTask<bool> IsBannedAsync()
         {
             var cacheKey = UserCacheKeys.BanStatus(_currentUser.UserId);
 
-            if (_memoryCache.TryGetValue(cacheKey, out bool isBanned))
-            {
-                _logger.LogInformation("Cache HIT for key: {CacheKey}", cacheKey);
-                return new ValueTask<bool>(isBanned);
-            }
+            return await _cache.GetOrSetAsync(
+                cacheKey,
+                async _ =>
+                {
+                    var user = await _userManager.Users
+                        .Where(u => u.Id == _currentUser.UserId)
+                        .Select(u => new { u.IsBanned })
+                        .SingleOrDefaultAsync();
 
-            _logger.LogInformation("Cache MISS for key: {CacheKey}", cacheKey);
-            return new ValueTask<bool>(LoadFromDbAndCacheAsync(cacheKey));
-
-            async Task<bool> LoadFromDbAndCacheAsync(string cacheKey)
-            {
-                var user = await _userManager.Users
-                    .Where(u => u.Id == _currentUser.UserId)
-                    .Select(u => new { u.IsBanned })
-                    .SingleOrDefaultAsync();
-
-                bool isBanned = user?.IsBanned ?? true;
-
-                _memoryCache.Set(cacheKey, isBanned, _cacheOptions.BanUserTtl);
-
-                return isBanned;
-            }
+                    return user?.IsBanned ?? true;
+                },
+                options => options.SetDuration(_cacheOptions.BanUserTtl));
         }
 
         /// <inheritdoc />
@@ -171,7 +161,7 @@ namespace api.Services.User
         }
 
         /// <inheritdoc />
-        public async Task<ErrorOr<Success>> ChangePasswordAsync(AppUser user, string currentPassword, string newPassword)
+        public async Task<ErrorOr<Updated>> ChangePasswordAsync(AppUser user, string currentPassword, string newPassword)
         {
             var identityResult = await _userManager.ChangePasswordAsync(user, currentPassword, newPassword);
 
@@ -179,12 +169,12 @@ namespace api.Services.User
             {
                 var errors = identityResult.ToErrorDictionary();
 
-                _logger.LogError(LoggingEvents.Auth.UpdatePasswordFailed, "Failed to assign role to user: {@Errors}", errors);
+                _logger.LogError(LoggingEvents.Auth.UpdatePasswordFailed, "Failed to change password: {@Errors}", errors);
 
                 return identityResult.MapToErrors();
             }
 
-            return Result.Success;
+            return Result.Updated;
         }
     }
 }

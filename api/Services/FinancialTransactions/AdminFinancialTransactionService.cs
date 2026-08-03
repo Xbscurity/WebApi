@@ -20,10 +20,10 @@ namespace api.Services.FinancialTransactions
         {
             "category",
             "amount",
-            "createdAt",
+            "createdat",
         }.ToFrozenSet(StringComparer.OrdinalIgnoreCase);
 
-        private readonly ILogger<FinancialTransactionService> _logger;
+        private readonly ILogger<AdminFinancialTransactionService> _logger;
         private readonly IRepository<Category> _categoryRepository;
         private readonly IFinancialTransactionRepository _financialTransactionRepository;
 
@@ -40,7 +40,7 @@ namespace api.Services.FinancialTransactions
         /// The repository used to manage financial transaction persistence.
         /// </param>
         public AdminFinancialTransactionService(
-            ILogger<FinancialTransactionService> logger,
+            ILogger<AdminFinancialTransactionService> logger,
             IRepository<Category> categoryRepository,
             IFinancialTransactionRepository financialTransactionsRepository)
         {
@@ -92,10 +92,15 @@ namespace api.Services.FinancialTransactions
         /// <inheritdoc/>
         public async Task<ErrorOr<AdminFinancialTransactionOutputDto>> GetByIdAsync(Guid id)
         {
-            var financialTransaction = await _financialTransactionRepository.GetByIdAsync(id);
+            var financialTransaction = await _financialTransactionRepository
+                .FirstOrDefaultAsync(new AdminFinancialTransactionByIdSpecification(id));
+
             if (financialTransaction == null)
             {
-                _logger.LogWarning(LoggingEvents.FinancialTransaction.NotFound, "Financial transaction {FinancialTransctionId} not found", id);
+                _logger.LogWarning(
+                    LoggingEvents.FinancialTransaction.NotFound,
+                    "Financial transaction {FinancialTransctionId} not found",
+                    id);
                 return Errors.FT.NotFound(id);
             }
 
@@ -103,7 +108,7 @@ namespace api.Services.FinancialTransactions
                 "Financial transaction with ID {FinancialTransactionId} retrieved.",
                 id);
 
-            return financialTransaction.ToAdminOutputDto();
+            return financialTransaction;
         }
 
         /// <inheritdoc/>
@@ -129,12 +134,12 @@ namespace api.Services.FinancialTransactions
             await _financialTransactionRepository.AddAsync(transaction);
 
             _logger.LogInformation(
-                LoggingEvents.Category.Created,
+                LoggingEvents.FinancialTransaction.Created,
                 "Created new financial transaction {FinancialTransactionId} for user {UserId}",
                 transaction.Id,
                 transaction.AppUserId);
 
-            return transaction.ToAdminOutputDto();
+            return transaction.ToAdminOutputDto(category.Name);
         }
 
         /// <inheritdoc/>
@@ -144,7 +149,10 @@ namespace api.Services.FinancialTransactions
             var financialTransaction = await _financialTransactionRepository.GetByIdAsync(id);
             if (financialTransaction == null)
             {
-                _logger.LogWarning(LoggingEvents.FinancialTransaction.NotFound, "Financial transaction {FinancialTransactionId} not found", id);
+                _logger.LogWarning(
+                    LoggingEvents.FinancialTransaction.NotFound,
+                    "Financial transaction {FinancialTransactionId} not found",
+                    id);
                 return Errors.FT.NotFound(id);
             }
 
@@ -161,7 +169,7 @@ namespace api.Services.FinancialTransactions
 
             if (category.AppUserId != financialTransaction.AppUserId)
             {
-                return Errors.Category.AccessDenied(input.CategoryId);
+                return Errors.FT.UserMismatch(input.CategoryId, category.AppUserId, financialTransaction.AppUserId);
             }
 
             financialTransaction.CategoryId = input.CategoryId;
@@ -169,14 +177,14 @@ namespace api.Services.FinancialTransactions
             financialTransaction.Type = input.Type;
             financialTransaction.Comment = input.Comment.Trim();
 
-            await _financialTransactionRepository.UpdateAsync(financialTransaction);
+            await _financialTransactionRepository.SaveChangesAsync();
 
             _logger.LogInformation(
                 LoggingEvents.FinancialTransaction.Updated,
                 "Financial transaction with ID {FinancialTransactionId} updated.",
                 id);
 
-            return financialTransaction.ToAdminOutputDto();
+            return financialTransaction.ToAdminOutputDto(category.Name);
         }
 
         /// <inheritdoc/>
@@ -186,7 +194,9 @@ namespace api.Services.FinancialTransactions
             if (financialTransaction == null)
             {
                 _logger.LogWarning(
-                    LoggingEvents.FinancialTransaction.NotFound, "Financial transaction {FinancialTransactionId} not found", id);
+                    LoggingEvents.FinancialTransaction.NotFound,
+                    "Financial transaction {FinancialTransactionId} not found",
+                    id);
 
                 return Errors.FT.NotFound(id);
             }

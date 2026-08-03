@@ -75,7 +75,6 @@ namespace api.Data
                 .IsUnique();
 
             modelBuilder.Entity<RefreshToken>()
-                .Ignore(rt => rt.IsExpired)
                 .Ignore(rt => rt.IsRevoked);
 
             modelBuilder.Entity<FinancialTransaction>()

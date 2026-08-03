@@ -3,7 +3,7 @@
 namespace api.Dtos.FinancialTransaction
 {
     /// <summary>
-    /// Represents a financial transaction returned by the application as an administrator.
+    /// Represents a financial transaction returned by the application with additional user information for administrative purposes.
     /// </summary>
     public record AdminFinancialTransactionOutputDto
     {
@@ -16,6 +16,11 @@ namespace api.Dtos.FinancialTransaction
         /// Gets the identifier of the category assigned to the transaction.
         /// </summary>
         required public Guid CategoryId { get; init; }
+
+        /// <summary>
+        /// Gets the name of the category assigned to the transaction.
+        /// </summary>
+        required public string CategoryName { get; init; }
 
         /// <summary>
         /// Gets the transaction amount.

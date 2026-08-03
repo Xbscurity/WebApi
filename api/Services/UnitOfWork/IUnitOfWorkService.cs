@@ -20,6 +20,7 @@ namespace api.Services.UnitOfWork
         /// <remarks>
         /// Reuses the current transaction if one is already active; otherwise, creates a new one.
         /// </remarks>
-        Task<ErrorOr<T>> ExecuteInTransactionAsync<T>(Func<Task<ErrorOr<T>>> action);
+        Task<ErrorOr<T>> ExecuteInTransactionAsync<T>(
+            Func<Task<ErrorOr<T>>> action);
     }
 }

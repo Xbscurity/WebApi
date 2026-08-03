@@ -91,6 +91,7 @@ namespace api.Interfaces
                         transaction.UpdatedAt,
                         transaction.AppUserId,
                         transaction.CategoryId,
+                        transaction.Category.Name,
                     }),
                 }).OrderByDescending(g => Math.Abs(g.TotalAmount))
             .Skip((query.Page - 1) * query.Size)
@@ -111,6 +112,7 @@ namespace api.Interfaces
                 CreatedAt = t.CreatedAt,
                 UpdatedAt = t.UpdatedAt,
                 CategoryId = t.CategoryId,
+                CategoryName = t.Name,
             })
             .ToList(),
             }).ToList();

@@ -26,14 +26,19 @@
             public static readonly EventId InvalidCredentials = new(1003, nameof(InvalidCredentials));
 
             /// <summary>
+            /// Event ID for when a login attempt is made with invalid credentials.
+            /// </summary>
+            public static readonly EventId PasswordChanged = new(1004, nameof(PasswordChanged));
+
+            /// <summary>
             /// Event ID for when a password update operation fails.
             /// </summary>
-            public static readonly EventId UpdatePasswordFailed = new(1004, nameof(UpdatePasswordFailed));
+            public static readonly EventId UpdatePasswordFailed = new(1005, nameof(UpdatePasswordFailed));
 
             /// <summary>
             /// Event ID for when an authenticated user attempts an action they are not permitted to perform.
             /// </summary>
-            public static readonly EventId Forbidden = new(1005, nameof(Forbidden));
+            public static readonly EventId Forbidden = new(1006, nameof(Forbidden));
 
             /// <summary>
             /// EventIds related to refresh token operations (1100–1199).

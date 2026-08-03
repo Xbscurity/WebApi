@@ -1,5 +1,6 @@
 ﻿using api.Constants;
 using api.Data;
+using api.Providers.Time;
 using Microsoft.EntityFrameworkCore;
 
 namespace api.Services.Background
@@ -10,16 +11,22 @@ namespace api.Services.Background
     public class RefreshTokenCleanupService : BackgroundService
     {
         private readonly IServiceScopeFactory _scopeFactory;
+        private readonly ITimeProvider _timeProvider;
         private readonly ILogger<RefreshTokenCleanupService> _logger;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="RefreshTokenCleanupService"/> class.
         /// </summary>
         /// <param name="scopeFactory">The factory used to create service scopes for database access.</param>
+        /// <param name="timeProvider">Provides the current time.</param>
         /// <param name="logger">The logger used to record informational and error messages.</param>
-        public RefreshTokenCleanupService(IServiceScopeFactory scopeFactory, ILogger<RefreshTokenCleanupService> logger)
+        public RefreshTokenCleanupService(
+            IServiceScopeFactory scopeFactory,
+            ITimeProvider timeProvider,
+            ILogger<RefreshTokenCleanupService> logger)
         {
             _scopeFactory = scopeFactory;
+            _timeProvider = timeProvider;
             _logger = logger;
         }
 
@@ -31,29 +38,35 @@ namespace api.Services.Background
         /// <returns>A Task representing the asynchronous operation.</returns>
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            while (!stoppingToken.IsCancellationRequested)
+            using var timer = new PeriodicTimer(TimeSpan.FromHours(1));
+
+            try
             {
-                try
+                do
                 {
-                    using var scope = _scopeFactory.CreateScope();
-                    var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+                    try
+                    {
+                        using var scope = _scopeFactory.CreateScope();
+                        var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
 
-                    var expired = db.RefreshTokens
-                        .Where(r => r.ExpiresAt < DateTimeOffset.UtcNow);
+                        var deletedCount = await db.RefreshTokens
+                            .Where(r => r.ExpiresAt < _timeProvider.UtcNow)
+                            .ExecuteDeleteAsync(stoppingToken);
 
-                    var deletedCount = await expired.ExecuteDeleteAsync();
-
-                    _logger.LogInformation("Removed expired refresh tokens: {Count}", deletedCount);
+                        _logger.LogInformation("Removed expired refresh tokens: {Count}", deletedCount);
+                    }
+                    catch (Exception ex) when (ex is not OperationCanceledException)
+                    {
+                        _logger.LogError(
+                            LoggingEvents.Auth.RefreshToken.CleanupError,
+                            ex,
+                            "Error occurred while cleaning up expired refresh tokens");
+                    }
                 }
-                catch (Exception ex)
-                {
-                    _logger.LogError(
-                        LoggingEvents.Auth.RefreshToken.CleanupError,
-                        ex,
-                        "Error occurred while cleaning up expired refresh tokens");
-                }
-
-                await Task.Delay(TimeSpan.FromHours(1), stoppingToken);
+                while (await timer.WaitForNextTickAsync(stoppingToken));
+            }
+            catch (OperationCanceledException)
+            {
             }
         }
     }

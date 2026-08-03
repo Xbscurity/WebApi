@@ -111,9 +111,9 @@ namespace api.Services.User
         /// <param name="currentPassword">The current password to validate before changing.</param>
         /// <param name="newPassword">The new password to set for the specified <paramref name="user"/>.</param>
         /// <returns>
-        /// A <see cref="Success"/> result if successful;
+        /// A <see cref="Updated"/> result if successful;
         /// otherwise, an error.
         /// </returns>
-        Task<ErrorOr<Success>> ChangePasswordAsync(AppUser user, string currentPassword, string newPassword);
+        Task<ErrorOr<Updated>> ChangePasswordAsync(AppUser user, string currentPassword, string newPassword);
     }
 }

@@ -15,6 +15,9 @@ namespace api.Extensions
         /// <param name="financialTransaction">
         /// The financial transaction entity to convert.
         /// </param>
+        /// <param name="categoryName">
+        /// The name of the category assigned to the financial transaction.
+        /// </param>
         /// <returns>
         /// A DTO representation of the financial transaction.
         /// </returns>
@@ -22,7 +25,7 @@ namespace api.Extensions
         /// Thrown when <paramref name="financialTransaction"/> is <see langword="null"/>.
         /// </exception>
         public static FinancialTransactionOutputDto ToOutputDto(
-            this FinancialTransaction financialTransaction)
+            this FinancialTransaction financialTransaction, string categoryName)
         {
             ArgumentNullException.ThrowIfNull(financialTransaction);
 
@@ -30,6 +33,7 @@ namespace api.Extensions
             {
                 Id = financialTransaction.Id,
                 CategoryId = financialTransaction.CategoryId,
+                CategoryName = categoryName,
                 Amount = financialTransaction.Amount,
                 Type = financialTransaction.Type,
                 Comment = financialTransaction.Comment,
@@ -45,6 +49,9 @@ namespace api.Extensions
         /// <param name="financialTransaction">
         /// The financial transaction entity to convert.
         /// </param>
+        /// <param name="categoryName">
+        /// The name of the category assigned to the financial transaction.
+        /// </param>
         /// <returns>
         /// A DTO representation of the financial transaction.
         /// </returns>
@@ -52,7 +59,7 @@ namespace api.Extensions
         /// Thrown when <paramref name="financialTransaction"/> is <see langword="null"/>.
         /// </exception>
         public static AdminFinancialTransactionOutputDto ToAdminOutputDto(
-                this FinancialTransaction financialTransaction)
+                this FinancialTransaction financialTransaction, string categoryName)
         {
             ArgumentNullException.ThrowIfNull(financialTransaction);
 
@@ -60,6 +67,7 @@ namespace api.Extensions
             {
                 Id = financialTransaction.Id,
                 CategoryId = financialTransaction.CategoryId,
+                CategoryName = categoryName,
                 Amount = financialTransaction.Amount,
                 Type = financialTransaction.Type,
                 Comment = financialTransaction.Comment,

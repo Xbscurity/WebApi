@@ -72,9 +72,14 @@ namespace api.Services.Account
             var userId = _currentUser.UserId;
             var user = await _userService.FindByIdAsync(userId);
 
+            if (user == null)
+            {
+                return Errors.User.NotFound(userId);
+            }
+
             var result = new UserProfileOutputDto
             {
-                UserName = user!.UserName!,
+                UserName = user.UserName!,
                 Email = user.Email!,
                 CreatedAt = user.CreatedAt,
             };
@@ -102,17 +107,18 @@ namespace api.Services.Account
 
             return await _unitOfWork.ExecuteInTransactionAsync<string>(async () =>
             {
-                var updateResult = await _userService.ChangePasswordAsync(user, dto.CurrentPassword, dto.NewPassword);
+                var updateResult = await _userService
+                .ChangePasswordAsync(user, dto.CurrentPassword, dto.NewPassword);
                 if (updateResult.IsError)
                 {
                     return updateResult.Errors;
                 }
 
                 var ip = _clientIpProvider.GetClientIp();
-
-                await _tokenRepository.RevokeAllRefreshTokensAsync(ip, "Password changed");
+                await _tokenRepository.RevokeAllRefreshTokensAsync(user.Id, ip, "Password changed");
 
                 var refreshToken = await _tokenService.CreateRefreshTokenAsync(user.Id);
+                _logger.LogInformation(LoggingEvents.Auth.PasswordChanged, "Password changed");
 
                 return refreshToken;
             });

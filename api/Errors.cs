@@ -54,22 +54,6 @@ namespace api
                     });
 
             /// <summary>
-            /// Creates an error indicating that access to a category is forbidden.
-            /// </summary>
-            /// <param name="id">The category identifier.</param>
-            /// <returns>A <see cref="Error"/> of type <see cref="ErrorType.Forbidden"/>.</returns>
-            public static Error AccessDenied(Guid id) =>
-                Error.Forbidden(
-                    code: $"{Prefix}ACCESS_DENIED",
-                    description: $"An unauthorized access to category with id {id}",
-                    metadata: new Dictionary<string, object>
-                    {
-                        {
-                            "categoryId", id
-                        },
-                    });
-
-            /// <summary>
             /// Creates an error indicating that a category cannot be deleted due to existing dependencies.
             /// </summary>
             /// <param name="id">The category identifier.</param>
@@ -104,6 +88,25 @@ namespace api
                         {
                             "financialTransactionId", id
                         },
+                    });
+
+            /// <summary>
+            /// Creates an error indicating that the specified category belongs to a different user than the financial transaction.
+            /// </summary>
+            /// <param name="categoryId">The identifier of the category.</param>
+            /// <param name="categoryUserId">The identifier of the user who owns the category.</param>
+            /// <param name="financialTransactionUserId">The identifier of the user who owns the financial transaction.</param>
+            /// <returns>A <see cref="Error"/> of type <see cref="ErrorType.Validation"/>.</returns>
+            public static Error UserMismatch(Guid categoryId, string categoryUserId, string financialTransactionUserId) =>
+                Error.Validation(
+                    code: $"{Prefix}USER_MISMATCH",
+                    description: $"The category with ID {categoryId} belongs to user '{categoryUserId}', but the financial transaction belongs to user '{financialTransactionUserId}'.",
+                    metadata: new Dictionary<string, object>
+                    {
+                        [ErrorMetadataKeys.Field] = "categoryId",
+                        [ErrorMetadataKeys.Value] = categoryId,
+                        ["categoryUserId"] = categoryUserId,
+                        ["transactionUserId"] = financialTransactionUserId,
                     });
 
             /// <summary>

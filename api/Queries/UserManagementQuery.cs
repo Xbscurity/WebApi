@@ -15,7 +15,7 @@
         /// The sort field name.
         /// Defaults to <c>"id"</c>.
         /// </value>
-        public string SortBy { get; init; } = "id";
+        public string SortBy { get; init; } = "createdat";
 
         /// <summary>
         /// Gets a value indicating whether sorting should be performed

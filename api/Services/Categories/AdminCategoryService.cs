@@ -21,7 +21,7 @@ namespace api.Services.Categories
         {
             "name",
             "isactive",
-            "createdAt",
+            "createdat",
         }.ToFrozenSet(StringComparer.OrdinalIgnoreCase);
 
         private readonly ILogger<CategoryService> _logger;
@@ -98,14 +98,16 @@ namespace api.Services.Categories
         /// <inheritdoc/>
         public async Task<ErrorOr<AdminCategoryOutputDto>> GetByIdAsync(Guid id)
         {
-            var category = await _categoryRepository.GetByIdAsync(id);
+            var category = await _categoryRepository
+                .FirstOrDefaultAsync(new AdminCategoryByIdSpecification(id));
+
             if (category == null)
             {
                 _logger.LogWarning(LoggingEvents.Category.NotFound, "Category {CategoryId} not found", id);
                 return Errors.Category.NotFound(id);
             }
 
-            return category.ToAdminOutputDto();
+            return category;
         }
 
         /// <inheritdoc/>
@@ -149,7 +151,7 @@ namespace api.Services.Categories
 
             category.Name = input.Name.Trim();
 
-            await _categoryRepository.UpdateAsync(category);
+            await _categoryRepository.SaveChangesAsync();
 
             _logger.LogInformation(
                 LoggingEvents.Category.Updated,
@@ -169,7 +171,7 @@ namespace api.Services.Categories
                 return Errors.Category.NotFound(id);
             }
 
-            var spec = new FinancialTransactionByCategoryIdSpecification(id);
+            var spec = new HasFinancialTransactionsByCategoryIdSpecification(id);
             if (await _financialTransactionRepository.AnyAsync(spec))
             {
                 _logger.LogWarning(
@@ -202,7 +204,7 @@ namespace api.Services.Categories
 
             category.IsActive = isActive;
 
-            await _categoryRepository.UpdateAsync(category);
+            await _categoryRepository.SaveChangesAsync();
 
             _logger.LogInformation(
                 LoggingEvents.Category.Toggled,

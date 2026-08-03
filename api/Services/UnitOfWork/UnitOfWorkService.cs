@@ -20,7 +20,8 @@ namespace api.Services.UnitOfWork
         public UnitOfWorkService(ApplicationDbContext context) => _context = context;
 
         /// <inheritdoc />
-        public async Task<ErrorOr<T>> ExecuteInTransactionAsync<T>(Func<Task<ErrorOr<T>>> action)
+        public async Task<ErrorOr<T>> ExecuteInTransactionAsync<T>(
+            Func<Task<ErrorOr<T>>> action)
         {
             if (_context.Database.CurrentTransaction != null)
             {
@@ -31,7 +32,8 @@ namespace api.Services.UnitOfWork
 
             return await strategy.ExecuteAsync(async () =>
             {
-                using var transaction = await _context.Database.BeginTransactionAsync();
+                _context.ChangeTracker.Clear();
+                await using var transaction = await _context.Database.BeginTransactionAsync();
                 try
                 {
                     var result = await action();

@@ -26,15 +26,6 @@
         public DateTimeOffset ExpiresAt { get; set; }
 
         /// <summary>
-        /// Gets a value indicating whether the token has expired.
-        /// </summary>
-        /// <value>
-        /// <see langword="true"/> if the current UTC time is greater than or equal
-        /// to <see cref="ExpiresAt"/>; otherwise, <see langword="false"/>.
-        /// </value>
-        public bool IsExpired => DateTimeOffset.UtcNow >= ExpiresAt;
-
-        /// <summary>
         /// Gets or sets the date and time when the token was revoked.
         /// </summary>
         public DateTimeOffset? RevokedAt { get; set; }

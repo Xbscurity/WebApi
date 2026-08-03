@@ -29,7 +29,7 @@
 
             return ip.IsIPv4MappedToIPv6
                 ? ip.MapToIPv4().ToString()
-                : ip.ToString() ?? "unknown";
+                : ip.ToString();
         }
     }
 }

@@ -64,7 +64,8 @@ namespace api
             services.AddTransient<LogEnrichmentMiddleware>();
 
             services.AddScoped<IUserService, UserService>();
-            services.AddMemoryCache();
+
+            services.AddFusionCache();
 
             services.AddHostedService<RefreshTokenCleanupService>();
 

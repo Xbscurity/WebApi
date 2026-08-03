@@ -94,10 +94,7 @@ namespace api.Services.Categories
         /// <param name="userId">
         /// The identifier of the user for whom the categories should be created.
         /// </param>
-        /// <returns>
-        /// An instance of <see cref="ErrorOr{T}"/> containing a <see cref="Success"/>
-        /// if successful; otherwise, an error.
-        /// </returns>
-        Task<ErrorOr<Success>> CreateInitialCategoriesForUserAsync(string userId);
+        /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
+        Task CreateInitialCategoriesForUserAsync(string userId);
     }
 }
