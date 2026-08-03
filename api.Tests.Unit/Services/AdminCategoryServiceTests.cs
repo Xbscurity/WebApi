@@ -1,10 +1,9 @@
-﻿using api.Data;
-using api.Dtos.Category;
+﻿using api.Dtos.Category;
 using api.Interfaces;
 using api.Models;
-using api.Providers.CurrentUser;
 using api.Queries;
 using api.Services.Categories;
+using api.Services.User;
 using api.Specifications;
 using api.Tests.Unit.Factories;
 using ErrorOr;
@@ -13,25 +12,18 @@ using Moq;
 
 namespace api.Tests.Unit.Services
 {
-    public class CategoryServiceTests
+    public class AdminCategoryServiceTests
     {
-        private readonly Mock<ICurrentUser> _currentUserMock = new();
+        private readonly Mock<IUserService> _userServiceMock = new();
         private readonly Mock<IRepository<Category>> _categoryRepositoryMock = new();
         private readonly Mock<IRepository<FinancialTransaction>> _financialTransactionRepositoryMock = new();
-        private readonly CategoryService _sut;
-
-        private const string CurrentUserId = "current-user";
+        private readonly AdminCategoryService _sut;
         private const string OtherUserId = "other-user";
-
-        public CategoryServiceTests()
+        public AdminCategoryServiceTests()
         {
-            _currentUserMock
-                .SetupGet(x => x.UserId)
-                .Returns(CurrentUserId);
-
-            _sut = new CategoryService(
+            _sut = new AdminCategoryService(
                 Mock.Of<ILogger<CategoryService>>(),
-                _currentUserMock.Object,
+                _userServiceMock.Object,
                 _categoryRepositoryMock.Object,
                 _financialTransactionRepositoryMock.Object
                 );
@@ -40,9 +32,8 @@ namespace api.Tests.Unit.Services
         [Fact]
         public async Task GetAllAsync_InvalidSortBy_ReturnsValidationError()
         {
-            // Arrange 
-
-            var query = new EntityQuery
+            // Arange 
+            var query = new AdminEntityQuery
             {
                 SortBy = "InvalidSortBy"
             };
@@ -58,11 +49,11 @@ namespace api.Tests.Unit.Services
             Assert.Equal("CATEGORY_INVALID_SORT_BY", error.Code);
 
             _categoryRepositoryMock.Verify(
-                x => x.ListAsync(It.IsAny<CategorySortedPagedSpecification>()),
+                x => x.ListAsync(It.IsAny<AdminCategorySortedPagedSpecification>()),
                 Times.Never);
 
             _categoryRepositoryMock.Verify(
-                x => x.CountAsync(It.IsAny<CategorySortedPagedSpecification>()),
+                x => x.CountAsync(It.IsAny<AdminCategorySortedPagedSpecification>()),
                 Times.Never);
         }
 
@@ -74,43 +65,47 @@ namespace api.Tests.Unit.Services
         {
             // Arrange
 
-            var query = new EntityQuery
+            var query = new AdminEntityQuery
             {
                 SortBy = sortBy,
                 Page = 1,
                 Size = 10,
             };
 
+
             var timeStub = new DateTimeOffset(2026, 1, 1, 0, 0, 0, TimeSpan.Zero);
 
-            var categories = new List<CategoryOutputDto>
+            var categories = new List<AdminCategoryOutputDto>
             {
-                new ()
+                new()
             {
                 Id = Guid.NewGuid(),
                 Name = "Food",
                 IsActive = true,
                 CreatedAt = timeStub,
-                UpdatedAt = timeStub
+                UpdatedAt = timeStub,
+                AppUserId = "123"
             },
-                new ()
+                new()
             {
                 Id = Guid.NewGuid(),
                 Name = "Transport",
                 IsActive = true,
                 CreatedAt = timeStub,
-                UpdatedAt = timeStub
-            },
+                UpdatedAt = timeStub,
+                AppUserId = "123"
+            }
             };
+
 
             _categoryRepositoryMock
                 .Setup(x => x.ListAsync(
-                    It.IsAny<CategorySortedPagedSpecification>()))
+                    It.IsAny<AdminCategorySortedPagedSpecification>()))
                 .ReturnsAsync(categories);
 
             _categoryRepositoryMock
                 .Setup(x => x.CountAsync(
-                    It.IsAny<CategorySortedPagedSpecification>()))
+                    It.IsAny<AdminCategorySortedPagedSpecification>()))
                 .ReturnsAsync(25);
 
             // Act
@@ -125,27 +120,27 @@ namespace api.Tests.Unit.Services
             Assert.Equal(25, result.Value.Pagination.TotalItems);
             Assert.True(result.Value.Pagination.HasNext);
             Assert.False(result.Value.Pagination.HasPrevious);
+
             Assert.Equal(categories, result.Value.Items);
         }
 
         [Theory]
-        [InlineData("Name")]
+        [InlineData("NAME")]
         [InlineData("ISACTIVE")]
         [InlineData("CREATEDAT")]
         public async Task GetAllAsync_SortByDifferentCase_IsTreatedAsValid(string sortBy)
         {
             // Arrange
-
-            var query = new EntityQuery
+            var query = new AdminEntityQuery
             {
                 SortBy = sortBy,
             };
 
-            var categories = new List<CategoryOutputDto>();
+            var categories = new List<AdminCategoryOutputDto>();
 
             _categoryRepositoryMock
                 .Setup(x => x.ListAsync(
-                    It.IsAny<CategorySortedPagedSpecification>()))
+                    It.IsAny<AdminCategorySortedPagedSpecification>()))
                 .ReturnsAsync(categories);
 
             // Act
@@ -159,24 +154,24 @@ namespace api.Tests.Unit.Services
         public async Task GetAllAsync_EmptyList_ReturnsEmptyList()
         {
             // Arrange
-            var query = new EntityQuery
+
+            var query = new AdminEntityQuery
             {
                 Page = 1,
                 Size = 10,
                 SortBy = "isactive"
             };
 
-            var timeStub = new DateTimeOffset(2026, 1, 1, 0, 0, 0, TimeSpan.Zero);
-
-            var transactions = new List<CategoryOutputDto>();
+            var categories = new List<AdminCategoryOutputDto>();
 
             _categoryRepositoryMock
                 .Setup(x => x.ListAsync(
-                    It.IsAny<CategorySortedPagedSpecification>()))
-                .ReturnsAsync(transactions);
+                    It.IsAny<AdminCategorySortedPagedSpecification>()))
+                .ReturnsAsync(categories);
 
             _categoryRepositoryMock
-                .Setup(x => x.CountAsync(It.IsAny<CategorySortedPagedSpecification>()))
+                .Setup(x => x.CountAsync(
+                    It.IsAny<AdminCategorySortedPagedSpecification>()))
                 .ReturnsAsync(0);
 
             // Act
@@ -217,19 +212,21 @@ namespace api.Tests.Unit.Services
         {
             // Arrange
             var categoryId = Guid.NewGuid();
+
             var timeStub = new DateTimeOffset(2026, 1, 1, 0, 0, 0, TimeSpan.Zero);
 
-            var category = new CategoryOutputDto
+            var category = new AdminCategoryOutputDto
             {
                 Id = categoryId,
                 Name = "Transport",
                 IsActive = true,
                 CreatedAt = timeStub,
-                UpdatedAt = timeStub
+                UpdatedAt = timeStub,
+                AppUserId = OtherUserId
             };
 
             _categoryRepositoryMock
-                .Setup(x => x.FirstOrDefaultAsync(It.IsAny<CategoryByIdSpecification>()))
+                .Setup(x => x.FirstOrDefaultAsync(It.IsAny<AdminCategoryByIdSpecification>()))
                 .ReturnsAsync(category);
 
             // Act
@@ -242,24 +239,35 @@ namespace api.Tests.Unit.Services
         }
 
         [Fact]
-        public async Task CreateAsync_Valid_ReturnsCreatedCategoryForCurrentUser()
+        public async Task CreateAsync_ValidTargetUser_ReturnsCreatedCategoryForTargetUser()
         {
-            // Arrange
-            var input = new CategoryCreateInputDto
+            // Arrange     
+            var input = new AdminCategoryCreateInputDto
             {
-                Name = "New",
+                Name = "Test",
+                AppUserId = OtherUserId
             };
+
+            _userServiceMock
+                .Setup(x => x.AnyAsync(OtherUserId))
+                .ReturnsAsync(true);
 
             // Act
             var result = await _sut.CreateAsync(input);
 
             // Assert
             Assert.True(result.IsSuccess, $"Error code: {result.FirstError.Code}");
+            Assert.Equal(input.AppUserId, result.Value.AppUserId);
             Assert.Equal(input.Name, result.Value.Name);
 
-            _categoryRepositoryMock.Verify(
-                x =>
-                x.AddAsync(It.Is<Category>(c => c.AppUserId == CurrentUserId && c.Name == "New")),
+            _userServiceMock.Verify(
+                x => x.AnyAsync(OtherUserId),
+                Times.Once);
+
+            _categoryRepositoryMock.Verify(x => x.AddAsync(
+                It.Is<Category>(c =>
+                c.Name == "Test" &&
+                c.AppUserId == OtherUserId)),
                 Times.Once);
         }
 
@@ -267,10 +275,15 @@ namespace api.Tests.Unit.Services
         public async Task CreateAsync_NameWithWhitespace_TrimsName()
         {
             // Arrange
-            var input = new CategoryCreateInputDto
+            var input = new AdminCategoryCreateInputDto
             {
                 Name = "  Test  ",
+                AppUserId = OtherUserId
             };
+
+            _userServiceMock
+                .Setup(x => x.AnyAsync(OtherUserId))
+                .ReturnsAsync(true);
 
             // Act
             var result = await _sut.CreateAsync(input);
@@ -280,8 +293,39 @@ namespace api.Tests.Unit.Services
             Assert.Equal("Test", result.Value.Name);
 
             _categoryRepositoryMock.Verify(x => x.AddAsync(
-                It.Is<Category>(c => c.Name == "Test")),
+                It.Is<Category>(c => c.Name == "Test" &&
+                c.AppUserId == OtherUserId)),
                 Times.Once);
+        }
+
+        [Fact]
+        public async Task CreateAsync_UserNotFound_ReturnsNotFoundError()
+        {
+            // Arrange
+            var targetUserId = "bad-user";
+
+            var dto = new AdminCategoryCreateInputDto
+            {
+                Name = "Test",
+                AppUserId = targetUserId
+            };
+
+            _userServiceMock
+                .Setup(x => x.AnyAsync(targetUserId))
+                .ReturnsAsync(false);
+
+            // Act
+            var result = await _sut.CreateAsync(dto);
+
+            // Assert
+            Assert.True(result.IsError);
+            Assert.Equal(Errors.User.NotFound(targetUserId), result.FirstError);
+
+            _userServiceMock.Verify(x => x.AnyAsync(targetUserId),
+                Times.Once);
+
+            _categoryRepositoryMock.Verify(x => x.AddAsync(It.IsAny<Category>()),
+                Times.Never);
         }
 
         [Fact]
@@ -289,52 +333,21 @@ namespace api.Tests.Unit.Services
         {
             // Arrange
             var categoryId = Guid.NewGuid();
-
-            var input = new CategoryUpdateInputDto
+            var dto = new CategoryUpdateInputDto
             {
                 Name = "Updated"
             };
 
             _categoryRepositoryMock
-                .Setup(x => x.GetByIdAsync(categoryId))
-                .ReturnsAsync((Category?)null);
+               .Setup(x => x.GetByIdAsync(categoryId))
+               .ReturnsAsync((Category?)null);
 
             // Act
-            var result = await _sut.UpdateAsync(categoryId, input);
+            var result = await _sut.UpdateAsync(categoryId, dto);
 
             // Assert
             Assert.True(result.IsError);
             Assert.Equal(Errors.Category.NotFound(categoryId), result.FirstError);
-
-            _categoryRepositoryMock.Verify(
-                x => x.SaveChangesAsync(It.IsAny<CancellationToken>()),
-                Times.Never);
-        }
-
-        [Fact]
-        public async Task UpdateAsync_CategoryBelongsToDifferentUser_ReturnsNotFoundError()
-        {
-            // Arrange
-            var categoryId = Guid.NewGuid();
-
-            var category = CategoryFactory.Create(id: categoryId, userId: OtherUserId, name: "old");
-
-            _categoryRepositoryMock
-                .Setup(x => x.GetByIdAsync(categoryId))
-                .ReturnsAsync(category);
-
-            var input = new CategoryUpdateInputDto
-            {
-                Name = "New Name"
-            };
-
-            // Act
-            var result = await _sut.UpdateAsync(categoryId, input);
-
-            // Assert
-            Assert.True(result.IsError);
-            Assert.Equal(Errors.Category.NotFound(categoryId), result.FirstError);
-            Assert.Equal("old", category.Name);
 
             _categoryRepositoryMock.Verify(
                 x => x.SaveChangesAsync(It.IsAny<CancellationToken>()),
@@ -347,24 +360,23 @@ namespace api.Tests.Unit.Services
             // Arrange
             var categoryId = Guid.NewGuid();
 
-            var category = CategoryFactory.Create(id: categoryId, userId: CurrentUserId);
+            var category = CategoryFactory.Create(id: categoryId, userId: OtherUserId, name: "old");
 
             _categoryRepositoryMock
                 .Setup(x => x.GetByIdAsync(categoryId))
                 .ReturnsAsync(category);
 
-            var input = new CategoryUpdateInputDto
+            var dto = new CategoryUpdateInputDto
             {
-                Name = "  New Name  "
+                Name = "New Name"
             };
 
             // Act
-            var result = await _sut.UpdateAsync(categoryId, input);
+            var result = await _sut.UpdateAsync(categoryId, dto);
 
             // Assert
             Assert.True(result.IsSuccess, $"Error code: {result.FirstError.Code}");
 
-            Assert.Equal(categoryId, result.Value.Id);
             Assert.Equal("New Name", result.Value.Name);
             Assert.Equal("New Name", category.Name);
 
@@ -379,24 +391,24 @@ namespace api.Tests.Unit.Services
             // Arrange
             var categoryId = Guid.NewGuid();
 
-            var category = CategoryFactory.Create(id: categoryId, userId: CurrentUserId);
+            var category = CategoryFactory.Create(id: categoryId, userId: OtherUserId, name: "old");
 
             _categoryRepositoryMock
                 .Setup(x => x.GetByIdAsync(categoryId))
                 .ReturnsAsync(category);
 
-            var input = new CategoryUpdateInputDto
+            var dto = new CategoryUpdateInputDto
             {
-                Name = "    Test       ",
+                Name = "     New Name    "
             };
 
             // Act
-            var result = await _sut.UpdateAsync(categoryId, input);
+            var result = await _sut.UpdateAsync(categoryId, dto);
 
             // Assert
             Assert.True(result.IsSuccess, $"Error code: {result.FirstError.Code}");
-            Assert.Equal("Test", result.Value.Name);
-            Assert.Equal("Test", category.Name);
+            Assert.Equal("New Name", category.Name);
+            Assert.Equal("New Name", result.Value.Name);
 
             _categoryRepositoryMock.Verify(
                 x => x.SaveChangesAsync(It.IsAny<CancellationToken>()),
@@ -428,40 +440,12 @@ namespace api.Tests.Unit.Services
         [Theory]
         [InlineData(true)]
         [InlineData(false)]
-        public async Task SetActiveAsync_CategoryBelongsToDifferentUser_ReturnsNotFoundError(bool isActive)
-        {
-            // Arrange
-            var categoryId = Guid.NewGuid();
-
-            var category = CategoryFactory.Create(id: categoryId, userId: OtherUserId, isActive: isActive);
-
-            _categoryRepositoryMock
-                .Setup(x => x.GetByIdAsync(categoryId))
-                .ReturnsAsync(category);
-
-            // Act
-            var result = await _sut.SetActiveAsync(categoryId, !isActive);
-
-            // Assert
-            Assert.True(result.IsError);
-            Assert.Equal(Errors.Category.NotFound(categoryId), result.FirstError);
-            Assert.Equal(isActive, category.IsActive);
-
-            _categoryRepositoryMock.Verify(
-                x => x.SaveChangesAsync(It.IsAny<CancellationToken>()),
-                Times.Never);
-        }
-
-
-        [Theory]
-        [InlineData(true)]
-        [InlineData(false)]
         public async Task SetActiveAsync_ValidInput_UpdatesActiveStatusAndReturnsDto(bool isActive)
         {
             // Arrange
             var categoryId = Guid.NewGuid();
 
-            var category = CategoryFactory.Create(id: categoryId, userId: CurrentUserId, isActive: true);
+            var category = CategoryFactory.Create(id: categoryId, userId: OtherUserId, isActive: true);
 
             _categoryRepositoryMock
                 .Setup(x => x.GetByIdAsync(categoryId))
@@ -474,6 +458,7 @@ namespace api.Tests.Unit.Services
             Assert.True(result.IsSuccess, $"Error code: {result.FirstError.Code}");
 
             Assert.Equal(isActive, result.Value.ToggleActive);
+
             Assert.Equal(isActive, category.IsActive);
 
             _categoryRepositoryMock.Verify(
@@ -502,36 +487,7 @@ namespace api.Tests.Unit.Services
                 x => x.AnyAsync(It.IsAny<HasFinancialTransactionsByCategoryIdSpecification>()),
                 Times.Never);
 
-            _categoryRepositoryMock.Verify(
-                x => x.DeleteAsync(It.IsAny<Category>()),
-                Times.Never);
-        }
-
-        [Fact]
-        public async Task DeleteAsync_CategoryBelongsToDifferentUser_ReturnsNotFoundError()
-        {
-            // Arrange
-            var categoryId = Guid.NewGuid();
-
-            var category = CategoryFactory.Create(id: categoryId, userId: OtherUserId);
-
-            _categoryRepositoryMock
-                .Setup(x => x.GetByIdAsync(categoryId))
-                .ReturnsAsync(category);
-
-            // Act
-            var result = await _sut.DeleteAsync(categoryId);
-
-            // Assert
-            Assert.True(result.IsError);
-            Assert.Equal(Errors.Category.NotFound(categoryId), result.FirstError);
-
-            _financialTransactionRepositoryMock.Verify(
-                x => x.AnyAsync(It.IsAny<HasFinancialTransactionsByCategoryIdSpecification>()),
-                Times.Never);
-
-            _categoryRepositoryMock.Verify(
-                x => x.DeleteAsync(It.IsAny<Category>()),
+            _categoryRepositoryMock.Verify(x => x.DeleteAsync(It.IsAny<Category>()),
                 Times.Never);
         }
 
@@ -540,7 +496,8 @@ namespace api.Tests.Unit.Services
         {
             // Arrange
             var categoryId = Guid.NewGuid();
-            var category = CategoryFactory.Create(id: categoryId, userId: CurrentUserId);
+
+            var category = CategoryFactory.Create(id: categoryId, userId: OtherUserId);
 
             _categoryRepositoryMock
                 .Setup(x => x.GetByIdAsync(categoryId))
@@ -561,8 +518,7 @@ namespace api.Tests.Unit.Services
                 x => x.AnyAsync(It.IsAny<HasFinancialTransactionsByCategoryIdSpecification>()),
                 Times.Once);
 
-            _categoryRepositoryMock.Verify(
-                x => x.DeleteAsync(It.IsAny<Category>()),
+            _categoryRepositoryMock.Verify(x => x.DeleteAsync(It.IsAny<Category>()),
                 Times.Never);
         }
 
@@ -572,7 +528,7 @@ namespace api.Tests.Unit.Services
             // Arrange
             var categoryId = Guid.NewGuid();
 
-            var category = CategoryFactory.Create(id: categoryId, userId: CurrentUserId);
+            var category = CategoryFactory.Create(id: categoryId, userId: OtherUserId);
 
             _categoryRepositoryMock
                 .Setup(x => x.GetByIdAsync(categoryId))
@@ -589,22 +545,7 @@ namespace api.Tests.Unit.Services
             Assert.True(result.IsSuccess, $"Error code: {result.FirstError.Code}");
             Assert.Equal(Result.Deleted, result.Value);
 
-            _categoryRepositoryMock.Verify(
-                x => x.DeleteAsync(category),
-                Times.Once);
-        }
-
-        [Fact]
-        public async Task CreateInitialCategoriesForUserAsync_ValidUserId_AddsDefaultCategoriesForUser()
-        {
-            // Act
-            await _sut.CreateInitialCategoriesForUserAsync(CurrentUserId);
-
-            // Assert
-            _categoryRepositoryMock.Verify(
-                x => x.AddRangeAsync(It.Is<List<Category>>(list =>
-                    list.Count == DataSeeder.DefaultCategoryTemplates.Count &&
-                    list.All(c => c.AppUserId == CurrentUserId && c.IsActive))),
+            _categoryRepositoryMock.Verify(x => x.DeleteAsync(category),
                 Times.Once);
         }
     }
