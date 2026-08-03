@@ -1,6 +1,5 @@
 ﻿using api.Dtos.FinancialTransaction;
 using api.Models;
-using api.Providers.CurrentUser;
 using api.Queries;
 using Ardalis.Specification;
 
@@ -16,13 +15,9 @@ namespace api.Specifications
         /// Initializes a new instance of the <see cref="FinancialTransactionSortedPagedSpecification"/> class.
         /// </summary>
         /// <param name="query">Query parameters for filtering, sorting, and pagination.</param>
-        /// <param name="currentUser">The current user context.</param>
-        public FinancialTransactionSortedPagedSpecification(EntityQuery query, ICurrentUser currentUser)
+        /// <param name="userId">The identifier of the user whose financial transactions are queried.</param>
+        public FinancialTransactionSortedPagedSpecification(EntityQuery query, string userId)
         {
-            Query.Where(c => c.AppUserId == currentUser.UserId);
-
-            Query.Include(ft => ft.Category);
-
             if (query.StartDate != null)
             {
                 Query.Where(c => c.CreatedAt >= query.StartDate);
@@ -38,29 +33,37 @@ namespace api.Specifications
                 Query.Where(c => c.Category.IsActive);
             }
 
-            var sortBy = query.SortBy.Trim().ToLowerInvariant();
+            var sortBy = query.SortBy?.Trim().ToLowerInvariant();
 
             switch (sortBy)
             {
                 case "category":
                     if (query.IsDescending)
                     {
-                        Query.OrderByDescending(o => o.Category.Name);
+                        Query
+                            .OrderByDescending(o => o.Category.Name)
+                            .ThenByDescending(o => o.CreatedAt);
                     }
                     else
                     {
-                        Query.OrderBy(o => o.Category.Name);
+                        Query
+                            .OrderBy(o => o.Category.Name)
+                            .ThenByDescending(o => o.CreatedAt);
                     }
 
                     break;
                 case "amount":
                     if (query.IsDescending)
                     {
-                        Query.OrderByDescending(o => o.Amount);
+                        Query
+                            .OrderByDescending(o => o.Amount)
+                            .ThenByDescending(o => o.CreatedAt);
                     }
                     else
                     {
-                        Query.OrderBy(ft => ft.Amount);
+                        Query
+                            .OrderBy(ft => ft.Amount)
+                            .ThenByDescending(o => o.CreatedAt);
                     }
 
                     break;
@@ -79,19 +82,20 @@ namespace api.Specifications
             }
 
             Query
-            .Skip((query.Page - 1) * query.Size)
-            .Take(query.Size);
-
-            Query.Select(ft => new FinancialTransactionOutputDto
-            {
-                Id = ft.Id,
-                CategoryId = ft.CategoryId,
-                Amount = ft.Amount,
-                Type = ft.Type,
-                Comment = ft.Comment,
-                CreatedAt = ft.CreatedAt,
-                UpdatedAt = ft.UpdatedAt,
-            });
+                .Where(c => c.AppUserId == userId)
+                .Skip((query.Page - 1) * query.Size)
+                .Take(query.Size)
+                .Select(ft => new FinancialTransactionOutputDto
+                {
+                    Id = ft.Id,
+                    CategoryId = ft.CategoryId,
+                    CategoryName = ft.Category.Name,
+                    Amount = ft.Amount,
+                    Type = ft.Type,
+                    Comment = ft.Comment,
+                    CreatedAt = ft.CreatedAt,
+                    UpdatedAt = ft.UpdatedAt,
+                });
         }
     }
 }

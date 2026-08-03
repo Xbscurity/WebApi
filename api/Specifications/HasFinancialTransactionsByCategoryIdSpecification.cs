@@ -6,15 +6,16 @@ namespace api.Specifications
     /// <summary>
     /// Specification for filtering financial transactions by category identifier.
     /// </summary>
-    public class FinancialTransactionByCategoryIdSpecification : Specification<FinancialTransaction>
+    public class HasFinancialTransactionsByCategoryIdSpecification : Specification<FinancialTransaction>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="FinancialTransactionByCategoryIdSpecification"/> class.
+        /// Initializes a new instance of the <see cref="HasFinancialTransactionsByCategoryIdSpecification"/> class.
         /// </summary>
         /// <param name="id">The category identifier to filter transactions by.</param>
-        public FinancialTransactionByCategoryIdSpecification(Guid id)
+        public HasFinancialTransactionsByCategoryIdSpecification(Guid id)
         {
-            Query.Where(ft => ft.CategoryId == id);
+            Query
+                .Where(ft => ft.CategoryId == id);
         }
     }
 }

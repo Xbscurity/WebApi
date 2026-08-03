@@ -37,17 +37,21 @@ namespace api.Specifications
                 Query.Where(c => c.CreatedAt <= query.EndDate);
             }
 
-            var sortBy = query.SortBy.Trim().ToLowerInvariant();
+            var sortBy = query.SortBy?.Trim().ToLowerInvariant();
             switch (sortBy)
             {
                 case "name":
                     if (query.IsDescending)
                     {
-                        Query.OrderByDescending(o => o.Name);
+                        Query
+                            .OrderByDescending(c => c.Name)
+                            .ThenByDescending(c => c.CreatedAt);
                     }
                     else
                     {
-                        Query.OrderBy(o => o.Name);
+                        Query
+                            .OrderBy(c => c.Name)
+                            .ThenByDescending(c => c.CreatedAt);
                     }
 
                     break;
@@ -55,11 +59,15 @@ namespace api.Specifications
                 case "isactive":
                     if (query.IsDescending)
                     {
-                        Query.OrderByDescending(o => o.Name);
+                        Query
+                            .OrderByDescending(c => c.IsActive)
+                            .ThenByDescending(c => c.CreatedAt);
                     }
                     else
                     {
-                        Query.OrderBy(o => o.Name);
+                        Query
+                            .OrderBy(c => c.IsActive)
+                            .ThenByDescending(c => c.CreatedAt);
                     }
 
                     break;
@@ -67,11 +75,11 @@ namespace api.Specifications
 
                     if (query.IsDescending)
                     {
-                        Query.OrderByDescending(o => o.CreatedAt);
+                        Query.OrderByDescending(c => c.CreatedAt);
                     }
                     else
                     {
-                        Query.OrderBy(o => o.CreatedAt);
+                        Query.OrderBy(c => c.CreatedAt);
                     }
 
                     break;
@@ -79,9 +87,8 @@ namespace api.Specifications
 
             Query
             .Skip((query.Page - 1) * query.Size)
-            .Take(query.Size);
-
-            Query.Select(c => new AdminCategoryOutputDto
+            .Take(query.Size)
+            .Select(c => new AdminCategoryOutputDto
             {
                 Id = c.Id,
                 Name = c.Name,

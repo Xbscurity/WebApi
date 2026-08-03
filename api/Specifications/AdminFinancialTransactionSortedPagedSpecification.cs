@@ -19,38 +19,40 @@ namespace api.Specifications
         {
             if (query.UserId != null)
             {
-                Query.Where(c => c.AppUserId == query.UserId);
+                Query.Where(ft => ft.AppUserId == query.UserId);
             }
-
-            Query.Include(ft => ft.Category);
 
             if (query.StartDate != null)
             {
-                Query.Where(c => c.CreatedAt >= query.StartDate);
+                Query.Where(ft => ft.CreatedAt >= query.StartDate);
             }
 
             if (query.EndDate != null)
             {
-                Query.Where(c => c.CreatedAt <= query.EndDate);
+                Query.Where(ft => ft.CreatedAt <= query.EndDate);
             }
 
             if (!query.IncludeInactive)
             {
-                Query.Where(c => c.Category.IsActive);
+                Query.Where(ft => ft.Category.IsActive);
             }
 
-            var sortBy = query.SortBy.Trim().ToLowerInvariant();
+            var sortBy = query.SortBy?.Trim().ToLowerInvariant();
 
             switch (sortBy)
             {
                 case "category":
                     if (query.IsDescending)
                     {
-                        Query.OrderByDescending(o => o.Category.Name);
+                        Query
+                            .OrderByDescending(ft => ft.Category.Name)
+                            .ThenByDescending(ft => ft.CreatedAt);
                     }
                     else
                     {
-                        Query.OrderBy(o => o.Category.Name);
+                        Query
+                            .OrderBy(ft => ft.Category.Name)
+                            .ThenByDescending(ft => ft.CreatedAt);
                     }
 
                     break;
@@ -58,11 +60,15 @@ namespace api.Specifications
                 case "amount":
                     if (query.IsDescending)
                     {
-                        Query.OrderByDescending(o => o.Amount);
+                        Query
+                            .OrderByDescending(ft => ft.Amount)
+                            .ThenByDescending(ft => ft.CreatedAt);
                     }
                     else
                     {
-                        Query.OrderBy(ft => ft.Amount);
+                        Query
+                            .OrderBy(ft => ft.Amount)
+                            .ThenByDescending(ft => ft.CreatedAt);
                     }
 
                     break;
@@ -83,13 +89,13 @@ namespace api.Specifications
 
             Query
             .Skip((query.Page - 1) * query.Size)
-            .Take(query.Size);
-
-            Query.Select(ft => new AdminFinancialTransactionOutputDto
+            .Take(query.Size)
+            .Select(ft => new AdminFinancialTransactionOutputDto
             {
                 Id = ft.Id,
                 CategoryId = ft.CategoryId,
                 Amount = ft.Amount,
+                CategoryName = ft.Category.Name,
                 Type = ft.Type,
                 Comment = ft.Comment,
                 CreatedAt = ft.CreatedAt,

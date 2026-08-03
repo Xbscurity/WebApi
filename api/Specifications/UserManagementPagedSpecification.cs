@@ -17,17 +17,21 @@ namespace api.Specifications
         /// <param name="query">Query parameters for sorting and pagination.</param>
         public UserManagementPagedSpecification(UserManagementQuery query)
         {
-            var sortBy = query.SortBy.Trim().ToLowerInvariant();
+            var sortBy = query.SortBy?.Trim().ToLowerInvariant();
             switch (sortBy)
             {
                 case "username":
                     if (query.IsDescending)
                     {
-                        Query.OrderByDescending(u => u.UserName);
+                        Query
+                            .OrderByDescending(u => u.UserName)
+                            .ThenByDescending(u => u.CreatedAt);
                     }
                     else
                     {
-                        Query.OrderBy(u => u.UserName);
+                        Query
+                            .OrderBy(u => u.UserName)
+                            .ThenByDescending(u => u.CreatedAt);
                     }
 
                     break;
@@ -35,22 +39,30 @@ namespace api.Specifications
                 case "email":
                     if (query.IsDescending)
                     {
-                        Query.OrderByDescending(u => u.Email);
+                        Query
+                            .OrderByDescending(u => u.Email)
+                            .ThenByDescending(u => u.CreatedAt);
                     }
                     else
                     {
-                        Query.OrderBy(u => u.Email);
+                        Query
+                            .OrderBy(u => u.Email)
+                            .ThenByDescending(u => u.CreatedAt);
                     }
 
                     break;
                 case "isbanned":
                     if (query.IsDescending)
                     {
-                        Query.OrderByDescending(u => u.IsBanned);
+                        Query
+                            .OrderByDescending(u => u.IsBanned)
+                            .ThenByDescending(u => u.CreatedAt);
                     }
                     else
                     {
-                        Query.OrderBy(u => u.IsBanned);
+                        Query
+                            .OrderBy(u => u.IsBanned)
+                            .ThenByDescending(u => u.CreatedAt);
                     }
 
                     break;
@@ -71,9 +83,8 @@ namespace api.Specifications
 
             Query
             .Skip((query.Page - 1) * query.Size)
-            .Take(query.Size);
-
-            Query.Select(u => new UserManagementUserOutputDto
+            .Take(query.Size)
+            .Select(u => new UserManagementUserOutputDto
             {
                 Id = u.Id,
                 Email = u.Email!,

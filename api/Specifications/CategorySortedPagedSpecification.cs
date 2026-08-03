@@ -1,6 +1,5 @@
 ﻿using api.Dtos.Category;
 using api.Models;
-using api.Providers.CurrentUser;
 using api.Queries;
 using Ardalis.Specification;
 
@@ -16,11 +15,9 @@ namespace api.Specifications
         /// Initializes a new instance of the <see cref="CategorySortedPagedSpecification"/> class.
         /// </summary>
         /// <param name="query">Query parameters for filtering, sorting, and pagination.</param>
-        /// <param name="currentUser">The current user context.</param>
-        public CategorySortedPagedSpecification(EntityQuery query, ICurrentUser currentUser)
+        /// <param name="userId">The current user id context.</param>
+        public CategorySortedPagedSpecification(EntityQuery query, string userId)
         {
-            Query.Where(c => c.AppUserId == currentUser.UserId);
-
             if (!query.IncludeInactive)
             {
                 Query.Where(c => c.IsActive);
@@ -36,28 +33,36 @@ namespace api.Specifications
                 Query.Where(c => c.CreatedAt <= query.EndDate);
             }
 
-            var sortBy = query.SortBy.Trim().ToLowerInvariant();
+            var sortBy = query.SortBy?.Trim().ToLowerInvariant();
             switch (sortBy)
             {
                 case "name":
                     if (query.IsDescending)
                     {
-                        Query.OrderByDescending(o => o.Name);
+                        Query
+                            .OrderByDescending(c => c.Name)
+                            .ThenByDescending(c => c.CreatedAt);
                     }
                     else
                     {
-                        Query.OrderBy(o => o.Name);
+                        Query
+                            .OrderBy(c => c.Name)
+                            .ThenByDescending(c => c.CreatedAt);
                     }
 
                     break;
                 case "isactive":
                     if (query.IsDescending)
                     {
-                        Query.OrderByDescending(o => o.IsActive);
+                        Query
+                            .OrderByDescending(c => c.IsActive)
+                            .ThenByDescending(c => c.CreatedAt);
                     }
                     else
                     {
-                        Query.OrderBy(o => o.IsActive);
+                        Query
+                            .OrderBy(c => c.IsActive)
+                            .ThenByDescending(c => c.CreatedAt);
                     }
 
                     break;
@@ -65,28 +70,29 @@ namespace api.Specifications
 
                     if (query.IsDescending)
                     {
-                        Query.OrderByDescending(o => o.CreatedAt);
+                        Query
+                            .OrderByDescending(c => c.CreatedAt);
                     }
                     else
                     {
-                        Query.OrderBy(o => o.CreatedAt);
+                        Query.OrderBy(c => c.CreatedAt);
                     }
 
                     break;
             }
 
             Query
-            .Skip((query.Page - 1) * query.Size)
-            .Take(query.Size);
-
-            Query.Select(c => new CategoryOutputDto
-            {
-                Id = c.Id,
-                Name = c.Name,
-                IsActive = c.IsActive,
-                CreatedAt = c.CreatedAt,
-                UpdatedAt = c.UpdatedAt,
-            });
+                .Where(c => c.AppUserId == userId)
+                .Skip((query.Page - 1) * query.Size)
+                .Take(query.Size)
+                .Select(c => new CategoryOutputDto
+                {
+                    Id = c.Id,
+                    Name = c.Name,
+                    IsActive = c.IsActive,
+                    CreatedAt = c.CreatedAt,
+                    UpdatedAt = c.UpdatedAt,
+                });
         }
     }
 }
