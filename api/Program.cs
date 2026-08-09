@@ -45,11 +45,3 @@ finally
 {
     Log.CloseAndFlush();
 }
-
-/// <summary>
-/// Partial <see cref="Program"/> class used as an entry point
-/// for integration testing with <c>WebApplicationFactory&lt;TEntryPoint&gt;</c>.
-/// </summary>
-public partial class Program
-{
-}

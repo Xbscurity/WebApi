@@ -1,3 +1,4 @@
+using api.Attributes;
 using System.ComponentModel.DataAnnotations;
 
 namespace api.Dtos.Category
@@ -14,8 +15,7 @@ namespace api.Dtos.Category
         /// The name must be between 3 and 20 characters long.
         /// </remarks>
         [Required]
-        [MinLength(3, ErrorMessage = "Name must be at least 3 characters")]
-        [MaxLength(20, ErrorMessage = "Name can not be over 20 characters")]
+        [TrimmedLength(3, 20)]
         required public string Name { get; init; }
     }
 }

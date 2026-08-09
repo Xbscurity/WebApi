@@ -26,7 +26,7 @@
             public static readonly EventId InvalidCredentials = new(1003, nameof(InvalidCredentials));
 
             /// <summary>
-            /// Event ID for when a login attempt is made with invalid credentials.
+            /// Event ID for when a password has been changed.
             /// </summary>
             public static readonly EventId PasswordChanged = new(1004, nameof(PasswordChanged));
 
