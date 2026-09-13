@@ -1,8 +1,10 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 
 namespace api.Tests.Integration.TestControllers
 {
     [ApiController]
+    [AllowAnonymous]
     [Route("test/testexception")]
     public class TestExceptionController : ControllerBase
     {

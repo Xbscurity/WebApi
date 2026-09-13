@@ -262,7 +262,7 @@ namespace api.Tests.Unit.Services
             Assert.True(result.IsError);
 
             Assert.Equal(
-                Errors.Auth.RefreshTokenExpired(),
+                Errors.Auth.RefreshTokenInvalid(),
                 result.FirstError);
         }
 
@@ -294,7 +294,7 @@ namespace api.Tests.Unit.Services
         }
 
         [Fact]
-        public async Task RotateTokensAsync_MismatchedUser_ThrowsInvalidOperationException()
+        public async Task RotateTokensAsync_MismatchedUser_ReturnsRefreshTokenInvalidError()
         {
             // Arrange
             var user = AppUserFactory.Create(id: "user-1");
@@ -305,10 +305,11 @@ namespace api.Tests.Unit.Services
             };
 
             // Act
-            var action = () => _sut.RotateTokensAsync(user, token);
+            var result = await _sut.RotateTokensAsync(user, token);
 
             // Assert
-            await Assert.ThrowsAsync<InvalidOperationException>(action);
+            Assert.True(result.IsError);
+            Assert.Equal(Errors.Auth.RefreshTokenInvalid(), result.FirstError);
 
             _unitOfWorkMock.Verify(
                 x => x.ExecuteInTransactionAsync(

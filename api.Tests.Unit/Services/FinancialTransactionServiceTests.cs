@@ -671,15 +671,9 @@ namespace api.Tests.Unit.Services
                 Transactions = []
             }
         };
-            const int totalCount = 5;
-
             _strategyMock
                 .Setup(s => s.GetGroupedAsync(It.IsAny<Specification<FinancialTransaction>>(), query))
                 .ReturnsAsync(expectedItems);
-
-            _financialTransactionRepositoryMock
-                .Setup(r => r.CountAsync(It.IsAny<Specification<FinancialTransaction>>()))
-                .ReturnsAsync(totalCount);
 
             // Act
             var result = await _sut.GetReportAsync(query);
@@ -690,7 +684,7 @@ namespace api.Tests.Unit.Services
             Assert.Equal(expectedItems, result.Value.Items);
             Assert.Equal(query.Page, result.Value.Pagination.PageNumber);
             Assert.Equal(query.Size, result.Value.Pagination.PageSize);
-            Assert.Equal(totalCount, result.Value.Pagination.TotalItems);
+            Assert.Equal(2, result.Value.Pagination.TotalItems);
         }
     }
 }

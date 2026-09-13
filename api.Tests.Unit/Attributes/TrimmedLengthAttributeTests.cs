@@ -1,7 +1,7 @@
 ﻿using api.Attributes;
 using System.ComponentModel.DataAnnotations;
 
-namespace api.Tests.Unit.Validation.Dtos;
+namespace api.Tests.Unit.Attributes;
 
 public class TrimmedLengthAttributeTests
 {

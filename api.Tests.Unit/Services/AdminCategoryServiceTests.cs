@@ -425,8 +425,9 @@ namespace api.Tests.Unit.Services
                 .Setup(x => x.GetByIdAsync(categoryId))
                 .ReturnsAsync((Category?)null);
 
+            var input = new SetActiveInputDto { IsActive = true };
             // Act
-            var result = await _sut.SetActiveAsync(categoryId, true);
+            var result = await _sut.SetActiveAsync(categoryId, input);
 
             // Assert
             Assert.True(result.IsError);
@@ -451,13 +452,15 @@ namespace api.Tests.Unit.Services
                 .Setup(x => x.GetByIdAsync(categoryId))
                 .ReturnsAsync(category);
 
+            var input = new SetActiveInputDto { IsActive = isActive };
+
             // Act
-            var result = await _sut.SetActiveAsync(categoryId, isActive);
+            var result = await _sut.SetActiveAsync(categoryId, input);
 
             // Assert
             Assert.True(result.IsSuccess, $"Error code: {result.FirstError.Code}");
 
-            Assert.Equal(isActive, result.Value.ToggleActive);
+            Assert.Equal(isActive, result.Value.IsActive);
 
             Assert.Equal(isActive, category.IsActive);
 
