@@ -91,22 +91,22 @@ namespace api.Services.Account
         public async Task<ErrorOr<string>> ChangePasswordAsync(ChangePasswordInputDto dto)
         {
             var userId = _currentUser.UserId;
-            var user = await _userService.FindByIdAsync(userId);
-            if (user == null)
-            {
-                return Errors.User.NotFound(userId);
-            }
-
-            var passwordCheck = await _userService.CheckPasswordAsync(user, dto.CurrentPassword);
-
-            if (!passwordCheck)
-            {
-                _logger.LogWarning(LoggingEvents.Auth.InvalidCredentials, "Invalid credentials");
-                return Errors.Auth.InvalidCredentials();
-            }
 
             return await _unitOfWork.ExecuteInTransactionAsync<string>(async () =>
             {
+                var user = await _userService.FindByIdAsync(userId);
+                if (user == null)
+                {
+                    return Errors.User.NotFound(userId);
+                }
+
+                var passwordCheck = await _userService.CheckPasswordAsync(user, dto.CurrentPassword);
+                if (!passwordCheck)
+                {
+                    _logger.LogWarning(LoggingEvents.Auth.InvalidCredentials, "Invalid credentials");
+                    return Errors.Auth.InvalidCredentials();
+                }
+
                 var updateResult = await _userService
                 .ChangePasswordAsync(user, dto.CurrentPassword, dto.NewPassword);
                 if (updateResult.IsError)

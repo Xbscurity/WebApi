@@ -43,7 +43,7 @@ namespace api.Services.RefreshTokenCookie
                 new CookieOptions
                 {
                     HttpOnly = true,
-                    Secure = !_env.IsDevelopment(),
+                    Secure = !(_env.IsDevelopment() || _env.IsEnvironment("Testing")),
                     SameSite = SameSiteMode.Lax,
                     Expires = _timeProvider.UtcNow.AddDays(_options.ExpirationDays),
                 });

@@ -1,4 +1,5 @@
 using api.Models;
+using api.Providers.Time;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
@@ -10,14 +11,20 @@ namespace api.Data
     /// </summary>
     public class ApplicationDbContext : IdentityDbContext<AppUser>
     {
+        private readonly ITimeProvider _timeProvider;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="ApplicationDbContext"/> class
         /// using the specified options.
         /// </summary>
         /// <param name="options">The options to configure the database context.</param>
-        public ApplicationDbContext(DbContextOptions options)
+        /// <param name="timeProvider">The provider used to obtain the current UTC time.</param>
+        public ApplicationDbContext(
+            DbContextOptions options,
+            ITimeProvider timeProvider)
             : base(options)
         {
+            _timeProvider = timeProvider;
         }
 
         /// <summary>
@@ -36,21 +43,21 @@ namespace api.Data
         public DbSet<RefreshToken> RefreshTokens { get; set; }
 
         /// <inheritdoc/>
-        public override async Task<int> SaveChangesAsync(
-        CancellationToken cancellationToken = default)
+        public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
         {
-            foreach (var entry in ChangeTracker.Entries<ITrackedEntity>())
+            var now = _timeProvider.UtcNow;
+
+            var trackedEntries = ChangeTracker.Entries<ITrackedEntity>()
+                .Where(e => e.State == EntityState.Added || e.State == EntityState.Modified);
+
+            foreach (var entry in trackedEntries)
             {
                 if (entry.State == EntityState.Added)
                 {
-                    entry.Entity.CreatedAt = DateTimeOffset.UtcNow;
-                    entry.Entity.UpdatedAt = DateTimeOffset.UtcNow;
+                    entry.Entity.CreatedAt = now;
                 }
 
-                if (entry.State == EntityState.Modified)
-                {
-                    entry.Entity.UpdatedAt = DateTimeOffset.UtcNow;
-                }
+                entry.Entity.UpdatedAt = now;
             }
 
             return await base.SaveChangesAsync(cancellationToken);

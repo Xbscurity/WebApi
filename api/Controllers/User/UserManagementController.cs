@@ -47,7 +47,8 @@ namespace api.Controllers.User
         /// Returns the paginated collection of users.
         /// </response>
         [HttpGet]
-        public async Task<ActionResult<PagedItems<UserManagementUserOutputDto>>> GetAllUsers([FromQuery] UserManagementQuery query)
+        public async Task<ActionResult<PagedItems<UserManagementUserOutputDto>>> GetAllUsers(
+            [FromQuery] UserManagementQuery query)
         {
             var result = await _userManagementService.GetAllUsersAsync(query);
             return result.ToActionResult(this);
@@ -97,7 +98,8 @@ namespace api.Controllers.User
         [HttpPost("{userId}/ban-status")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<BanStatusOutputDto>> SetBanStatus([FromRoute] string userId, [FromBody] BanStatusInputDto request)
+        public async Task<ActionResult<BanStatusOutputDto>> SetBanStatus(
+            [FromRoute] string userId, [FromBody] BanStatusInputDto request)
         {
             var result = await _userManagementService.SetBanAsync(userId, request);
             return result.ToActionResult(this);

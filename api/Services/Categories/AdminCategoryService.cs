@@ -193,7 +193,7 @@ namespace api.Services.Categories
         }
 
         /// <inheritdoc />
-        public async Task<ErrorOr<ToggleActiveOutputDto>> SetActiveAsync(Guid id, bool isActive)
+        public async Task<ErrorOr<SetActiveOutputDto>> SetActiveAsync(Guid id, SetActiveInputDto input)
         {
             var category = await _categoryRepository.GetByIdAsync(id);
             if (category == null)
@@ -202,7 +202,7 @@ namespace api.Services.Categories
                 return Errors.Category.NotFound(id);
             }
 
-            category.IsActive = isActive;
+            category.IsActive = input.IsActive;
 
             await _categoryRepository.SaveChangesAsync();
 
@@ -210,9 +210,9 @@ namespace api.Services.Categories
                 LoggingEvents.Category.Toggled,
                 "Category {CategoryId} active status successfully toggled.",
                 category.Id);
-            var outputDto = new ToggleActiveOutputDto
+            var outputDto = new SetActiveOutputDto
             {
-                ToggleActive = category.IsActive,
+                IsActive = category.IsActive,
             };
             return outputDto;
         }

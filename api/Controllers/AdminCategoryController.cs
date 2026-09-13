@@ -68,6 +68,8 @@ namespace api.Controllers
         /// <response code="404">
         /// The specified category was not found.
         /// </response>
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         [HttpGet("{id:guid}")]
         public async Task<ActionResult<AdminCategoryOutputDto>> GetById([FromRoute] Guid id)
         {
@@ -84,6 +86,11 @@ namespace api.Controllers
         /// <response code="201">
         /// The category was successfully created.
         /// </response>
+        /// <response code="404">
+        /// Requested User id not found.
+        /// </response>
+        [ProducesResponseType(StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         [HttpPost]
         public async Task<ActionResult<AdminCategoryOutputDto>> Create(
             [FromBody] AdminCategoryCreateInputDto categoryDto)
@@ -128,7 +135,7 @@ namespace api.Controllers
         /// Toggles the active status of a category.
         /// </summary>
         /// <param name="id">The identifier of the category.</param>
-        /// <param name="isActive">The new active state.</param>
+        /// <param name="input">The new active state.</param>
         /// <returns>The updated active status.</returns>
         /// <response code="200">
         /// The category active status was successfully updated.
@@ -139,9 +146,9 @@ namespace api.Controllers
         [HttpPatch("{id:guid}/active")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<ToggleActiveOutputDto>> SetActive([FromRoute] Guid id, [FromQuery] bool isActive)
+        public async Task<ActionResult<SetActiveOutputDto>> SetActive([FromRoute] Guid id, [FromBody] SetActiveInputDto input)
         {
-            var result = await _adminCategoryService.SetActiveAsync(id, isActive);
+            var result = await _adminCategoryService.SetActiveAsync(id, input);
 
             return result.ToActionResult(this);
         }

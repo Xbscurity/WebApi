@@ -90,8 +90,9 @@ namespace api.Controllers
         /// The financial transaction was successfully created.
         /// </response>
         /// <response code="404">
-        /// The specified category was not found.
+        /// The specified category was not found or belongs to another user.
         /// </response>
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         [HttpPost]
         public async Task<ActionResult<FinancialTransactionOutputDto>> Create(
             [FromBody] FinancialTransactionCreateInputDto transactionDto)
@@ -121,7 +122,7 @@ namespace api.Controllers
         /// The financial transaction was successfully updated.
         /// </response>
         /// <response code="404">
-        /// The financial transaction or category was not found.
+        /// The financial transaction or category was not found or belongs to another user.
         /// </response>
         [HttpPut("{id:guid}")]
         [ProducesResponseType(StatusCodes.Status200OK)]

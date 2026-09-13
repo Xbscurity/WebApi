@@ -1,4 +1,5 @@
-﻿using api.Middlewares;
+﻿using api.Constants;
+using api.Middlewares;
 using Serilog;
 
 namespace api
@@ -34,7 +35,8 @@ namespace api
                 app.UseSwaggerUI();
             }
 
-            app.MapControllers();
+            app.MapControllers()
+                .RequireAuthorization(Policies.NotBanned);
 
             return app;
         }

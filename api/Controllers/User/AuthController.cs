@@ -4,6 +4,7 @@ using api.Dtos.User;
 using api.Services.Auth;
 using api.Services.RefreshTokenCookie;
 using api.Services.Token;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace api.Controllers.User
@@ -11,6 +12,7 @@ namespace api.Controllers.User
     /// <summary>
     /// Provides authentication endpoints for user registration, login, token refresh, and logout.
     /// </summary>
+    [AllowAnonymous]
     [Route("api/auth")]
     [ApiController]
     public class AuthController : ControllerBase
@@ -51,6 +53,12 @@ namespace api.Controllers.User
         /// <response code="200">
         /// The user was successfully registered.
         /// </response>
+        /// <response code="409">
+        /// Email already exists.
+        /// </response>
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status409Conflict)]
+        [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
         [HttpPost("register")]
         public async Task<ActionResult<AuthOutputDto>> Register([FromBody] RegisterInputDto registerDto)
         {
@@ -82,6 +90,7 @@ namespace api.Controllers.User
         /// <response code="200">
         /// The user was successfully authenticated.
         /// </response>
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [HttpPost("login")]
         public async Task<ActionResult<AuthOutputDto>> Login([FromBody] LoginInputDto loginDto)
         {

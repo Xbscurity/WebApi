@@ -42,7 +42,7 @@ namespace api
                 ["errorCode"] = "INTERNAL_ERROR",
             };
 
-            if (_env.IsDevelopment())
+            if (_env.IsDevelopment() || _env.EnvironmentName == "Testing")
             {
                 extensions.Add("exception", exception.GetType().Name);
                 extensions.Add("stackTrace", exception.StackTrace);

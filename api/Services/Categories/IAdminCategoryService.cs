@@ -78,10 +78,10 @@ namespace api.Services.Categories
         /// The value indicating whether the category should be active.
         /// </param>
         /// <returns>
-        /// An instance of <see cref="ErrorOr{T}"/> containing a <see cref="ToggleActiveOutputDto"/>
+        /// An instance of <see cref="ErrorOr{T}"/> containing a <see cref="SetActiveOutputDto"/>
         /// if successful; otherwise, an error.
         /// </returns>
-        Task<ErrorOr<ToggleActiveOutputDto>> SetActiveAsync(Guid id, bool isActive);
+        Task<ErrorOr<SetActiveOutputDto>> SetActiveAsync(Guid id, SetActiveInputDto isActive);
 
         /// <summary>
         /// Deletes a category.

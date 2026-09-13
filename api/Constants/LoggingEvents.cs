@@ -70,6 +70,13 @@
                 /// Event ID for when no refresh token was supplied with the request.
                 /// </summary>
                 public static readonly EventId NotSupplied = new(1104, nameof(NotSupplied));
+
+                /// <summary>
+                /// Event ID for when a refresh token rotation was attempted, but the stored
+                /// refresh token's UserId does not match the authenticated user's Id.
+                /// This may indicate session desynchronization or a token replay attempt.
+                /// </summary>
+                public static readonly EventId TokenOwnershipMismatch = new(1105, nameof(TokenOwnershipMismatch));
             }
         }
 

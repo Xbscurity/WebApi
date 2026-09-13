@@ -70,6 +70,8 @@ namespace api.Controllers
         /// <response code="404">
         /// The financial transaction was not found.
         /// </response>
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         [HttpGet("{id:guid}")]
         public async Task<ActionResult<AdminFinancialTransactionOutputDto>> GetById([FromRoute] Guid id)
         {
@@ -93,6 +95,8 @@ namespace api.Controllers
         /// <response code="404">
         /// The specified category was not found.
         /// </response>
+        [ProducesResponseType(StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         [HttpPost]
         public async Task<ActionResult<AdminFinancialTransactionOutputDto>> Create(
             [FromBody] AdminFinancialTransactionCreateInputDto transactionDto)
@@ -127,6 +131,7 @@ namespace api.Controllers
         [HttpPut("{id:guid}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
         public async Task<ActionResult<AdminFinancialTransactionOutputDto>> Update(
             [FromRoute] Guid id, [FromBody] FinancialTransactionUpdateInputDto dto)
         {

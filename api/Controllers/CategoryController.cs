@@ -139,7 +139,8 @@ namespace api.Controllers
         [HttpPatch("{id:guid}/active")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<ToggleActiveOutputDto>> SetActive([FromRoute] Guid id, [FromQuery] bool isActive)
+        public async Task<ActionResult<SetActiveOutputDto>> SetActive(
+            [FromRoute] Guid id, [FromBody] SetActiveInputDto isActive)
         {
             var result = await _categoryService.SetActiveAsync(id, isActive);
 

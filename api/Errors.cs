@@ -214,7 +214,7 @@ namespace api
             /// Creates an error indicating an attempt to ban an administrator.
             /// </summary>
             /// <param name="id">The admin identifier.</param>
-            /// <returns>A <see cref="Error"/> of type <see cref="ErrorType.Conflict"/>.</returns>
+            /// <returns>A <see cref="Error"/> of type <see cref="ErrorType.Forbidden"/>.</returns>
             public static Error AdminBanAttempt(string id) =>
                 Error.Forbidden(
                     code: $"{Prefix}ADMIN_BAN_ATTEMPT",
@@ -273,13 +273,13 @@ namespace api
                     description: "Refresh token has been already revoked");
 
             /// <summary>
-            /// Creates an error indicating that a refresh token has expired.
+            /// Creates an error indicating that a refresh token is expired or invalid.
             /// </summary>
             /// <returns>A <see cref="Error"/> of type <see cref="ErrorType.Unauthorized"/>.</returns>
-            public static Error RefreshTokenExpired() =>
+            public static Error RefreshTokenInvalid() =>
                 Error.Unauthorized(
-                    code: $"{Prefix}{Refresh}EXPIRED",
-                    description: "Refresh token has been expired");
+                    code: $"{Prefix}{Refresh}INVALID",
+                    description: "Refresh token is expired or invalid");
         }
     }
 }

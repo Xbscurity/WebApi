@@ -164,7 +164,7 @@ namespace api.Services.Token
             {
                 _logger.LogInformation(
                     "Expired refresh token used");
-                return Errors.Auth.RefreshTokenExpired();
+                return Errors.Auth.RefreshTokenInvalid();
             }
 
             return stored;
@@ -175,9 +175,14 @@ namespace api.Services.Token
         {
             if (stored.UserId != user.Id)
             {
-                throw new InvalidOperationException(
-                    $"Refresh token rotation was attempted with mismatched user and token ownership. " +
-                    $"User.Id={user.Id}, RefreshToken.UserId={stored.UserId}.");
+                _logger.LogWarning(
+                    LoggingEvents.Auth.RefreshToken.TokenOwnershipMismatch,
+                    "Refresh token rotation attempted with mismatched ownership. User.Id={UserId}, RefreshToken.UserId={TokenUserId}, Ip={Ip}",
+                    user.Id,
+                    stored.UserId,
+                    _clientIpProvider.GetClientIp() ?? "unknown");
+
+                return Errors.Auth.RefreshTokenInvalid();
             }
 
             return await _unitOfWork.ExecuteInTransactionAsync<RefreshTokenDto>(async () =>

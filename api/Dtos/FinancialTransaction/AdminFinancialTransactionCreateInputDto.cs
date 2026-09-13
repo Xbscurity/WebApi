@@ -24,7 +24,6 @@ namespace api.Dtos.FinancialTransaction
         /// <summary>
         /// Gets the type of the financial transaction.
         /// </summary>
-        [EnumDataType(typeof(FinancialTransactionType))]
         required public FinancialTransactionType Type { get; init; }
 
         /// <summary>
