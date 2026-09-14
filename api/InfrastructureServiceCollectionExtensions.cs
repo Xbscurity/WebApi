@@ -81,8 +81,7 @@ namespace api
                     policy.Requirements.Add(new NotBannedRequirement());
                 });
 
-            var jwt = configuration.GetRequiredSection(JwtOptions.SectionName).Get<JwtOptions>()
-                ?? throw new InvalidOperationException($"Missing configuration section: {JwtOptions.SectionName}");
+            var jwt = configuration.GetRequiredSection(JwtOptions.SectionName).Get<JwtOptions>();
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                 .AddJwtBearer(options =>
                 {
@@ -124,6 +123,10 @@ namespace api
                 };
             });
 
+            var rateLimitingOptions = configuration
+                .GetRequiredSection(RateLimitingOptions.SectionName)
+                .Get<RateLimitingOptions>() ?? new RateLimitingOptions();
+
             services.AddRateLimiter(options =>
             {
                 options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
@@ -136,7 +139,7 @@ namespace api
                     {
                         retryAfterSeconds = retryAfter.TotalSeconds;
                         context.HttpContext.Response.Headers.RetryAfter =
-                            ((int)retryAfterSeconds).ToString();
+                            ((int)Math.Ceiling(retryAfterSeconds)).ToString();
                     }
 
                     Dictionary<string, object?> extensions = new()
@@ -162,8 +165,8 @@ namespace api
                       ?? "unknown",
                         factory: partition => new FixedWindowRateLimiterOptions
                         {
-                            PermitLimit = 100,
-                            Window = TimeSpan.FromSeconds(10),
+                            PermitLimit = rateLimitingOptions.Global.PermitLimit,
+                            Window = TimeSpan.FromSeconds(rateLimitingOptions.Global.WindowSeconds),
                             QueueLimit = 0,
                             AutoReplenishment = true,
                         }));
@@ -173,8 +176,8 @@ namespace api
                     partitionKey: httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown",
                     factory: partition => new FixedWindowRateLimiterOptions
                     {
-                        PermitLimit = 5,
-                        Window = TimeSpan.FromMinutes(1),
+                        PermitLimit = rateLimitingOptions.Auth.PermitLimit,
+                        Window = TimeSpan.FromMinutes(rateLimitingOptions.Auth.WindowSeconds),
                         QueueLimit = 0,
                         AutoReplenishment = true,
                     }));
@@ -194,6 +197,13 @@ namespace api
                 .BindConfiguration(CacheOptions.SectionName)
                 .ValidateDataAnnotations()
                 .ValidateOnStart();
+
+            services
+                .AddOptions<RateLimitingOptions>()
+                .BindConfiguration(RateLimitingOptions.SectionName)
+                .ValidateDataAnnotations()
+                .ValidateOnStart();
+
             return services;
         }
     }

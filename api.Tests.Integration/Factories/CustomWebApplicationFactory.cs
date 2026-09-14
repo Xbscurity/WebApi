@@ -5,7 +5,6 @@ using api.Tests.Integration.TestControllers;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
-using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -32,6 +31,7 @@ namespace api.Tests.Integration.Factories
         {
             builder.UseEnvironment("Testing");
 
+
             builder.ConfigureTestServices(services =>
             {
                 services.RemoveAll<DbContextOptions<ApplicationDbContext>>();
@@ -51,11 +51,6 @@ namespace api.Tests.Integration.Factories
                 services.AddAuthentication(TestAuthHandler.SchemeName)
                     .AddScheme<AuthenticationSchemeOptions, TestAuthHandler>(
                         TestAuthHandler.SchemeName, _ => { });
-
-                services.Configure<RateLimiterOptions>(options =>
-                {
-                    options.GlobalLimiter = null;
-                });
             });
         }
 
