@@ -1,4 +1,5 @@
-﻿using api.Enums;
+﻿using api.Attributes;
+using api.Enums;
 using System.ComponentModel.DataAnnotations;
 
 namespace api.Dtos.FinancialTransaction
@@ -18,7 +19,7 @@ namespace api.Dtos.FinancialTransaction
         /// Gets the comment or description associated with the transaction.
         /// </summary>
         [Required]
-        [MaxLength(255, ErrorMessage = "Comment can not be over 255 characters")]
+        [TrimmedLength(255)]
         required public string Comment { get; init; }
 
         /// <summary>

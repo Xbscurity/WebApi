@@ -113,7 +113,7 @@ namespace api.Tests.Unit.Services
             Assert.Equal(Errors.User.NotFound(userId), result.FirstError);
 
             _userServiceMock.Verify(
-                x => x.CheckPasswordAsync(It.IsAny<AppUser>(), It.IsAny<string>()),
+                x => x.CheckPasswordSignInAsync(It.IsAny<AppUser>(), It.IsAny<string>()),
                 Times.Never);
 
             _unitOfWorkMock
@@ -143,8 +143,8 @@ namespace api.Tests.Unit.Services
                 .ReturnsAsync(user);
 
             _userServiceMock
-                .Setup(x => x.CheckPasswordAsync(user, input.CurrentPassword))
-                .ReturnsAsync(false);
+                .Setup(x => x.CheckPasswordSignInAsync(user, input.CurrentPassword))
+                .ReturnsAsync(Errors.Auth.InvalidCredentials());
 
             // Act
             var result = await _sut.ChangePasswordAsync(input);
@@ -187,8 +187,8 @@ namespace api.Tests.Unit.Services
                 .ReturnsAsync(user);
 
             _userServiceMock
-                .Setup(x => x.CheckPasswordAsync(user, input.CurrentPassword))
-                .ReturnsAsync(true);
+                .Setup(x => x.CheckPasswordSignInAsync(user, input.CurrentPassword))
+                .ReturnsAsync(Errors.Auth.InvalidCredentials());
 
             _userServiceMock
                 .Setup(x => x.ChangePasswordAsync(user, input.CurrentPassword, input.NewPassword))
@@ -235,8 +235,8 @@ namespace api.Tests.Unit.Services
                 .ReturnsAsync(user);
 
             _userServiceMock
-                .Setup(x => x.CheckPasswordAsync(user, input.CurrentPassword))
-                .ReturnsAsync(true);
+                .Setup(x => x.CheckPasswordSignInAsync(user, input.CurrentPassword))
+                .ReturnsAsync(Errors.Auth.InvalidCredentials());
 
             _userServiceMock
                 .Setup(x => x.ChangePasswordAsync(user, input.CurrentPassword, input.NewPassword))

@@ -184,7 +184,9 @@ namespace api
             ErrorType.Conflict => StatusCodes.Status409Conflict,
             ErrorType.Unauthorized => StatusCodes.Status401Unauthorized,
             ErrorType.Forbidden => StatusCodes.Status403Forbidden,
-            _ => StatusCodes.Status500InternalServerError
+            ErrorType.Validation => StatusCodes.Status422UnprocessableEntity,
+            ErrorType.Unexpected => StatusCodes.Status500InternalServerError,
+            _ => StatusCodes.Status400BadRequest
         };
 
         /// <summary>
@@ -202,6 +204,7 @@ namespace api
             ErrorType.Unauthorized => "Unauthorized",
             ErrorType.Forbidden => "Forbidden",
             ErrorType.Conflict => "Conflict",
+            ErrorType.Validation => "One or more validation errors occurred.",
             ErrorType.Unexpected => "An error occurred while processing your request",
             _ => "An error occurred"
         };
@@ -222,6 +225,7 @@ namespace api
             ErrorType.Unauthorized => "https://tools.ietf.org/html/rfc9110#section-15.5.2",
             ErrorType.Forbidden => "https://tools.ietf.org/html/rfc9110#section-15.5.4",
             ErrorType.Conflict => "https://tools.ietf.org/html/rfc9110#section-15.5.10",
+            ErrorType.Validation => "https://tools.ietf.org/html/rfc9110#section-15.5.21",
             _ => "https://tools.ietf.org/html/rfc9110#section-15.6.1"
         };
     }

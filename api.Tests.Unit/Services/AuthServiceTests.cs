@@ -190,7 +190,7 @@ namespace api.Tests.Unit.Services
             Assert.Equal(Errors.Auth.InvalidCredentials(), result.FirstError);
 
             _userServiceMock.Verify(
-                x => x.CheckPasswordAsync(It.IsAny<AppUser>(), It.IsAny<string>()),
+                x => x.CheckPasswordSignInAsync(It.IsAny<AppUser>(), It.IsAny<string>()),
                 Times.Never);
         }
 
@@ -209,8 +209,8 @@ namespace api.Tests.Unit.Services
                 .Setup(x => x.FindByNameAsync(dto.UserName))
                 .ReturnsAsync(user);
             _userServiceMock
-                .Setup(x => x.CheckPasswordAsync(user, dto.Password))
-                .ReturnsAsync(false);
+                .Setup(x => x.CheckPasswordSignInAsync(user, dto.Password))
+                .ReturnsAsync(Errors.Auth.InvalidCredentials());
 
             // Act
             var result = await _sut.LoginAsync(dto);
@@ -241,8 +241,8 @@ namespace api.Tests.Unit.Services
                 .ReturnsAsync(user);
 
             _userServiceMock
-                .Setup(x => x.CheckPasswordAsync(user, dto.Password))
-                .ReturnsAsync(true);
+                .Setup(x => x.CheckPasswordSignInAsync(user, dto.Password))
+                .ReturnsAsync(Errors.Auth.InvalidCredentials());
 
             // Act
             var result = await _sut.LoginAsync(dto);
@@ -269,8 +269,8 @@ namespace api.Tests.Unit.Services
                 .Setup(x => x.FindByNameAsync(dto.UserName))
                 .ReturnsAsync(user);
             _userServiceMock
-                .Setup(x => x.CheckPasswordAsync(user, dto.Password))
-                .ReturnsAsync(true);
+                .Setup(x => x.CheckPasswordSignInAsync(user, dto.Password))
+                .ReturnsAsync(Errors.Auth.InvalidCredentials());
             _tokenServiceMock
                 .Setup(x => x.GenerateAccessTokenAsync(user))
                 .ReturnsAsync(accessToken);
