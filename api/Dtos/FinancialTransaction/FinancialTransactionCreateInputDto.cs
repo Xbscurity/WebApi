@@ -19,7 +19,7 @@ namespace api.Dtos.FinancialTransaction
         /// Gets the comment or description associated with the transaction.
         /// </summary>
         [Required]
-        [TrimmedLength(255)]
+        [TrimmedLength(1, 255)]
         required public string Comment { get; init; }
 
         /// <summary>
