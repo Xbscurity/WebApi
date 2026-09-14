@@ -41,6 +41,10 @@ namespace api.Authorization
             {
                 context.Succeed(requirement);
             }
+            else
+            {
+                context.Fail(new AuthorizationFailureReason(this, "UserBanned"));
+            }
         }
     }
 }

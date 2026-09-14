@@ -246,6 +246,15 @@ namespace api
                     description: "Invalid username or password");
 
             /// <summary>
+            /// Creates an error indicating that the account is temporarily locked due to repeated failed login attempts.
+            /// </summary>
+            /// <returns>A <see cref="Error"/> of type <see cref="ErrorType.Unauthorized"/>.</returns>
+            public static Error AccountLockedOut() =>
+                Error.Unauthorized(
+                    code: $"{Prefix}ACCOUNT_LOCKED_OUT",
+                    description: "Account is temporarily locked due to multiple failed login attempts");
+
+            /// <summary>
             /// Creates an error indicating that a refresh token was not provided.
             /// </summary>
             /// <returns>A <see cref="Error"/> of type <see cref="ErrorType.Unauthorized"/>.</returns>

@@ -100,11 +100,10 @@ namespace api.Services.Account
                     return Errors.User.NotFound(userId);
                 }
 
-                var passwordCheck = await _userService.CheckPasswordAsync(user, dto.CurrentPassword);
-                if (!passwordCheck)
+                var passwordCheck = await _userService.CheckPasswordSignInAsync(user, dto.CurrentPassword);
+                if (passwordCheck.IsError)
                 {
-                    _logger.LogWarning(LoggingEvents.Auth.InvalidCredentials, "Invalid credentials");
-                    return Errors.Auth.InvalidCredentials();
+                    return passwordCheck.Errors;
                 }
 
                 var updateResult = await _userService

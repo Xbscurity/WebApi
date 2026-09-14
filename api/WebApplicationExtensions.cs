@@ -20,9 +20,10 @@ namespace api
 
             app.MapHealthChecks("/health");
 
+            app.UseAuthentication();
+
             app.UseRateLimiter();
 
-            app.UseAuthentication();
             app.UseAuthorization();
 
             app.UseMiddleware<LogEnrichmentMiddleware>();

@@ -17,7 +17,6 @@ namespace api.Controllers
     [Authorize(Roles = Roles.Admin)]
     [ApiController]
     [Route("api/admin/financial-transactions")]
-    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public class AdminFinancialTransactionController : ControllerBase
     {
         private readonly IAdminFinancialTransactionService _adminFinancialTransactionService;

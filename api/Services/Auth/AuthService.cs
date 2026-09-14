@@ -109,11 +109,10 @@ namespace api.Services.Auth
                 return Errors.Auth.InvalidCredentials();
             }
 
-            var valid = await _userService.CheckPasswordAsync(user, dto.Password);
-            if (!valid)
+            var signInResult = await _userService.CheckPasswordSignInAsync(user, dto.Password);
+            if (signInResult.IsError)
             {
-                _logger.LogWarning(LoggingEvents.Auth.InvalidCredentials, "Wrong password");
-                return Errors.Auth.InvalidCredentials();
+                return signInResult.Errors;
             }
 
             if (user.IsBanned)

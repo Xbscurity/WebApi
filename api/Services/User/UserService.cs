@@ -20,6 +20,8 @@ namespace api.Services.User
     public class UserService : IUserService
     {
         private readonly UserManager<AppUser> _userManager;
+
+        private readonly SignInManager<AppUser> _signInManager;
         private readonly IFusionCache _cache;
         private readonly CacheOptions _cacheOptions;
         private readonly ICurrentUser _currentUser;
@@ -29,18 +31,21 @@ namespace api.Services.User
         /// Initializes a new instance of the <see cref="UserService"/> class.
         /// </summary>
         /// <param name="userManager">The ASP.NET Core Identity user manager.</param>
+        /// <param name="signInManager"> The ASP.NET Core Identity sign in manager.</param>
         /// <param name="cache">The memory cache service for ban status.</param>
         /// <param name="currentUser">Service providing information about the currently logged-in user.</param>
         /// <param name="cacheOptions">Configuration options for caching behavior.</param>
         /// <param name="logger">Logger for diagnostic information (e.g., cache hits/misses).</param>
         public UserService(
             UserManager<AppUser> userManager,
+            SignInManager<AppUser> signInManager,
             IFusionCache cache,
             ICurrentUser currentUser,
             IOptions<CacheOptions> cacheOptions,
             ILogger<UserService> logger)
         {
             _userManager = userManager;
+            _signInManager = signInManager;
             _cache = cache;
             _currentUser = currentUser;
             _cacheOptions = cacheOptions.Value;
@@ -155,9 +160,22 @@ namespace api.Services.User
         }
 
         /// <inheritdoc />
-        public async Task<bool> CheckPasswordAsync(AppUser user, string password)
+        public async Task<ErrorOr<Success>> CheckPasswordSignInAsync(AppUser user, string password)
         {
-            return await _userManager.CheckPasswordAsync(user, password);
+            var result = await _signInManager.CheckPasswordSignInAsync(user, password, lockoutOnFailure: true);
+
+            if (result.IsLockedOut)
+            {
+                _logger.LogWarning(LoggingEvents.Auth.InvalidCredentials, "Account locked out for user {UserId}", user.Id);
+                return Errors.Auth.AccountLockedOut();
+            }
+
+            if (!result.Succeeded)
+            {
+                return Errors.Auth.InvalidCredentials();
+            }
+
+            return Result.Success;
         }
 
         /// <inheritdoc />

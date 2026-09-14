@@ -72,6 +72,19 @@ namespace api.Middlewares
 
             if (authorizeResult.Forbidden)
             {
+                var isBanned = authorizeResult.AuthorizationFailure?.FailureReasons
+                    .Any(r => r.Message == "UserBanned") ?? false;
+
+                if (isBanned)
+                {
+                    await Results.Problem(
+                        detail: "Your account has been banned.",
+                        statusCode: StatusCodes.Status403Forbidden,
+                        extensions: new Dictionary<string, object?> { ["errorCode"] = "USER_BANNED" })
+                        .ExecuteAsync(context);
+                    return;
+                }
+
                 await Results.Problem(
                     detail: "You do not have permission to perform this action.",
                     statusCode: StatusCodes.Status403Forbidden)

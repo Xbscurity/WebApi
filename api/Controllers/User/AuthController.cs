@@ -6,6 +6,7 @@ using api.Services.RefreshTokenCookie;
 using api.Services.Token;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace api.Controllers.User
 {
@@ -13,6 +14,7 @@ namespace api.Controllers.User
     /// Provides authentication endpoints for user registration, login, token refresh, and logout.
     /// </summary>
     [AllowAnonymous]
+    [EnableRateLimiting("auth")]
     [Route("api/auth")]
     [ApiController]
     public class AuthController : ControllerBase
@@ -90,6 +92,7 @@ namespace api.Controllers.User
         /// <response code="200">
         /// The user was successfully authenticated.
         /// </response>
+        [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [HttpPost("login")]
         public async Task<ActionResult<AuthOutputDto>> Login([FromBody] LoginInputDto loginDto)

@@ -106,9 +106,14 @@ namespace api
                 options.Password.RequireDigit = false;
                 options.Password.RequireNonAlphanumeric = false;
                 options.Password.RequiredLength = 6;
+
+                options.Lockout.MaxFailedAccessAttempts = 5;
+                options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(15);
+                options.Lockout.AllowedForNewUsers = true;
             })
             .AddRoles<IdentityRole>()
             .AddEntityFrameworkStores<ApplicationDbContext>()
+            .AddSignInManager()
             .AddDefaultTokenProviders();
 
             services.AddProblemDetails(options =>
@@ -121,7 +126,36 @@ namespace api
 
             services.AddRateLimiter(options =>
             {
+                options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+
+                options.OnRejected = async (context, cancellationToken) =>
+                {
+                    var retryAfterSeconds = 60d;
+
+                    if (context.Lease.TryGetMetadata(MetadataName.RetryAfter, out var retryAfter))
+                    {
+                        retryAfterSeconds = retryAfter.TotalSeconds;
+                        context.HttpContext.Response.Headers.RetryAfter =
+                            ((int)retryAfterSeconds).ToString();
+                    }
+
+                    Dictionary<string, object?> extensions = new()
+                    {
+                        ["errorCode"] = "TOO_MANY_REQUESTS",
+                        ["retryAfterSeconds"] = retryAfterSeconds,
+                    };
+
+                    await Results.Problem(
+                        statusCode: StatusCodes.Status429TooManyRequests,
+                        title: "Too many requests",
+                        detail: "Rate limit exceeded. Please try again later.",
+                        instance: context.HttpContext.Request.Path,
+                        extensions: extensions)
+                        .ExecuteAsync(context.HttpContext);
+                };
+
                 options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(httpContext =>
+
                     RateLimitPartition.GetFixedWindowLimiter(
                         partitionKey: httpContext.User.Identity?.Name
                       ?? httpContext.Connection.RemoteIpAddress?.ToString()
@@ -133,6 +167,17 @@ namespace api
                             QueueLimit = 0,
                             AutoReplenishment = true,
                         }));
+
+                options.AddPolicy("auth", httpContext =>
+                RateLimitPartition.GetFixedWindowLimiter(
+                    partitionKey: httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+                    factory: partition => new FixedWindowRateLimiterOptions
+                    {
+                        PermitLimit = 5,
+                        Window = TimeSpan.FromMinutes(1),
+                        QueueLimit = 0,
+                        AutoReplenishment = true,
+                    }));
             });
 
             services.AddOptions<JwtOptions>()

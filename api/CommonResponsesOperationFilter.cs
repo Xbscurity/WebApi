@@ -53,6 +53,10 @@ namespace api
 
             var schema = context.SchemaGenerator.GenerateSchema(typeof(ProblemDetails), context.SchemaRepository);
 
+            operation.Responses.TryAdd(
+                StatusCodes.Status429TooManyRequests.ToString(),
+                CreateProblemDetailsResponse("Rate limit exceeded. Please try again later.", schema));
+
             var hasQuery = context.ApiDescription.ParameterDescriptions
                 .Any(p => p.Source == BindingSource.Query);
 
@@ -77,6 +81,10 @@ namespace api
                 operation.Responses.TryAdd(
                     StatusCodes.Status401Unauthorized.ToString(),
                     CreateProblemDetailsResponse("Valid JWT token is missing or expired.", schema));
+
+                operation.Responses.TryAdd(
+                    StatusCodes.Status403Forbidden.ToString(),
+                    CreateProblemDetailsResponse("You do not have permission to access this resource.", schema));
             }
         }
 

@@ -94,15 +94,16 @@ namespace api.Services.User
         Task<ErrorOr<Success>> AddToRoleAsync(AppUser user, string role);
 
         /// <summary>
-        /// Returns a flag indicating whether the given <paramref name="password"/> is valid for the
+        /// Checks whether the given <paramref name="password"/> is valid for the
         /// specified <paramref name="user"/>.
         /// </summary>
         /// <param name="user">The user whose password should be validated.</param>
         /// <param name="password">The password to validate.</param>
         /// <returns>
-        /// <see langword="true"/> if the specified <paramref name="password" /> matches the one store for the <paramref name="user"/>,
-        /// otherwise <see langword="false"/>.</returns>
-        Task<bool> CheckPasswordAsync(AppUser user, string password);
+        /// A <see cref="Success"/> result if successful;
+        /// otherwise, an error.
+        /// </returns>
+        Task<ErrorOr<Success>> CheckPasswordSignInAsync(AppUser user, string password);
 
         /// <summary>
         /// Changes a user's password after confirming the specified <paramref name="currentPassword"/> is correct.

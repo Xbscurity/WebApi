@@ -17,7 +17,6 @@ namespace api.Controllers
     [Authorize(Roles = Roles.Admin)]
     [ApiController]
     [Route("api/admin/categories")]
-    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public class AdminCategoryController : ControllerBase
     {
         private readonly IAdminCategoryService _adminCategoryService;
