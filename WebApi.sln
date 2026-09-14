@@ -15,8 +15,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		.editorconfig = .editorconfig
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "testwebapi", "..\testwebapi\testwebapi.csproj", "{3E2E5F2E-D3BA-45DF-A126-52ED83D8AD90}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".github", ".github", "{D9F62B6B-6DAB-4C60-A34E-AD8FCF6085F4}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflows", "workflows", "{1FA08DFB-8A30-41F2-8C37-35C820A8FBD9}"
@@ -46,10 +44,6 @@ Global
 		{39F62CF9-E17A-4A32-B7DD-49BD58AB0AB4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{39F62CF9-E17A-4A32-B7DD-49BD58AB0AB4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{39F62CF9-E17A-4A32-B7DD-49BD58AB0AB4}.Release|Any CPU.Build.0 = Release|Any CPU
-		{3E2E5F2E-D3BA-45DF-A126-52ED83D8AD90}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{3E2E5F2E-D3BA-45DF-A126-52ED83D8AD90}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{3E2E5F2E-D3BA-45DF-A126-52ED83D8AD90}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{3E2E5F2E-D3BA-45DF-A126-52ED83D8AD90}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
