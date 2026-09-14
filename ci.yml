@@ -1,0 +1,64 @@
+name: CI
+ 
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+ 
+env:
+  DOTNET_VERSION: '10.0.x'
+  DOTNET_NOLOGO: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
+ 
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+ 
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+ 
+      - name: Setup .NET ${{ env.DOTNET_VERSION }}
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+ 
+      - name: Cache NuGet packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget-
+ 
+      - name: Restore dependencies
+        run: dotnet restore WebApi.sln
+
+      - name: Build
+        run: dotnet build WebApi.sln --no-restore --configuration Release
+ 
+      - name: Run unit tests
+        run: >
+          dotnet test api.Tests.Unit/api.Tests.Unit.csproj
+          --no-build --configuration Release
+          --logger "trx;LogFileName=unit-tests.trx"
+          --results-directory ./TestResults
+ 
+      # Integration tests spin up their own Postgres container via
+      # Testcontainers, which works out of the box on GitHub-hosted
+      # Ubuntu runners since Docker is preinstalled - no extra `services:`
+      # block needed.
+      - name: Run integration tests
+        run: >
+          dotnet test api.Tests.Integration/api.Tests.Integration.csproj
+          --no-build --configuration Release
+          --logger "trx;LogFileName=integration-tests.trx"
+          --results-directory ./TestResults
+ 
+      - name: Publish test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: TestResults/*.trx
