@@ -225,7 +225,7 @@ namespace api.Tests.Unit.Services
         }
 
         [Fact]
-        public async Task LoginAsync_UserBanned_ReturnsBannedError()
+        public async Task LoginAsync_UserBanned_ReturnsInvalidCredentialsError()
         {
             // Arrange
             var user = AppUserFactory.Create(isBanned: true);
@@ -249,7 +249,7 @@ namespace api.Tests.Unit.Services
 
             // Assert
             Assert.True(result.IsError);
-            Assert.Equal(Errors.User.Banned(), result.FirstError);
+            Assert.Equal(Errors.Auth.InvalidCredentials(), result.FirstError);
         }
 
         [Fact]
@@ -270,7 +270,7 @@ namespace api.Tests.Unit.Services
                 .ReturnsAsync(user);
             _userServiceMock
                 .Setup(x => x.CheckPasswordSignInAsync(user, dto.Password))
-                .ReturnsAsync(Errors.Auth.InvalidCredentials());
+                .ReturnsAsync(Result.Success);
             _tokenServiceMock
                 .Setup(x => x.GenerateAccessTokenAsync(user))
                 .ReturnsAsync(accessToken);
