@@ -3,7 +3,7 @@ using api.Models;
 using api.Queries;
 using Ardalis.Specification;
 
-namespace api.Specifications
+namespace api.Specifications.User
 {
     /// <summary>
     /// Sorts and paginates <see cref="AppUser"/> entities for admin user management,

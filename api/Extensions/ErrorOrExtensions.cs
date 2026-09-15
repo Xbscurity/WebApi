@@ -2,7 +2,7 @@
 using ErrorOr;
 using Microsoft.AspNetCore.Mvc;
 
-namespace api
+namespace api.Extensions
 {
     /// <summary>
     /// Provides extension methods for converting <c>ErrorOr</c> results

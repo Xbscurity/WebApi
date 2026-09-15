@@ -2,10 +2,10 @@
 using api.Models;
 using Ardalis.Specification;
 
-namespace api.Specifications
+namespace api.Specifications.Categories
 {
     /// <summary>
-    /// Retrieves a specific <see cref="Category"/> entity by its identifier
+    /// Retrieves a specific <see cref="Categories"/> entity by its identifier
     /// for a specific user and projects the result to <see cref="CategoryOutputDto"/>.
     /// </summary>
     public class CategoryByIdSpecification : Specification<Category, CategoryOutputDto>

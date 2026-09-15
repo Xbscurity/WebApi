@@ -1,37 +1,37 @@
 ﻿using api.Constants;
 using api.Dtos.Category;
+using api.Extensions;
 using api.Queries;
 using api.Services.Categories;
 using api.Services.Shared;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace api.Controllers
+namespace api.Controllers.Category
 {
     /// <summary>
-    /// Provides API endpoints for managing the current user's categories used to group financial transactions.
+    /// Provides administrative API endpoints for managing categories across all users.
     /// </summary>
     /// <remarks>
-    /// All endpoints require authentication and are accessible only to users
-    /// who satisfy the <c>NotBanned</c> authorization policy.
+    /// All endpoints require administrator role.
     /// </remarks>
-    [Authorize(Policy = Policies.NotBanned)]
+    [Authorize(Roles = Roles.Admin)]
     [ApiController]
-    [Route("api/categories")]
-    public class CategoryController : ControllerBase
+    [Route("api/admin/categories")]
+    public class AdminCategoryController : ControllerBase
     {
-        private readonly ICategoryService _categoryService;
+        private readonly IAdminCategoryService _adminCategoryService;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="CategoryController"/> class.
+        /// Initializes a new instance of the <see cref="AdminCategoryController"/> class.
         /// </summary>
-        /// <param name="categoryService">
-        /// The service responsible for category operations.
+        /// <param name="adminCategoryService">
+        /// The service responsible for administrative category operations.
         /// </param>
-        public CategoryController(
-            ICategoryService categoryService)
+        public AdminCategoryController(
+            IAdminCategoryService adminCategoryService)
         {
-            _categoryService = categoryService;
+            _adminCategoryService = adminCategoryService;
         }
 
         /// <summary>
@@ -49,10 +49,10 @@ namespace api.Controllers
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
-        public async Task<ActionResult<PagedItems<CategoryOutputDto>>> GetAll(
-            [FromQuery] EntityQuery query)
+        public async Task<ActionResult<PagedItems<AdminCategoryOutputDto>>> GetAll(
+            [FromQuery] AdminEntityQuery query)
         {
-            var categories = await _categoryService.GetAllAsync(query);
+            var categories = await _adminCategoryService.GetAllAsync(query);
 
             return categories.ToActionResult(this);
         }
@@ -68,10 +68,12 @@ namespace api.Controllers
         /// <response code="404">
         /// The specified category was not found.
         /// </response>
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         [HttpGet("{id:guid}")]
-        public async Task<ActionResult<CategoryOutputDto>> GetById([FromRoute] Guid id)
+        public async Task<ActionResult<AdminCategoryOutputDto>> GetById([FromRoute] Guid id)
         {
-            var result = await _categoryService.GetByIdAsync(id);
+            var result = await _adminCategoryService.GetByIdAsync(id);
 
             return result.ToActionResult(this);
         }
@@ -84,11 +86,16 @@ namespace api.Controllers
         /// <response code="201">
         /// The category was successfully created.
         /// </response>
+        /// <response code="404">
+        /// Requested User id not found.
+        /// </response>
+        [ProducesResponseType(StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         [HttpPost]
-        public async Task<ActionResult<CategoryOutputDto>> Create(
-            [FromBody] CategoryCreateInputDto categoryDto)
+        public async Task<ActionResult<AdminCategoryOutputDto>> Create(
+            [FromBody] AdminCategoryCreateInputDto categoryDto)
         {
-            var result = await _categoryService.CreateAsync(categoryDto);
+            var result = await _adminCategoryService.CreateAsync(categoryDto);
 
             if (result.IsError)
             {
@@ -116,10 +123,10 @@ namespace api.Controllers
         [HttpPut("{id:guid}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<CategoryOutputDto>> Update(
+        public async Task<ActionResult<AdminCategoryOutputDto>> Update(
             [FromRoute] Guid id, [FromBody] CategoryUpdateInputDto categoryDto)
         {
-            var result = await _categoryService.UpdateAsync(id, categoryDto);
+            var result = await _adminCategoryService.UpdateAsync(id, categoryDto);
 
             return result.ToActionResult(this);
         }
@@ -128,7 +135,7 @@ namespace api.Controllers
         /// Toggles the active status of a category.
         /// </summary>
         /// <param name="id">The identifier of the category.</param>
-        /// <param name="isActive">The new active state.</param>
+        /// <param name="input">The new active state.</param>
         /// <returns>The updated active status.</returns>
         /// <response code="200">
         /// The category active status was successfully updated.
@@ -139,10 +146,9 @@ namespace api.Controllers
         [HttpPatch("{id:guid}/active")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<SetActiveOutputDto>> SetActive(
-            [FromRoute] Guid id, [FromBody] SetActiveInputDto isActive)
+        public async Task<ActionResult<SetActiveOutputDto>> SetActive([FromRoute] Guid id, [FromBody] SetActiveInputDto input)
         {
-            var result = await _categoryService.SetActiveAsync(id, isActive);
+            var result = await _adminCategoryService.SetActiveAsync(id, input);
 
             return result.ToActionResult(this);
         }
@@ -169,7 +175,7 @@ namespace api.Controllers
         [ProducesResponseType(StatusCodes.Status409Conflict)]
         public async Task<IActionResult> Delete([FromRoute] Guid id)
         {
-            var result = await _categoryService.DeleteAsync(id);
+            var result = await _adminCategoryService.DeleteAsync(id);
             return result.ToNoContentResult(this);
         }
     }

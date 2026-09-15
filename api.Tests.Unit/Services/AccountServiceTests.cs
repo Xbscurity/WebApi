@@ -1,4 +1,4 @@
-﻿using api.Dtos.Account;
+﻿using api.Dtos.User;
 using api.Models;
 using api.Providers.ClientIpProvider;
 using api.Providers.CurrentUser;

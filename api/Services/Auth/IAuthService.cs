@@ -1,5 +1,4 @@
-﻿using api.Dtos.Account;
-using api.Dtos.User;
+﻿using api.Dtos.User;
 using api.Services.Token;
 using ErrorOr;
 

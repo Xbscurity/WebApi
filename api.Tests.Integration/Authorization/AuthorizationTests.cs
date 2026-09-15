@@ -1,4 +1,4 @@
-﻿using api.Dtos.Account;
+﻿using api.Dtos.User;
 using api.Tests.Integration.Collections.Fixtures;
 using System.Net;
 using System.Net.Http.Json;

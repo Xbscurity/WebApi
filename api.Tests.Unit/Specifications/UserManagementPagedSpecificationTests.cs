@@ -1,6 +1,6 @@
 ﻿using api.Models;
 using api.Queries;
-using api.Specifications;
+using api.Specifications.User;
 using api.Tests.Unit.Factories;
 
 namespace api.Tests.Unit.Specifications

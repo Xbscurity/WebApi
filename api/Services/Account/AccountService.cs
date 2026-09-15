@@ -1,5 +1,4 @@
 ﻿using api.Constants;
-using api.Dtos.Account;
 using api.Dtos.User;
 using api.Providers.ClientIpProvider;
 using api.Providers.CurrentUser;

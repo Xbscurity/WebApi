@@ -2,11 +2,11 @@
 using api.Queries;
 using Ardalis.Specification;
 
-namespace api.Specifications
+namespace api.Specifications.FinancialTransactions
 {
     /// <summary>
-    /// Filters <see cref="FinancialTransaction"/> entities for a specific user during report generation,
-    /// including related <see cref="Category"/> data.
+    /// Filters <see cref="FinancialTransactions"/> entities for a specific user during report generation,
+    /// including related <see cref="Categories"/> data.
     /// </summary>
     public class FinancialTransactionReportSpecification : Specification<FinancialTransaction>
     {

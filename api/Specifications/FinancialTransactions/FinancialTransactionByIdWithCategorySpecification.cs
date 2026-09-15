@@ -2,10 +2,10 @@
 using api.Models;
 using Ardalis.Specification;
 
-namespace api.Specifications
+namespace api.Specifications.FinancialTransactions
 {
     /// <summary>
-    /// Retrieves a specific <see cref="FinancialTransaction"/> entity by its identifier
+    /// Retrieves a specific <see cref="FinancialTransactions"/> entity by its identifier
     /// for a specific user and projects the result to <see cref="FinancialTransactionOutputDto"/>.
     /// </summary>
     public class FinancialTransactionByIdWithCategorySpecification

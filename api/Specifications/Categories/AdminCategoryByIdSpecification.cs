@@ -2,10 +2,10 @@
 using api.Models;
 using Ardalis.Specification;
 
-namespace api.Specifications
+namespace api.Specifications.Categories
 {
     /// <summary>
-    /// Retrieves a specific <see cref="Category"/> entity by its identifier
+    /// Retrieves a specific <see cref="Categories"/> entity by its identifier
     /// and projects the result to <see cref="AdminCategoryOutputDto"/>
     /// for administrative purposes.
     /// </summary>

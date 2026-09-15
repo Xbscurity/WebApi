@@ -1,6 +1,6 @@
 ﻿using api.Dtos.Category;
 using api.Models;
-using api.Specifications;
+using api.Specifications.Categories;
 using api.Tests.Unit.Factories;
 
 namespace api.Tests.Unit.Specifications

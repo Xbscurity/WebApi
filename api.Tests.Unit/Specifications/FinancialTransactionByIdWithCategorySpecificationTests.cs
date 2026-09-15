@@ -1,7 +1,7 @@
 ﻿using api.Dtos.FinancialTransaction;
 using api.Enums;
 using api.Models;
-using api.Specifications;
+using api.Specifications.FinancialTransactions;
 using api.Tests.Unit.Factories;
 
 namespace api.Tests.Unit.Specifications

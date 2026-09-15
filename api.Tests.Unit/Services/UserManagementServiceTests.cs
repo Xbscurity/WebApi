@@ -4,7 +4,7 @@ using api.Models;
 using api.Queries;
 using api.Services.User;
 using api.Services.UserManagement;
-using api.Specifications;
+using api.Specifications.User;
 using api.Tests.Unit.Factories;
 using ErrorOr;
 using Microsoft.Extensions.Logging;

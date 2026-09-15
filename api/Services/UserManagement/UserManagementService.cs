@@ -3,7 +3,7 @@ using api.Dtos.User;
 using api.Queries;
 using api.Services.Shared;
 using api.Services.User;
-using api.Specifications;
+using api.Specifications.User;
 using ErrorOr;
 using System.Collections.Frozen;
 using ZiggyCreatures.Caching.Fusion;

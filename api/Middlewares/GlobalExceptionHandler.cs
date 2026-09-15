@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Diagnostics;
 
-namespace api
+namespace api.Middlewares
 {
     /// <summary>
     /// Global exception handler that converts unhandled exceptions into standardized HTTP problem responses.

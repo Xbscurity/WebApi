@@ -3,10 +3,10 @@ using api.Models;
 using api.Queries;
 using Ardalis.Specification;
 
-namespace api.Specifications
+namespace api.Specifications.FinancialTransactions
 {
     /// <summary>
-    /// Filters, sorts, and paginates <see cref="FinancialTransaction"/> entities for a specific user,
+    /// Filters, sorts, and paginates <see cref="FinancialTransactions"/> entities for a specific user,
     /// projecting results to <see cref="FinancialTransactionOutputDto"/>.
     /// </summary>
     public class FinancialTransactionSortedPagedSpecification : Specification<FinancialTransaction, FinancialTransactionOutputDto>

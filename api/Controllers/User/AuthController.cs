@@ -1,6 +1,6 @@
 ﻿using api.Constants;
-using api.Dtos.Account;
 using api.Dtos.User;
+using api.Extensions;
 using api.Services.Auth;
 using api.Services.RefreshTokenCookie;
 using api.Services.Token;

@@ -3,25 +3,21 @@ using api.Models;
 using api.Queries;
 using Ardalis.Specification;
 
-namespace api.Specifications
+namespace api.Specifications.Categories
 {
     /// <summary>
-    /// Filters, sorts, and paginates <see cref="Category"/> entities across all users,
-    /// projecting results to <see cref="AdminCategoryOutputDto"/>.
+    /// Filters, sorts, and paginates <see cref="Categories"/> entities for a specific user,
+    /// projecting results to <see cref="CategoryOutputDto"/>.
     /// </summary>
-    public class AdminCategorySortedPagedSpecification : Specification<Category, AdminCategoryOutputDto>
+    public class CategorySortedPagedSpecification : Specification<Category, CategoryOutputDto>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="AdminCategorySortedPagedSpecification"/> class.
+        /// Initializes a new instance of the <see cref="CategorySortedPagedSpecification"/> class.
         /// </summary>
-        /// <param name="query">Admin query parameters for filtering, sorting, and pagination.</param>
-        public AdminCategorySortedPagedSpecification(AdminEntityQuery query)
+        /// <param name="query">Query parameters for filtering, sorting, and pagination.</param>
+        /// <param name="userId">The current user id context.</param>
+        public CategorySortedPagedSpecification(EntityQuery query, string userId)
         {
-            if (query.UserId != null)
-            {
-                Query.Where(c => c.AppUserId == query.UserId);
-            }
-
             if (!query.IncludeInactive)
             {
                 Query.Where(c => c.IsActive);
@@ -55,7 +51,6 @@ namespace api.Specifications
                     }
 
                     break;
-
                 case "isactive":
                     if (query.IsDescending)
                     {
@@ -75,7 +70,8 @@ namespace api.Specifications
 
                     if (query.IsDescending)
                     {
-                        Query.OrderByDescending(c => c.CreatedAt);
+                        Query
+                            .OrderByDescending(c => c.CreatedAt);
                     }
                     else
                     {
@@ -86,17 +82,17 @@ namespace api.Specifications
             }
 
             Query
-            .Skip((query.Page - 1) * query.Size)
-            .Take(query.Size)
-            .Select(c => new AdminCategoryOutputDto
-            {
-                Id = c.Id,
-                Name = c.Name,
-                IsActive = c.IsActive,
-                CreatedAt = c.CreatedAt,
-                UpdatedAt = c.UpdatedAt,
-                AppUserId = c.AppUserId,
-            });
+                .Where(c => c.AppUserId == userId)
+                .Skip((query.Page - 1) * query.Size)
+                .Take(query.Size)
+                .Select(c => new CategoryOutputDto
+                {
+                    Id = c.Id,
+                    Name = c.Name,
+                    IsActive = c.IsActive,
+                    CreatedAt = c.CreatedAt,
+                    UpdatedAt = c.UpdatedAt,
+                });
         }
     }
 }

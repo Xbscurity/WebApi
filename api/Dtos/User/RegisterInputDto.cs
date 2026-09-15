@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace api.Dtos.Account
+namespace api.Dtos.User
 {
     /// <summary>
     /// Represents the data required to register a new user account.

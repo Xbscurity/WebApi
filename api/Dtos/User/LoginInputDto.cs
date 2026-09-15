@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace api.Dtos.Account
+namespace api.Dtos.User
 {
     /// <summary>
     /// Represents the credentials required for user authentication.

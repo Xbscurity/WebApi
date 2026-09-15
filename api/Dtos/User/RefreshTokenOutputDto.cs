@@ -1,4 +1,4 @@
-﻿namespace api.Dtos.Account
+﻿namespace api.Dtos.User
 {
     /// <summary>
     /// Represents the response returned after a successful token refresh operation.

@@ -1,6 +1,5 @@
 ﻿using api.Constants;
 using api.Data;
-using api.Dtos.Account;
 using api.Dtos.User;
 using api.Models;
 using api.Tests.Integration.Collections.Fixtures;

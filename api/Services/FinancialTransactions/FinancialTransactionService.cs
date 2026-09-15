@@ -6,7 +6,7 @@ using api.Models;
 using api.Providers.CurrentUser;
 using api.Queries;
 using api.Services.Shared;
-using api.Specifications;
+using api.Specifications.FinancialTransactions;
 using ErrorOr;
 using System.Collections.Frozen;
 

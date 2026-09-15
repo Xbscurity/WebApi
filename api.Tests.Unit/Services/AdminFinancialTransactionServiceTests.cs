@@ -4,7 +4,7 @@ using api.Interfaces;
 using api.Models;
 using api.Queries;
 using api.Services.FinancialTransactions;
-using api.Specifications;
+using api.Specifications.FinancialTransactions;
 using api.Tests.Unit.Factories;
 using ErrorOr;
 using Microsoft.Extensions.Logging;

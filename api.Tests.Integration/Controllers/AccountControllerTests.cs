@@ -1,5 +1,4 @@
-﻿using api.Dtos.Account;
-using api.Dtos.User;
+﻿using api.Dtos.User;
 using api.Models;
 using api.Tests.Integration.Auth;
 using api.Tests.Integration.Collections.Fixtures;

@@ -1,7 +1,7 @@
 ﻿using api.Models;
 using Ardalis.Specification;
 
-namespace api.Specifications
+namespace api.Specifications.FinancialTransactions
 {
     /// <summary>
     /// Specification for filtering financial transactions by category identifier.
