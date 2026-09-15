@@ -28,17 +28,17 @@ namespace api.Interfaces
         }
 
         /// <inheritdoc />
-        public async Task<List<GroupedReportOutputDto>> GetGroupedListByCategory(ISpecification<FinancialTransaction> spec, ReportQuery query)
+        public async Task<(List<GroupedReportOutputDto> Items, int TotalCount)> GetGroupedListByCategory(ISpecification<FinancialTransaction> spec, ReportQuery query)
             => await GetGroupedListAsync(
                 spec, query, t => t.Category.Name, key => new ReportKey.CategoryKey(key));
 
         /// <inheritdoc />
-        public async Task<List<GroupedReportOutputDto>> GetGroupedListByDate(ISpecification<FinancialTransaction> spec, ReportQuery query)
+        public async Task<(List<GroupedReportOutputDto> Items, int TotalCount)> GetGroupedListByDate(ISpecification<FinancialTransaction> spec, ReportQuery query)
             => await GetGroupedListAsync(
                 spec, query, t => t.CreatedAt, key => new ReportKey.DateKey(key.Year, key.Month));
 
         /// <inheritdoc />
-        public async Task<List<GroupedReportOutputDto>> GetGroupedListByCategoryAndDate(
+        public async Task<(List<GroupedReportOutputDto> Items, int TotalCount)> GetGroupedListByCategoryAndDate(
             ISpecification<FinancialTransaction> spec, ReportQuery query)
             => await GetGroupedListAsync(
                 spec,
@@ -68,13 +68,18 @@ namespace api.Interfaces
         /// <returns>
         /// A collection of grouped financial transaction report results.
         /// </returns>
-        private async Task<List<GroupedReportOutputDto>> GetGroupedListAsync<TKey>(
+        private async Task<(List<GroupedReportOutputDto> Items, int TotalCount)> GetGroupedListAsync<TKey>(
             ISpecification<FinancialTransaction> spec,
             ReportQuery query,
             Expression<Func<FinancialTransaction, TKey>> groupBy,
             Func<TKey, ReportKey> reportKeyFactory)
         {
             var filteredQuery = ApplySpecification(spec);
+
+            var totalCount = await filteredQuery.GroupBy(groupBy)
+                .Select(group => group.Key)
+                .CountAsync();
+
             var groupedQuery = await filteredQuery.GroupBy(groupBy).
                 Select(group => new
                 {
@@ -97,7 +102,7 @@ namespace api.Interfaces
             .Skip((query.Page - 1) * query.Size)
             .Take(query.Size).ToListAsync();
 
-            return groupedQuery.Select(r => new GroupedReportOutputDto
+            var items = groupedQuery.Select(r => new GroupedReportOutputDto
             {
                 GroupKey = reportKeyFactory(r.Key),
                 Count = r.Count,
@@ -116,6 +121,8 @@ namespace api.Interfaces
             })
             .ToList(),
             }).ToList();
+
+            return (items, totalCount);
         }
     }
 }

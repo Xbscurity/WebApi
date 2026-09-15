@@ -25,8 +25,9 @@ namespace api.Services.FinancialTransactions
         /// The query containing grouping and pagination parameters.
         /// </param>
         /// <returns>
-        /// A collection of grouped report items.
+        /// The current page of grouped report items, together with the
+        /// total number of groups across all pages.
         /// </returns>
-        Task<List<GroupedReportOutputDto>> GetGroupedAsync(Specification<FinancialTransaction> spec, ReportQuery query);
+        Task<(List<GroupedReportOutputDto> Items, int TotalCount)> GetGroupedAsync(Specification<FinancialTransaction> spec, ReportQuery query);
     }
 }

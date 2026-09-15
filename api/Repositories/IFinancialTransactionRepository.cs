@@ -20,9 +20,10 @@ namespace api.Interfaces
         /// The report query containing paging parameters.
         /// </param>
         /// <returns>
-        /// A collection of grouped report results aggregated by category.
+        /// The current page of grouped report results aggregated by category,
+        /// together with the total number of groups across all pages.
         /// </returns>
-        Task<List<GroupedReportOutputDto>> GetGroupedListByCategory(
+        Task<(List<GroupedReportOutputDto> Items, int TotalCount)> GetGroupedListByCategory(
             ISpecification<FinancialTransaction> spec, ReportQuery query);
 
         /// <summary>
@@ -35,9 +36,10 @@ namespace api.Interfaces
         /// The report query containing paging parameters.
         /// </param>
         /// <returns>
-        /// A collection of grouped report results aggregated by date.
+        /// The current page of grouped report results aggregated by date,
+        /// together with the total number of groups across all pages.
         /// </returns>
-        Task<List<GroupedReportOutputDto>> GetGroupedListByDate(
+        Task<(List<GroupedReportOutputDto> Items, int TotalCount)> GetGroupedListByDate(
             ISpecification<FinancialTransaction> spec, ReportQuery query);
 
         /// <summary>
@@ -51,10 +53,11 @@ namespace api.Interfaces
         /// The report query containing paging parameters.
         /// </param>
         /// <returns>
-        /// A collection of grouped report results aggregated
-        /// by category and date.
+        /// The current page of grouped report results aggregated
+        /// by category and date, together with the total number
+        /// of groups across all pages.
         /// </returns>
-        Task<List<GroupedReportOutputDto>> GetGroupedListByCategoryAndDate(
+        Task<(List<GroupedReportOutputDto> Items, int TotalCount)> GetGroupedListByCategoryAndDate(
             ISpecification<FinancialTransaction> spec, ReportQuery query);
     }
 }

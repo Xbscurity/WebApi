@@ -26,7 +26,8 @@ namespace api.Services.FinancialTransactions
         public GroupingReportStrategyKey Key => GroupingReportStrategyKey.ByCategoryAndDate;
 
         /// <inheritdoc/>
-        public Task<List<GroupedReportOutputDto>> GetGroupedAsync(Specification<FinancialTransaction> spec, ReportQuery query)
+        public Task<(List<GroupedReportOutputDto> Items, int TotalCount)> GetGroupedAsync(
+            Specification<FinancialTransaction> spec, ReportQuery query)
             => _repository.GetGroupedListByCategoryAndDate(spec, query);
     }
 }

@@ -673,7 +673,7 @@ namespace api.Tests.Unit.Services
         };
             _strategyMock
                 .Setup(s => s.GetGroupedAsync(It.IsAny<Specification<FinancialTransaction>>(), query))
-                .ReturnsAsync(expectedItems);
+                .ReturnsAsync((expectedItems, expectedItems.Count));
 
             // Act
             var result = await _sut.GetReportAsync(query);
@@ -685,6 +685,43 @@ namespace api.Tests.Unit.Services
             Assert.Equal(query.Page, result.Value.Pagination.PageNumber);
             Assert.Equal(query.Size, result.Value.Pagination.PageSize);
             Assert.Equal(2, result.Value.Pagination.TotalItems);
+        }
+
+        [Fact]
+        public async Task GetReportAsync_MoreGroupsThanFitOnPage_ReturnsTotalCountAcrossAllPages()
+        {
+            // Arrange
+            var query = new ReportQuery
+            {
+                Key = GroupingReportStrategyKey.ByCategory,
+                Page = 1,
+                Size = 1
+            };
+
+            var pageItems = new List<GroupedReportOutputDto>
+        {
+            new()
+            {
+                GroupKey = new ReportKey.CategoryKey("Food"),
+                Count = 2,
+                TotalAmount = 150.00m,
+                Transactions = []
+            }
+        };
+
+            _strategyMock
+                .Setup(s => s.GetGroupedAsync(It.IsAny<Specification<FinancialTransaction>>(), query))
+                .ReturnsAsync((pageItems, 5));
+
+            // Act
+            var result = await _sut.GetReportAsync(query);
+
+            // Assert
+            Assert.True(result.IsSuccess, $"Error code: {result.FirstError.Code}");
+
+            Assert.Single(result.Value.Items);
+            Assert.Equal(5, result.Value.Pagination.TotalItems);
+            Assert.True(result.Value.Pagination.HasNext);
         }
     }
 }

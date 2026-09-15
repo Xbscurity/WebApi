@@ -238,13 +238,14 @@ namespace api.Services.FinancialTransactions
             }
 
             var spec = new FinancialTransactionReportSpecification(query, _currentUser.UserId);
-            var grouped = await strategy.GetGroupedAsync(spec, query);
 
-            var pagination = new Pagination(query.Page, query.Size, grouped.Count);
+            var (items, totalCount) = await strategy.GetGroupedAsync(spec, query);
+
+            var pagination = new Pagination(query.Page, query.Size, totalCount);
 
             var pagedData = new PagedItems<GroupedReportOutputDto>
             {
-                Items = grouped,
+                Items = items,
                 Pagination = pagination,
             };
 
