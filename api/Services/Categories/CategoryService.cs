@@ -67,7 +67,7 @@ namespace api.Services.Categories
             {
                 var allowed = string.Join(", ", ValidFields);
 
-                _logger.LogWarning(
+                _logger.LogInformation(
                     LoggingEvents.Category.SortInvalid,
                     "SortBy '{Field}' is invalid. Allowed fields: {AllowedFields}",
                     query.SortBy,
@@ -87,7 +87,7 @@ namespace api.Services.Categories
                 Pagination = pagination,
             };
 
-            _logger.LogInformation(
+            _logger.LogDebug(
                 "Returning {Count} categories. Page={PageNumber}, Size={PageSize}, SortBy={SortBy}",
                 pagedData.Items.Count,
                 pagedData.Pagination.PageNumber,
@@ -105,10 +105,13 @@ namespace api.Services.Categories
 
             if (category == null)
             {
-                _logger.LogWarning(LoggingEvents.Category.NotFound, "Category {CategoryId} not found", id);
+                _logger.LogInformation(LoggingEvents.Category.NotFound, "Category {CategoryId} not found", id);
                 return Errors.Category.NotFound(id);
             }
 
+            _logger.LogDebug(
+                "Category with ID {CategoryId} retrieved.",
+                id);
             return category;
         }
 
@@ -171,9 +174,11 @@ namespace api.Services.Categories
             await _categoryRepository.SaveChangesAsync();
 
             _logger.LogInformation(
-                LoggingEvents.Category.Toggled,
-                "Category {CategoryId} active status successfully toggled.",
-                category.Id);
+                LoggingEvents.Category.SetActive,
+                "Category {CategoryId} active status successfully set to {IsActive}.",
+                category.Id,
+                input.IsActive);
+
             var outputDto = new SetActiveOutputDto
             {
                 IsActive = category.IsActive,
@@ -234,7 +239,7 @@ namespace api.Services.Categories
             var category = await _categoryRepository.GetByIdAsync(id);
             if (category == null)
             {
-                _logger.LogWarning(LoggingEvents.Category.NotFound, "Category {CategoryId} not found", id);
+                _logger.LogInformation(LoggingEvents.Category.NotFound, "Category {CategoryId} not found", id);
                 return Errors.Category.NotFound(id);
             }
 

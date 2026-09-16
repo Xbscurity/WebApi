@@ -41,6 +41,12 @@
             public static readonly EventId Forbidden = new(1006, nameof(Forbidden));
 
             /// <summary>
+            /// Event ID for when a banned user attempts to authenticate or continue
+            /// an existing session (login or refresh).
+            /// </summary>
+            public static readonly EventId BannedUserAccessAttempt = new(1007, nameof(BannedUserAccessAttempt));
+
+            /// <summary>
             /// EventIds related to refresh token operations (1100–1199).
             /// </summary>
             public static class RefreshToken
@@ -145,7 +151,7 @@
             /// <summary>
             /// Event ID for when a category's active state is toggled.
             /// </summary>
-            public static readonly EventId Toggled = new(2006, nameof(Toggled));
+            public static readonly EventId SetActive = new(2006, nameof(SetActive));
 
             /// <summary>
             /// Event ID for when a category is deleted.
@@ -192,6 +198,12 @@
             /// Event ID for when a grouping strategy that is not supported is requested.
             /// </summary>
             public static readonly EventId NotSupportedStrategyGrouping = new(2506, nameof(NotSupportedStrategyGrouping));
+
+            /// <summary>
+            /// Event ID for when the category supplied for a financial transaction
+            /// belongs to a different user than the transaction's owner.
+            /// </summary>
+            public static readonly EventId UserMismatch = new(2507, nameof(UserMismatch));
         }
     }
 }

@@ -187,7 +187,7 @@ namespace api.Services.User
             {
                 var errors = identityResult.ToErrorDictionary();
 
-                _logger.LogError(LoggingEvents.Auth.UpdatePasswordFailed, "Failed to change password: {@Errors}", errors);
+                _logger.LogWarning(LoggingEvents.Auth.UpdatePasswordFailed, "Failed to change password: {@Errors}", errors);
 
                 return identityResult.MapToErrors();
             }

@@ -116,7 +116,7 @@ namespace api.Services.Auth
 
             if (user.IsBanned)
             {
-                _logger.LogInformation("Banned user with id {userId} attempted to authenticate", user.Id);
+                _logger.LogWarning(LoggingEvents.Auth.BannedUserAccessAttempt, "Banned user with id {userId} attempted to authenticate", user.Id);
                 return Errors.User.Banned();
             }
 
@@ -138,11 +138,22 @@ namespace api.Services.Auth
             var user = await _userService.FindByIdAsync(storedToken.UserId);
             if (user == null)
             {
+                _logger.LogWarning(
+                    LoggingEvents.Auth.RefreshToken.UserMissing,
+                    "Refresh token {RefreshTokenId} points to a user {UserId} that no longer exists",
+                    storedToken.Id,
+                    storedToken.UserId);
+
                 return Errors.User.NotFound(storedToken.UserId);
             }
 
             if (user.IsBanned)
             {
+                _logger.LogWarning(
+                    LoggingEvents.Auth.BannedUserAccessAttempt,
+                    "Banned user {UserId} attempted to refresh their session",
+                    user.Id);
+
                 await _tokenRepository
                     .RevokeAllRefreshTokensAsync(user.Id, _clientIpProvider.GetClientIp(), "User banned");
                 return Errors.User.Banned();

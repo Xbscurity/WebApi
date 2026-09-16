@@ -70,7 +70,7 @@ namespace api.Services.FinancialTransactions
             {
                 var allowed = string.Join(", ", ValidFields);
 
-                _logger.LogWarning(
+                _logger.LogInformation(
                     LoggingEvents.FinancialTransaction.SortInvalid,
                     "SortBy '{Field}' is invalid. Allowed fields: {AllowedFields}",
                     query.SortBy,
@@ -92,7 +92,7 @@ namespace api.Services.FinancialTransactions
                 Pagination = pagination,
             };
 
-            _logger.LogInformation(
+            _logger.LogDebug(
                "Returning {Count} financial transactions. Page={PageNumber}, Size={PageSize}, SortBy={SortBy}",
                pagedData.Items.Count,
                pagedData.Pagination.PageNumber,
@@ -110,14 +110,14 @@ namespace api.Services.FinancialTransactions
 
             if (dto == null)
             {
-                _logger.LogWarning(
+                _logger.LogInformation(
                     LoggingEvents.FinancialTransaction.NotFound,
                     "Financial transaction {FinancialTransactionId} not found",
                     id);
                 return Errors.FT.NotFound(id);
             }
 
-            _logger.LogInformation(
+            _logger.LogDebug(
                 "Financial transaction with ID {FinancialTransactionId} retrieved.",
                 id);
 
@@ -131,7 +131,7 @@ namespace api.Services.FinancialTransactions
             var category = await _categoryRepository.GetByIdAsync(input.CategoryId);
             if (category == null)
             {
-                _logger.LogWarning(LoggingEvents.Category.NotFound, "Category {CategoryId} not found", input.CategoryId);
+                _logger.LogInformation(LoggingEvents.Category.NotFound, "Category {CategoryId} not found", input.CategoryId);
                 return Errors.Category.NotFound(input.CategoryId);
             }
 
@@ -175,7 +175,7 @@ namespace api.Services.FinancialTransactions
             var category = await _categoryRepository.GetByIdAsync(input.CategoryId);
             if (category == null)
             {
-                _logger.LogWarning(
+                _logger.LogInformation(
                     LoggingEvents.Category.NotFound,
                     "Category {CategoryId} not found",
                     input.CategoryId);
@@ -230,7 +230,7 @@ namespace api.Services.FinancialTransactions
         {
             if (!_strategies.TryGetValue(query.Key, out var strategy))
             {
-                _logger.LogWarning(
+                _logger.LogInformation(
                     LoggingEvents.FinancialTransaction.NotSupportedStrategyGrouping,
                     "Unsupported grouping strategy key has passed");
 
@@ -249,7 +249,7 @@ namespace api.Services.FinancialTransactions
                 Pagination = pagination,
             };
 
-            _logger.LogInformation(
+            _logger.LogDebug(
                 "Returning {Count} financial transactions. Strategy Key = {StrategyKey}, Page={PageNumber}, Size={PageSize}",
                 pagedData.Items.Count,
                 query.Key,
@@ -264,7 +264,7 @@ namespace api.Services.FinancialTransactions
             var financialTransaction = await _financialTransactionRepository.GetByIdAsync(id);
             if (financialTransaction == null)
             {
-                _logger.LogWarning(
+                _logger.LogInformation(
                     LoggingEvents.FinancialTransaction.NotFound,
                     "Financial transaction {FinancialTransactionId} not found",
                     id);

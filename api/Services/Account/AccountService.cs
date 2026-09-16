@@ -73,6 +73,7 @@ namespace api.Services.Account
 
             if (user == null)
             {
+                _logger.LogWarning(LoggingEvents.User.NotFound, "User {UserId} not found", userId);
                 return Errors.User.NotFound(userId);
             }
 

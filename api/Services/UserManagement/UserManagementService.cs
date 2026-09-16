@@ -55,7 +55,7 @@ namespace api.Services.UserManagement
             {
                 var allowed = string.Join(", ", ValidFields);
 
-                _logger.LogWarning(
+                _logger.LogInformation(
                     LoggingEvents.User.SortInvalid,
                     "SortBy '{Field}' is invalid. Allowed fields: {AllowedFields}",
                     query.SortBy,
@@ -76,7 +76,13 @@ namespace api.Services.UserManagement
                 Pagination = pagination,
             };
 
-            _logger.LogDebug("Returning {Count} users", pagedData.Items.Count);
+            _logger.LogDebug(
+               "Returning {Count} users. Page={PageNumber}, Size={PageSize}, SortBy={SortBy}",
+               pagedData.Items.Count,
+               pagedData.Pagination.PageNumber,
+               pagedData.Pagination.PageSize,
+               query.SortBy);
+
             return pagedData;
         }
 
@@ -86,8 +92,13 @@ namespace api.Services.UserManagement
             var user = await _userService.FindByIdAsync(id);
             if (user == null)
             {
+                _logger.LogInformation(LoggingEvents.User.NotFound, "User not found");
                 return Errors.User.NotFound(id);
             }
+
+            _logger.LogDebug(
+                "User with ID {UserId} retrieved.",
+                id);
 
             return new UserManagementUserOutputDto
             {
@@ -106,7 +117,7 @@ namespace api.Services.UserManagement
             var user = await _userService.FindByIdAsync(userId);
             if (user == null)
             {
-                _logger.LogWarning(LoggingEvents.User.NotFound, "User not found");
+                _logger.LogInformation(LoggingEvents.User.NotFound, "User not found");
                 return Errors.User.NotFound(userId);
             }
 
@@ -130,6 +141,8 @@ namespace api.Services.UserManagement
             var updateResult = await _userService.UpdateAsync(user);
             if (updateResult.IsError)
             {
+                _logger.LogWarning(LoggingEvents.User.UpdateFailed, "User update failed");
+
                 return updateResult.Errors;
             }
 
