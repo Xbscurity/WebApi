@@ -71,18 +71,29 @@ namespace api.Data
         {
             base.OnModelCreating(modelBuilder);
 
-            modelBuilder.Entity<FinancialTransaction>()
-                .HasOne(transaction => transaction.Category)
-                .WithMany()
-                .HasForeignKey(transaction => transaction.CategoryId)
-                .OnDelete(DeleteBehavior.Restrict);
-
             modelBuilder.Entity<RefreshToken>()
                 .HasIndex(rt => rt.TokenHash)
                 .IsUnique();
 
             modelBuilder.Entity<RefreshToken>()
                 .Ignore(rt => rt.IsRevoked);
+
+            modelBuilder.Entity<RefreshToken>()
+                .HasOne<AppUser>()
+                .WithMany()
+                .HasForeignKey(rt => rt.UserId);
+
+            modelBuilder.Entity<Category>()
+                .HasIndex(c => new { c.AppUserId, c.Name })
+                .IsUnique();
+
+            modelBuilder.Entity<Category>()
+                .Property(c => c.Name)
+                .HasMaxLength(20);
+
+            modelBuilder.Entity<FinancialTransaction>()
+                .Property(ft => ft.Comment)
+                .HasMaxLength(255);
 
             modelBuilder.Entity<FinancialTransaction>()
                 .Property(ft => ft.Type)
@@ -92,6 +103,12 @@ namespace api.Data
             modelBuilder.Entity<FinancialTransaction>()
                 .Property(t => t.Amount)
                 .HasColumnType("numeric(18,2)");
+
+            modelBuilder.Entity<FinancialTransaction>()
+                .HasOne(transaction => transaction.Category)
+                .WithMany()
+                .HasForeignKey(transaction => transaction.CategoryId)
+                .OnDelete(DeleteBehavior.Restrict);
         }
     }
 }

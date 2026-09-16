@@ -265,6 +265,32 @@ namespace api.Tests.Unit.Services
         }
 
         [Fact]
+        public async Task CreateAsync_NameAlreadyExists_ReturnsNameAlreadyExistsError()
+        {
+            // Arrange
+            var input = new CategoryCreateInputDto
+            {
+                Name = "New",
+            };
+            _categoryRepositoryMock
+                .Setup(c => c.AnyAsync(
+                    It.IsAny<HasCategoryWithNameSpecification>()))
+                .ReturnsAsync(true);
+
+            // Act
+            var result = await _sut.CreateAsync(input);
+
+            // Assert
+            Assert.True(result.IsError);
+            Assert.Equal(Errors.Category.NameAlreadyExists(input.Name), result.FirstError);
+
+            _categoryRepositoryMock.Verify(
+                x =>
+                x.AddAsync(It.IsAny<Category>()),
+                Times.Never);
+        }
+
+        [Fact]
         public async Task CreateAsync_NameWithWhitespace_TrimsName()
         {
             // Arrange

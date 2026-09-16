@@ -116,7 +116,11 @@ namespace api.Services.Auth
 
             if (user.IsBanned)
             {
-                _logger.LogWarning(LoggingEvents.Auth.BannedUserAccessAttempt, "Banned user with id {userId} attempted to authenticate", user.Id);
+                _logger.LogWarning(
+                    LoggingEvents.Auth.BannedUserAccessAttempt,
+                    "Banned user with id {userId} attempted to authenticate",
+                    user.Id);
+
                 return Errors.User.Banned();
             }
 

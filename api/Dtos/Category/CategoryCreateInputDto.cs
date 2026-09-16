@@ -15,7 +15,7 @@ namespace api.Dtos.Category
         /// The name must be between 3 and 20 characters long.
         /// </remarks>
         [Required]
-        [TrimmedLength(3, 20)]
+        [TrimmedLength(1, 20)]
         required public string Name { get; init; }
     }
 }

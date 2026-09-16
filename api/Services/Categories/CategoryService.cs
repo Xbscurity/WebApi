@@ -125,6 +125,12 @@ namespace api.Services.Categories
                 AppUserId = _currentUser.UserId,
             };
 
+            var spec = new HasCategoryWithNameSpecification(_currentUser.UserId, input.Name);
+            if (await _categoryRepository.AnyAsync(spec))
+            {
+                return Errors.Category.NameAlreadyExists(input.Name);
+            }
+
             await _categoryRepository.AddAsync(category);
 
             _logger.LogInformation(

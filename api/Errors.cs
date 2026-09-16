@@ -37,6 +37,22 @@ namespace api
                     });
 
             /// <summary>
+            /// Creates an error indicating that a category with the specified name already exists.
+            /// </summary>
+            /// <param name="name">The category name.</param>
+            /// <returns>A <see cref="Error"/> of type <see cref="ErrorType.Conflict"/>.</returns>
+            public static Error NameAlreadyExists(string name) =>
+                Error.Conflict(
+                    code: $"{Prefix}NAME_ALREADY_EXISTS",
+                    description: $"Category with name {name} already exists.",
+                    metadata: new Dictionary<string, object>
+                    {
+                        {
+                            "name", name
+                        },
+                    });
+
+            /// <summary>
             /// Creates an error indicating an invalid sort field for categories.
             /// </summary>
             /// <param name="name">The provided sort field.</param>
