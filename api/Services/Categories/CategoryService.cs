@@ -119,17 +119,19 @@ namespace api.Services.Categories
         public async Task<ErrorOr<CategoryOutputDto>> CreateAsync(
             CategoryCreateInputDto input)
         {
-            var category = new Category
-            {
-                Name = input.Name.Trim(),
-                AppUserId = _currentUser.UserId,
-            };
+            var name = input.Name.Trim();
+            var spec = new HasCategoryWithNameSpecification(_currentUser.UserId, name);
 
-            var spec = new HasCategoryWithNameSpecification(_currentUser.UserId, input.Name);
             if (await _categoryRepository.AnyAsync(spec))
             {
-                return Errors.Category.NameAlreadyExists(input.Name);
+                return Errors.Category.NameAlreadyExists(name);
             }
+
+            var category = new Category
+            {
+                Name = name,
+                AppUserId = _currentUser.UserId,
+            };
 
             await _categoryRepository.AddAsync(category);
 
@@ -152,7 +154,16 @@ namespace api.Services.Categories
             }
 
             var category = categoryResult.Value;
-            category.Name = input.Name.Trim();
+
+            var name = input.Name.Trim();
+
+            var spec = new HasCategoryWithNameSpecification(_currentUser.UserId, name, excludeId: id);
+            if (await _categoryRepository.AnyAsync(spec))
+            {
+                return Errors.Category.NameAlreadyExists(name);
+            }
+
+            category.Name = name;
 
             await _categoryRepository.SaveChangesAsync();
 

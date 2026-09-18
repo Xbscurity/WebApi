@@ -86,6 +86,8 @@ namespace api.Controllers.Category
         /// The category was successfully created.
         /// </response>
         [HttpPost]
+        [ProducesResponseType(StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status409Conflict)]
         public async Task<ActionResult<CategoryOutputDto>> Create(
             [FromBody] CategoryCreateInputDto categoryDto)
         {
@@ -117,6 +119,7 @@ namespace api.Controllers.Category
         [HttpPut("{id:guid}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status409Conflict)]
         public async Task<ActionResult<CategoryOutputDto>> Update(
             [FromRoute] Guid id, [FromBody] CategoryUpdateInputDto categoryDto)
         {

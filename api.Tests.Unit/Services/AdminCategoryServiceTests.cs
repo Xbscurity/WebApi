@@ -330,6 +330,71 @@ namespace api.Tests.Unit.Services
         }
 
         [Fact]
+        public async Task CreateAsync_NameAlreadyExists_ReturnsNameAlreadyExistsError()
+        {
+            // Arrange
+            var input = new AdminCategoryCreateInputDto
+            {
+                Name = "New",
+                AppUserId = OtherUserId
+            };
+
+            _userServiceMock
+                .Setup(x => x.AnyAsync(OtherUserId))
+                .ReturnsAsync(true);
+
+            _categoryRepositoryMock
+                .Setup(c => c.AnyAsync(
+                    It.IsAny<HasCategoryWithNameSpecification>()))
+                .ReturnsAsync(true);
+
+            // Act
+            var result = await _sut.CreateAsync(input);
+
+            // Assert
+            Assert.True(result.IsError);
+            Assert.Equal(Errors.Category.NameAlreadyExists(input.Name), result.FirstError);
+
+            _categoryRepositoryMock.Verify(
+                x =>
+                x.AddAsync(It.IsAny<Category>()),
+                Times.Never);
+        }
+
+        [Fact]
+        public async Task UpdateAsync_NameAlreadyExists_ReturnsNameAlreadyExistsError()
+        {
+            // Arrange
+            var categoryId = Guid.NewGuid();
+            var category = CategoryFactory.Create(id: categoryId, userId: OtherUserId, name: "Old Name");
+
+            _categoryRepositoryMock
+                .Setup(x => x.GetByIdAsync(categoryId))
+                .ReturnsAsync(category);
+
+            _categoryRepositoryMock
+                .Setup(x => x.AnyAsync(It.IsAny<HasCategoryWithNameSpecification>()))
+                .ReturnsAsync(true);
+
+            var input = new CategoryUpdateInputDto
+            {
+                Name = "Existing Name",
+            };
+
+            // Act
+            var result = await _sut.UpdateAsync(categoryId, input);
+
+            // Assert
+            Assert.True(result.IsError);
+            Assert.Equal(Errors.Category.NameAlreadyExists(input.Name), result.FirstError);
+            Assert.Equal("Old Name", category.Name);
+
+            _categoryRepositoryMock.Verify(
+                x => x.SaveChangesAsync(It.IsAny<CancellationToken>()),
+                Times.Never);
+        }
+
+        [Fact]
         public async Task UpdateAsync_NonExistentId_ReturnsNotFoundError()
         {
             // Arrange

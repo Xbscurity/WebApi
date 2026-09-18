@@ -431,6 +431,39 @@ namespace api.Tests.Unit.Services
         }
 
         [Fact]
+        public async Task UpdateAsync_NameAlreadyExists_ReturnsNameAlreadyExistsError()
+        {
+            // Arrange
+            var categoryId = Guid.NewGuid();
+            var category = CategoryFactory.Create(id: categoryId, userId: CurrentUserId, name: "Old Name");
+
+            _categoryRepositoryMock
+                .Setup(x => x.GetByIdAsync(categoryId))
+                .ReturnsAsync(category);
+
+            _categoryRepositoryMock
+                .Setup(x => x.AnyAsync(It.IsAny<HasCategoryWithNameSpecification>()))
+                .ReturnsAsync(true);
+
+            var input = new CategoryUpdateInputDto
+            {
+                Name = "Existing Name"
+            };
+
+            // Act
+            var result = await _sut.UpdateAsync(categoryId, input);
+
+            // Assert
+            Assert.True(result.IsError);
+            Assert.Equal(Errors.Category.NameAlreadyExists(input.Name), result.FirstError);
+            Assert.Equal("Old Name", category.Name);
+
+            _categoryRepositoryMock.Verify(
+                x => x.SaveChangesAsync(It.IsAny<CancellationToken>()),
+                Times.Never);
+        }
+
+        [Fact]
         public async Task SetActiveAsync_NonExistentId_ReturnsNotFoundError()
         {
             // Arrange

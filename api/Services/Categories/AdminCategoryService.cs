@@ -125,9 +125,17 @@ namespace api.Services.Categories
                 return Errors.User.NotFound(targetUserId);
             }
 
+            var name = input.Name.Trim();
+            var spec = new HasCategoryWithNameSpecification(input.AppUserId, name);
+
+            if (await _categoryRepository.AnyAsync(spec))
+            {
+                return Errors.Category.NameAlreadyExists(name);
+            }
+
             var category = new Category
             {
-                Name = input.Name.Trim(),
+                Name = name,
                 AppUserId = targetUserId,
             };
 
@@ -153,7 +161,15 @@ namespace api.Services.Categories
                 return Errors.Category.NotFound(id);
             }
 
-            category.Name = input.Name.Trim();
+            var name = input.Name.Trim();
+            var spec = new HasCategoryWithNameSpecification(category.AppUserId, name, category.Id);
+
+            if (await _categoryRepository.AnyAsync(spec))
+            {
+                return Errors.Category.NameAlreadyExists(name);
+            }
+
+            category.Name = name;
 
             await _categoryRepository.SaveChangesAsync();
 
