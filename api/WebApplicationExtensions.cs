@@ -18,6 +18,8 @@ namespace api
         {
             app.UseExceptionHandler();
 
+            app.UseSerilogRequestLogging();
+
             app.MapHealthChecks("/health");
 
             app.UseAuthentication();
@@ -27,8 +29,6 @@ namespace api
             app.UseAuthorization();
 
             app.UseMiddleware<LogEnrichmentMiddleware>();
-
-            app.UseSerilogRequestLogging();
 
             if (app.Environment.IsDevelopment())
             {
