@@ -70,7 +70,6 @@ namespace api.Tests.Integration.Authorization
                 TestContext.Current.CancellationToken);
 
             // Assert
-            var raw = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         }
 
