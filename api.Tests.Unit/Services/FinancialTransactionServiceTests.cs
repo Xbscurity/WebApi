@@ -1,9 +1,9 @@
 ﻿using api.Dtos.FinancialTransaction;
 using api.Enums;
-using api.Interfaces;
 using api.Models;
 using api.Providers.CurrentUser;
 using api.Queries;
+using api.Repositories;
 using api.Services.FinancialTransactions;
 using api.Specifications.FinancialTransactions;
 using api.Tests.Unit.Factories;

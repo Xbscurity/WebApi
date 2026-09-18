@@ -1,6 +1,6 @@
 ﻿using Ardalis.Specification;
 
-namespace api.Interfaces
+namespace api.Repositories
 {
     /// <summary>
     /// Defines a generic repository abstraction for entity persistence operations.

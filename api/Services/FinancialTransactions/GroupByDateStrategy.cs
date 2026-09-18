@@ -1,7 +1,7 @@
 ﻿using api.Dtos.FinancialTransaction;
-using api.Interfaces;
 using api.Models;
 using api.Queries;
+using api.Repositories;
 using Ardalis.Specification;
 
 namespace api.Services.FinancialTransactions

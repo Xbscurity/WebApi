@@ -1,10 +1,10 @@
 ﻿using api.Constants;
 using api.Dtos.FinancialTransaction;
 using api.Extensions;
-using api.Interfaces;
 using api.Models;
 using api.Providers.CurrentUser;
 using api.Queries;
+using api.Repositories;
 using api.Services.Shared;
 using api.Specifications.FinancialTransactions;
 using ErrorOr;

@@ -1,7 +1,6 @@
 ﻿using api.Authorization;
 using api.Constants;
 using api.Data;
-using api.Interfaces;
 using api.Middlewares;
 using api.Models;
 using api.Options;

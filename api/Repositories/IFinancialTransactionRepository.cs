@@ -3,7 +3,7 @@ using api.Models;
 using api.Queries;
 using Ardalis.Specification;
 
-namespace api.Interfaces
+namespace api.Repositories
 {
     /// <summary>
     /// Defines  repository for managing financial transactions.

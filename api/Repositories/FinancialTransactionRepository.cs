@@ -8,7 +8,7 @@ using Ardalis.Specification.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
 
-namespace api.Interfaces
+namespace api.Repositories
 {
     /// <summary>
     /// Default implementation of <see cref="IFinancialTransactionRepository"/>.

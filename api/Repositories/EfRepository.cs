@@ -1,7 +1,7 @@
 ﻿using api.Data;
 using Ardalis.Specification.EntityFrameworkCore;
 
-namespace api.Interfaces
+namespace api.Repositories
 {
     /// <summary>
     /// Provides a generic repository implementation.

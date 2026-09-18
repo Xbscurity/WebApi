@@ -1,9 +1,9 @@
 ﻿using api.Constants;
 using api.Dtos.Category;
 using api.Extensions;
-using api.Interfaces;
 using api.Models;
 using api.Queries;
+using api.Repositories;
 using api.Services.Shared;
 using api.Services.User;
 using api.Specifications.Categories;

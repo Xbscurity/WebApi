@@ -1,7 +1,7 @@
 ﻿using api.Dtos.Category;
-using api.Interfaces;
 using api.Models;
 using api.Queries;
+using api.Repositories;
 using api.Services.Categories;
 using api.Services.User;
 using api.Specifications.Categories;
