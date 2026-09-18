@@ -176,7 +176,7 @@ namespace api
                     factory: partition => new FixedWindowRateLimiterOptions
                     {
                         PermitLimit = rateLimitingOptions.Auth.PermitLimit,
-                        Window = TimeSpan.FromMinutes(rateLimitingOptions.Auth.WindowSeconds),
+                        Window = TimeSpan.FromSeconds(rateLimitingOptions.Auth.WindowSeconds),
                         QueueLimit = 0,
                         AutoReplenishment = true,
                     }));
