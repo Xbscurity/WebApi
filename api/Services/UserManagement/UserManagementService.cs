@@ -66,7 +66,7 @@ namespace api.Services.UserManagement
 
             var spec = new UserManagementPagedSpecification(query);
             var users = await _userService.GetAllAsync(spec);
-            var count = await _userService.CountAsync();
+            var count = await _userService.CountAsync(spec);
 
             var pagination = new Pagination(query.Page, query.Size, count);
 

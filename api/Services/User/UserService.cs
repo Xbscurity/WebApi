@@ -79,9 +79,9 @@ namespace api.Services.User
         }
 
         /// <inheritdoc />
-        public async Task<int> CountAsync()
+        public async Task<int> CountAsync(ISpecification<AppUser> specification)
         {
-            return await _userManager.Users.CountAsync();
+            return await _userManager.Users.WithSpecification(specification).CountAsync();
         }
 
         /// <inheritdoc />

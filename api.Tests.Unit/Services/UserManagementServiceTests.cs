@@ -47,7 +47,7 @@ namespace api.Tests.Unit.Services
             _userServiceMock.Verify(
                 s => s.GetAllAsync(It.IsAny<UserManagementPagedSpecification>()),
                 Times.Never);
-            _userServiceMock.Verify(s => s.CountAsync(), Times.Never);
+            _userServiceMock.Verify(s => s.CountAsync(It.IsAny<UserManagementPagedSpecification>()), Times.Never);
         }
 
         [Theory]
@@ -82,7 +82,7 @@ namespace api.Tests.Unit.Services
                 .ReturnsAsync(users);
 
             _userServiceMock
-                .Setup(s => s.CountAsync())
+                .Setup(s => s.CountAsync(It.IsAny<UserManagementPagedSpecification>()))
                 .ReturnsAsync(1);
 
             // Act
@@ -114,7 +114,7 @@ namespace api.Tests.Unit.Services
                 .ReturnsAsync(new List<UserManagementUserOutputDto>());
 
             _userServiceMock
-                .Setup(s => s.CountAsync())
+                .Setup(s => s.CountAsync(It.IsAny<UserManagementPagedSpecification>()))
                 .ReturnsAsync(0);
 
             // Act

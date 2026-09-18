@@ -45,8 +45,9 @@ namespace api.Services.User
         /// <summary>
         /// Returns the total number of users in the system.
         /// </summary>
+        /// <param name="specification">The specification used to filter, sort, and project users count.</param>
         /// <returns>The total count of users.</returns>
-        Task<int> CountAsync();
+        Task<int> CountAsync(ISpecification<AppUser> specification);
 
         /// <summary>
         /// Gets a list of role names the specified <paramref name="user"/> belongs to.
