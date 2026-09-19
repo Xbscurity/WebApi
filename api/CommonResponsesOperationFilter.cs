@@ -7,34 +7,10 @@ using Swashbuckle.AspNetCore.SwaggerGen;
 namespace api
 {
     /// <summary>
-    /// Adds common HTTP response definitions to Swagger/OpenAPI endpoint documentation.
+    /// Documents standard <see cref="ProblemDetails"/> responses for API operations.
     /// </summary>
     /// <remarks>
-    /// This operation filter automatically appends standard responses
-    /// based on endpoint characteristics:
-    /// <list type="bullet">
-    /// <item>
-    /// <description>
-    /// <c>400 Bad Request</c> for endpoints that accept request bodies.
-    /// </description>
-    /// </item>
-    /// <item>
-    /// <description>
-    /// <c>401 Unauthorized</c> for endpoints that require authentication.
-    /// </description>
-    /// </item>
-    /// <item>
-    /// <description>
-    /// <c>403 Forbidden</c> for authenticated users who do not have
-    /// permission to access the resource.
-    /// </description>
-    /// </item>
-    /// </list>
-    /// <para>
-    /// Authentication-related responses are added only to endpoints decorated with
-    /// <see cref="AuthorizeAttribute"/> and not marked with
-    /// <see cref="AllowAnonymousAttribute"/>.
-    /// </para>
+    /// Responses are added based on the endpoint's parameters and authorization metadata.
     /// </remarks>
     public class CommonResponsesOperationFilter : IOperationFilter
     {
