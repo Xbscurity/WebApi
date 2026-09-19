@@ -44,11 +44,7 @@ jobs:
           --no-build --configuration Release
           --logger "trx;LogFileName=unit-tests.trx"
           --results-directory ./TestResults
- 
-      # Integration tests spin up their own Postgres container via
-      # Testcontainers, which works out of the box on GitHub-hosted
-      # Ubuntu runners since Docker is preinstalled - no extra `services:`
-      # block needed.
+          
       - name: Run integration tests
         run: >
           dotnet test api.Tests.Integration/api.Tests.Integration.csproj
