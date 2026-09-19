@@ -1,15 +1,15 @@
 services:
   postgres:
-    image: postgres:15
+    image: postgres:15.8-alpine
     restart: unless-stopped
     environment:
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
-      - POSTGRES_DB=mydb
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER}"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -26,7 +26,7 @@ services:
       - "5000:8080"
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
-      - ConnectionStrings__DefaultConnection=Host=postgres;Port=5432;Database=mydb;Username=postgres;Password=postgres
+      - ConnectionStrings__DefaultConnection=Host=postgres;Port=5432;Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}
     depends_on:
       postgres:
         condition: service_healthy
@@ -37,8 +37,8 @@ services:
     image: dpage/pgadmin4:9.13
     restart: unless-stopped
     environment:
-      PGADMIN_DEFAULT_EMAIL: admin@admin.com
-      PGADMIN_DEFAULT_PASSWORD: admin
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD}
     ports:
       - "8081:80"
     depends_on:
@@ -55,7 +55,7 @@ services:
       - "5341:80"
     environment:
       - ACCEPT_EULA=Y
-      - SEQ_FIRSTRUN_ADMINPASSWORD=admin123
+      - SEQ_FIRSTRUN_ADMINPASSWORD=${SEQ_PASSWORD}
     volumes:
       - seq-data:/data
     networks:
