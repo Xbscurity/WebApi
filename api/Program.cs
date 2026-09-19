@@ -40,6 +40,7 @@ try
 catch (Exception ex)
 {
     Log.Fatal(ex, "Host terminated unexpectedly");
+    throw;
 }
 finally
 {
